@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "target": "es2020",
+        "jsx": "react-jsx",
+        "moduleResolution": "bundler",
+        "ignoreDeprecations": "6.0",
+        "strict": true,
+        "declaration": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true
+    }
+}

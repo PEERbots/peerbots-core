@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+    --color-primary: #46d9d9;
+    /* --color-old-dark-primary: #5fc7cc; */
+    --color-dark-primary: var(--color-teal-700);
+    --color-secondary: #e86e8a;
+    --color-accent: #d9e021;
+    --color-accent-hc: #c4cc24;
+    --color-accent-two: #4273ff;
+    --color-accent-two-hc: #516eb5;
+    --color-accent-three: #3f8588;
+    --color-danger: #e86e8a;
+    --color-light-bg: #d8e7eb;
+    --sidebar-bg: #f9ffff;
+
+    --background-image-gradient-radial: radial-gradient(var(--tw-gradient-stops));
+    --background-image-gradient-conic: conic-gradient(from 180deg at 50% 50%,
+            var(--tw-gradient-stops));
+
+    --font-sans: "Avenir", "Nunito", sans-serif;
+}
+
+@utility input-base {
+    @apply bg-primary/10 border border-b-2 border-gray-300 focus:border-gray-600 py-2 px-2;
+}
+
+@utility btn-primary {
+    @apply bg-primary hover:bg-dark-primary text-gray-900 font-bold py-1 px-2 my-1 mx-2 rounded-md disabled:bg-gray-400 disabled:hover:bg-gray-300 disabled:cursor-not-allowed cursor-pointer;
+}
+
+@utility btn-secondary {
+    @apply bg-gray-100 hover:bg-gray-200 text-gray-800 font-normal py-1 px-2 my-1 mx-2 rounded-md disabled:bg-gray-400 disabled:hover:bg-gray-300 disabled:cursor-not-allowed cursor-pointer;
+}
+
+@utility btn-danger {
+    @apply bg-danger hover:opacity-80 text-gray-900 font-bold py-1 px-2 my-1 mx-2 rounded-md disabled:bg-gray-400 disabled:hover:bg-gray-300 disabled:cursor-not-allowed cursor-pointer;
+}
+
+@utility range-primary {
+    @apply accent-primary bg-gray-100 rounded-md cursor-pointer;
+}
+
+.range-vertical {
+    writing-mode: vertical-lr;
+}
+
+.tooltip,
+.tooltip-slow {
+    @apply absolute invisible opacity-0;
+}
+
+/* Using siblings so that hovering over the invisible tooltip doesn't trigger the tooltip */
+.has-tooltip:hover+.tooltip {
+    @apply visible opacity-100 z-50 transition-opacity delay-300 ease-in-out;
+}
+
+.has-tooltip:hover+.tooltip-slow {
+    @apply visible opacity-100 z-50 transition-opacity delay-1000 ease-in-out;
+}
