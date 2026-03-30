@@ -2,6 +2,7 @@ export * from "./Button";
 export * from "./Input";
 export * from "./Select";
 export * from "./Typography";
+export { iconPaths } from "./IconRegistry";
 export * from "./Icon";
 export * from "./Slider";
 export * from "./SliderWithNumberField";
