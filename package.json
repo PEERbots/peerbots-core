@@ -1,5 +1,8 @@
 {
   "name": "@peerbots/core",
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "0.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -7,7 +10,7 @@
   "author": "Peerbots",
   "repository": {
     "type": "git",
-    "url": "https://github.com/peerbots/peerbots-core"
+    "url": "git+https://github.com/peerbots/peerbots-core.git"
   },
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts --minify"
@@ -29,5 +32,10 @@
     "@types/react-dom": "^19.2.3",
     "tsup": "^8.5.1",
     "typescript": "^6.0.2"
-  }
+  },
+  "description": "The core shared components, styles and helpers for Peerbots web applications.",
+  "bugs": {
+    "url": "https://github.com/peerbots/peerbots-core/issues"
+  },
+  "homepage": "https://github.com/peerbots/peerbots-core#readme"
 }
