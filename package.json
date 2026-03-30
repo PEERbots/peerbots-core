@@ -13,25 +13,44 @@
     "url": "git+https://github.com/peerbots/peerbots-core.git"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --minify"
+    "build": "tsup src/index.ts --format cjs,esm --dts --minify",
+    "changeset": "changeset",
+    "release": "changeset publish",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
-    "tailwind-merge": "^3.4.1",
-    "clsx": "^2.1.1"
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.4.1"
   },
   "peerDependencies": {
+    "@base-ui/react": "^1.2.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7",
-    "@base-ui/react": "^1.2.0",
     "tailwindcss": "^4.2.0",
     "victory": "^37.3.6"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.30.0",
+    "@chromatic-com/storybook": "^5.1.1",
+    "@storybook/addon-a11y": "^10.3.3",
+    "@storybook/addon-docs": "^10.3.3",
+    "@storybook/addon-onboarding": "^10.3.3",
+    "@storybook/addon-vitest": "^10.3.3",
+    "@storybook/react-vite": "^10.3.3",
+    "@tailwindcss/vite": "^4.2.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@vitest/browser-playwright": "^4.1.2",
+    "@vitest/coverage-v8": "^4.1.2",
+    "playwright": "^1.58.2",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "storybook": "^10.3.3",
     "tsup": "^8.5.1",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.2"
   },
   "description": "The core shared components, styles and helpers for Peerbots web applications.",
   "bugs": {
