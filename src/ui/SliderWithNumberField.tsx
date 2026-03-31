@@ -50,7 +50,7 @@ export const SliderWithNumberField = React.forwardRef<
         )}
         {...props}
       >
-        <div className="flex-grow min-w-[120px]">
+        <div className="pb:flex-grow pb:min-w-[120px]">
           <Slider
             min={min}
             max={max}
@@ -59,7 +59,7 @@ export const SliderWithNumberField = React.forwardRef<
             defaultValue={defaultValue}
             disabled={disabled}
             onChange={handleChange}
-            className="w-full"
+            className="pb:w-full"
           />
         </div>
         <div className={cn(inputWidth, "shrink-0")}>

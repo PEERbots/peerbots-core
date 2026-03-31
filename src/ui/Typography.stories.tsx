@@ -10,7 +10,7 @@ export default meta;
 
 export const Default: StoryObj = {
   render: () => (
-    <div className="space-y-4 max-w-lg">
+    <div className="pb:space-y-4 pb:max-w-lg">
       <Heading level={2}>Core Typography</Heading>
       <Text>
         The quick brown fox jumps over the lazy dog. This is our standard body
@@ -22,15 +22,15 @@ export const Default: StoryObj = {
 
 export const Variations: StoryObj = {
   render: () => (
-    <div className="flex flex-col gap-12 p-4">
-      <div className="space-y-4">
+    <div className="pb:flex pb:flex-col pb:gap-12 pb:p-4">
+      <div className="pb:space-y-4">
         <Heading
           level={4}
-          className="text-sm font-medium text-black uppercase tracking-wider border-b pb-1"
+          className="pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1"
         >
           Headings
         </Heading>
-        <div className="space-y-4">
+        <div className="pb:space-y-4">
           <Heading level={1}>Heading 1</Heading>
           <Heading level={2}>Heading 2</Heading>
           <Heading level={3}>Heading 3</Heading>
@@ -40,40 +40,40 @@ export const Variations: StoryObj = {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="pb:space-y-4">
         <Heading
           level={4}
-          className="text-sm font-medium text-black uppercase tracking-wider border-b pb-1"
+          className="pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1"
         >
           Text Variants
         </Heading>
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <Text variant="small" className="italic font-bold">
+        <div className="pb:space-y-4">
+          <div className="pb:space-y-1">
+            <Text variant="small" className="pb:italic pb:font-bold">
               Default
             </Text>
             <Text variant="default">
               The quick brown fox jumps over the lazy dog.
             </Text>
           </div>
-          <div className="space-y-1">
-            <Text variant="small" className="italic font-bold">
+          <div className="pb:space-y-1">
+            <Text variant="small" className="pb:italic pb:font-bold">
               Small
             </Text>
             <Text variant="small">
               The quick brown fox jumps over the lazy dog.
             </Text>
           </div>
-          <div className="space-y-1">
-            <Text variant="small" className="italic font-bold">
+          <div className="pb:space-y-1">
+            <Text variant="small" className="pb:italic pb:font-bold">
               Muted
             </Text>
             <Text variant="muted">
               The quick brown fox jumps over the lazy dog.
             </Text>
           </div>
-          <div className="space-y-1">
-            <Text variant="small" className="italic font-bold">
+          <div className="pb:space-y-1">
+            <Text variant="small" className="pb:italic pb:font-bold">
               Error
             </Text>
             <Text variant="error">

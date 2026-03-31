@@ -29,7 +29,7 @@ export function Alert({ level, message, action }: AlertUIProps) {
           <Icon
             name="exclamationCircle"
             size="lg"
-            className="m-2"
+            className="pb:m-2"
             stroke="red"
           />
         )}
@@ -37,18 +37,18 @@ export function Alert({ level, message, action }: AlertUIProps) {
           <Icon
             name="exclamationTriangle"
             size="lg"
-            className="m-2"
+            className="pb:m-2"
             stroke="yellow"
           />
         )}
         {level === "Success" && (
-          <Icon name="checkCircle" size="lg" className="m-2" stroke="green" />
+          <Icon name="checkCircle" size="lg" className="pb:m-2" stroke="green" />
         )}
         {level === "Info" && (
-          <Icon name="megaphone" size="lg" className="m-2" />
+          <Icon name="megaphone" size="lg" className="pb:m-2" />
         )}
       </span>
-      <span className="flex flex-1 ml-2">{message}</span>
+      <span className="pb:flex pb:flex-1 pb:ml-2">{message}</span>
       {action && (
         <Button
           onClick={() => {
@@ -60,12 +60,12 @@ export function Alert({ level, message, action }: AlertUIProps) {
         </Button>
       )}
       <span
-        className="cursor-pointer"
+        className="pb:cursor-pointer"
         onClick={() => {
           setShowAlert(false);
         }}
       >
-        <Icon name="xCircle" size="lg" className="m-1" />
+        <Icon name="xCircle" size="lg" className="pb:m-1" />
       </span>
     </div>
   );

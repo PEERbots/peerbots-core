@@ -34,17 +34,17 @@ export function BasePanel({
       <div
         className={`flex items-center justify-between px-1 mb-1 border-b border-solid border-gray-400 pb-1 ${headerClassName}`}
       >
-        <Heading level={headingLevel} className="text-lg">
+        <Heading level={headingLevel} className="pb:text-lg">
           {title}
         </Heading>
         <Button
           variant="ghost"
           size="sm"
           onClick={handleClose}
-          className="p-1 rounded hover:bg-gray-100 h-auto"
+          className="pb:p-1 pb:rounded hover:pb:bg-gray-100 pb:h-auto"
           aria-label={`Close ${title} Panel`}
         >
-          <Icon size="md" className="h-5 w-5">
+          <Icon size="md" className="pb:h-5 pb:w-5">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

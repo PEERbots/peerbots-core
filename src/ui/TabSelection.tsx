@@ -40,10 +40,10 @@ export function TabSelection({
             }
             onClick={() => onTabClick(tab.id)}
           >
-            <span className="inline-block align-middle">{tab.label}</span>
+            <span className="pb:inline-block pb:align-middle">{tab.label}</span>
 
             {isActive && (tab.onEdit || tab.onClose) && (
-              <span className="inline-flex items-center ml-2 align-middle">
+              <span className="pb:inline-flex pb:items-center pb:ml-2 pb:align-middle">
                 {tab.onEdit && (
                   <Button
                     variant="ghost"
@@ -57,7 +57,7 @@ export function TabSelection({
                   />
                 )}
                 {tab.onEdit && tab.onClose && (
-                  <span className="opacity-10 align-middle mx-1">{" | "}</span>
+                  <span className="pb:opacity-10 pb:align-middle pb:mx-1">{" | "}</span>
                 )}
                 {tab.onClose && (
                   <Button
@@ -83,7 +83,7 @@ export function TabSelection({
           aria-label="Create New Tab"
           onClick={onAddClick}
           leftIcon={<Icon name="plus" size="sm" />}
-          className="m-1 align-middle inline-flex"
+          className="pb:m-1 pb:align-middle pb:inline-flex"
         />
       )}
     </div>

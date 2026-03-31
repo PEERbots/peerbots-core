@@ -41,7 +41,7 @@ export const NumberField = React.forwardRef<HTMLDivElement, NumberFieldProps>(
     const numberId = propsId || generatedId;
 
     return (
-      <div className="w-full">
+      <div className="pb:w-full">
         <BaseNumberField.Root
           ref={ref}
           value={value}
@@ -69,7 +69,7 @@ export const NumberField = React.forwardRef<HTMLDivElement, NumberFieldProps>(
             {showButtons && (
               <BaseNumberField.Decrement
                 aria-label="Decrement"
-                className="relative z-20 flex items-center justify-center w-8 h-9 text-gray-500 hover:text-gray-700 hover:bg-gray-100/50 rounded-l-md border-r border-gray-300 disabled:opacity-30 cursor-pointer"
+                className="pb:relative pb:z-20 pb:flex pb:items-center pb:justify-center pb:w-8 pb:h-9 pb:text-gray-500 hover:pb:text-gray-700 hover:pb:bg-gray-100/50 pb:rounded-l-md pb:border-r pb:border-gray-300 disabled:pb:opacity-30 pb:cursor-pointer"
               >
                 <Icon size="sm">
                   <path
@@ -93,7 +93,7 @@ export const NumberField = React.forwardRef<HTMLDivElement, NumberFieldProps>(
             {showButtons && (
               <BaseNumberField.Increment
                 aria-label="Increment"
-                className="relative z-20 flex items-center justify-center w-8 h-9 text-gray-500 hover:text-gray-700 hover:bg-gray-100/50 rounded-r-md border-l border-gray-300 disabled:opacity-30 cursor-pointer"
+                className="pb:relative pb:z-20 pb:flex pb:items-center pb:justify-center pb:w-8 pb:h-9 pb:text-gray-500 hover:pb:text-gray-700 hover:pb:bg-gray-100/50 pb:rounded-r-md pb:border-l pb:border-gray-300 disabled:pb:opacity-30 pb:cursor-pointer"
               >
                 <Icon size="sm">
                   <path
@@ -105,7 +105,7 @@ export const NumberField = React.forwardRef<HTMLDivElement, NumberFieldProps>(
               </BaseNumberField.Increment>
             )}
 
-            <BaseNumberField.ScrubArea className="absolute inset-0 z-10 cursor-ew-resize opacity-0 hover:opacity-10 transition-opacity bg-primary/5 rounded-md pointer-events-none group-hover:pointer-events-auto" />
+            <BaseNumberField.ScrubArea className="pb:absolute pb:inset-0 pb:z-10 pb:cursor-ew-resize pb:opacity-0 hover:pb:opacity-10 pb:transition-opacity pb:bg-primary/5 pb:rounded-md pb:pointer-events-none group-hover:pb:pointer-events-auto" />
           </div>
         </BaseNumberField.Root>
       </div>

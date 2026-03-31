@@ -36,15 +36,15 @@ export const Default: Story = {
 
 export const Variations: Story = {
   render: () => (
-    <div className="flex flex-col gap-12 p-4 max-w-2xl">
-      <div className="space-y-4">
+    <div className="pb:flex pb:flex-col pb:gap-12 pb:p-4 pb:max-w-2xl">
+      <div className="pb:space-y-4">
         <Heading
           level={4}
-          className="text-sm font-medium text-black uppercase tracking-wider"
+          className="pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider"
         >
           Basic Inputs
         </Heading>
-        <div className="grid gap-6">
+        <div className="pb:grid pb:gap-6">
           <Field
             label="Text Input"
             description="Standard text field"
@@ -61,14 +61,14 @@ export const Variations: Story = {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="pb:space-y-4">
         <Heading
           level={4}
-          className="text-sm font-medium text-black uppercase tracking-wider"
+          className="pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider"
         >
           Selection & Toggles
         </Heading>
-        <div className="grid gap-6">
+        <div className="pb:grid pb:gap-6">
           <Field label="Select Language">
             <Select
               options={[
@@ -81,7 +81,7 @@ export const Variations: Story = {
           </Field>
           <Field
             label="Enable Notifications"
-            className="flex-row items-center justify-between"
+            className="pb:flex-row pb:items-center pb:justify-between"
           >
             <Switch />
           </Field>
@@ -95,14 +95,14 @@ export const Variations: Story = {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="pb:space-y-4">
         <Heading
           level={4}
-          className="text-sm font-medium text-black uppercase tracking-wider"
+          className="pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider"
         >
           Sliders
         </Heading>
-        <div className="grid gap-6">
+        <div className="pb:grid pb:gap-6">
           <Field label="Simple Slider" tooltip="Adjust volume">
             <Slider defaultValue={50} />
           </Field>
@@ -117,14 +117,14 @@ export const Variations: Story = {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="pb:space-y-4">
         <Heading
           level={4}
-          className="text-sm font-medium text-black uppercase tracking-wider"
+          className="pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider"
         >
           Layout Variations
         </Heading>
-        <div className="grid gap-6">
+        <div className="pb:grid pb:gap-6">
           <Field
             label="Label on Left"
             labelPlacement="left"
@@ -145,18 +145,18 @@ export const Variations: Story = {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="pb:space-y-4">
         <Heading
           level={4}
-          className="text-sm font-medium text-black uppercase tracking-wider"
+          className="pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider"
         >
           Field Groups
         </Heading>
-        <div className="border rounded-lg p-6 bg-gray-50/50">
-          <Heading level={5} className="font-bold mb-4">
+        <div className="pb:border pb:rounded-lg pb:p-6 pb:bg-gray-50/50">
+          <Heading level={5} className="pb:font-bold pb:mb-4">
             Settings Group
           </Heading>
-          <div className="flex flex-col gap-4">
+          <div className="pb:flex pb:flex-col pb:gap-4">
             <Field
               label="Break up long sentences"
               labelPlacement="right"

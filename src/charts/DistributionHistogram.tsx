@@ -52,8 +52,8 @@ export function DistributionHistogram({
   const padding = { left: 60, right: 30, top: 20, bottom: 70 };
 
   return (
-    <div className="mb-6" role="img" aria-label={alt}>
-      <label className="text-xs uppercase font-bold text-gray-400 block mb-2 px-1">
+    <div className="pb:mb-6" role="img" aria-label={alt}>
+      <label className="pb:text-xs pb:uppercase pb:font-bold pb:text-gray-400 pb:block pb:mb-2 pb:px-1">
         {label}
       </label>
       <VictoryChart

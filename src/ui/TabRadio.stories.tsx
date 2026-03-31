@@ -63,14 +63,14 @@ export const Variations: Story = {
     onChange: () => {},
   },
   render: () => (
-    <div className="flex flex-col gap-12 p-4 min-w-[400px]">
-      <div className="space-y-4">
-        <Heading level={4} className="text-sm font-medium text-black uppercase">
+    <div className="pb:flex pb:flex-col pb:gap-12 pb:p-4 pb:min-w-[400px]">
+      <div className="pb:space-y-4">
+        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:uppercase">
           Variants
         </Heading>
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <Text variant="small" className="italic">
+        <div className="pb:space-y-6">
+          <div className="pb:space-y-2">
+            <Text variant="small" className="pb:italic">
               Default
             </Text>
             <TabRadioWithState
@@ -80,8 +80,8 @@ export const Variations: Story = {
               onChange={() => {}}
             />
           </div>
-          <div className="space-y-2">
-            <Text variant="small" className="italic">
+          <div className="pb:space-y-2">
+            <Text variant="small" className="pb:italic">
               Primary
             </Text>
             <TabRadioWithState
@@ -91,8 +91,8 @@ export const Variations: Story = {
               onChange={() => {}}
             />
           </div>
-          <div className="space-y-2">
-            <Text variant="small" className="italic">
+          <div className="pb:space-y-2">
+            <Text variant="small" className="pb:italic">
               Danger
             </Text>
             <TabRadioWithState
@@ -105,8 +105,8 @@ export const Variations: Story = {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <Heading level={4} className="text-sm font-medium text-black uppercase">
+      <div className="pb:space-y-4">
+        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:uppercase">
           With Icons
         </Heading>
         <TabRadioWithState
@@ -117,8 +117,8 @@ export const Variations: Story = {
               {
                 value: "Message",
                 label: (
-                  <div className="flex items-center gap-1">
-                    <Icon size="sm" className="w-4 h-4">
+                  <div className="pb:flex pb:items-center pb:gap-1">
+                    <Icon size="sm" className="pb:w-4 pb:h-4">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -132,8 +132,8 @@ export const Variations: Story = {
               {
                 value: "Log",
                 label: (
-                  <div className="flex items-center gap-1">
-                    <Icon size="sm" className="w-4 h-4">
+                  <div className="pb:flex pb:items-center pb:gap-1">
+                    <Icon size="sm" className="pb:w-4 pb:h-4">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"

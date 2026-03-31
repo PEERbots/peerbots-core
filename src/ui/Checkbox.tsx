@@ -29,7 +29,7 @@ export const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
         {...(props as ComponentPropsWithoutRef<typeof BaseCheckbox.Root>)}
       >
         <BaseCheckbox.Indicator>
-          <Icon size="sm" strokeWidth={3} className="text-dark-primary">
+          <Icon size="sm" strokeWidth={3} className="pb:text-dark-primary">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

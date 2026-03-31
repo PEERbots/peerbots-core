@@ -40,7 +40,7 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
     const selectId = propsId || generatedId;
 
     return (
-      <div className="w-full">
+      <div className="pb:w-full">
         <BaseSelect.Root
           value={value === undefined ? null : String(value)}
           defaultValue={
@@ -85,7 +85,7 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
               sideOffset={4}
               className="z-50 w-[var(--anchor-width)]"
             >
-              <BaseSelect.Popup className="max-h-60 overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+              <BaseSelect.Popup className="pb:max-h-60 pb:overflow-auto pb:rounded-md pb:bg-white pb:py-1 pb:text-base pb:shadow-lg pb:ring-1 pb:ring-black pb:ring-opacity-5 focus:pb:outline-none sm:pb:text-sm">
                 {options.map((option, index) => {
                   const label =
                     typeof option === "object" ? option.label : option;
@@ -95,10 +95,10 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                     <BaseSelect.Item
                       key={`${value}-${index}`}
                       value={value}
-                      className="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-100 data-[highlighted]:bg-gray-100 data-[selected]:font-semibold"
+                      className="pb:relative pb:cursor-default pb:select-none pb:py-2 pb:pl-3 pb:pr-9 pb:text-gray-900 hover:pb:bg-gray-100 data-[highlighted]:pb:bg-gray-100 data-[selected]:pb:font-semibold"
                     >
                       <BaseSelect.ItemText>{label}</BaseSelect.ItemText>
-                      <BaseSelect.ItemIndicator className="absolute inset-y-0 right-0 flex items-center pr-4 text-primary">
+                      <BaseSelect.ItemIndicator className="pb:absolute pb:inset-y-0 pb:right-0 pb:flex pb:items-center pb:pr-4 pb:text-primary">
                         <Icon size="sm">
                           <path
                             strokeLinecap="round"

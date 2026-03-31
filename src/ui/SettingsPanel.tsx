@@ -48,7 +48,7 @@ export function SettingsPanel({
         <Collapsible
           title={
             typeof title === "string" ? (
-              <Heading level={headingLevel} className="text-gray-600">
+              <Heading level={headingLevel} className="pb:text-gray-600">
                 {title}
               </Heading>
             ) : (
@@ -63,9 +63,9 @@ export function SettingsPanel({
       ) : (
         <>
           {title && (
-            <div className="flex items-center justify-between mb-2 empty:hidden">
+            <div className="pb:flex pb:items-center pb:justify-between pb:mb-2 empty:hidden">
               {typeof title === "string" ? (
-                <Heading level={headingLevel} className="text-gray-600">
+                <Heading level={headingLevel} className="pb:text-gray-600">
                   {title}
                 </Heading>
               ) : (

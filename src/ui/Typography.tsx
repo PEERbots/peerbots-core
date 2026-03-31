@@ -63,7 +63,7 @@ export const Text = ({
 export const TypographyList = ({ args }: { args: Record<string, unknown> }) => {
   return (
     <div
-      className="space-y-4"
+      className="pb:space-y-4"
       {...(args as React.HTMLAttributes<HTMLDivElement>)}
     >
       <Heading level={1}>Heading 1</Heading>

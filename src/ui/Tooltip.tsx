@@ -33,7 +33,7 @@ export function Tooltip({
               )}
             >
               {content}
-              <BaseTooltip.Arrow className="fill-white stroke-gray-200" />
+              <BaseTooltip.Arrow className="pb:fill-white pb:stroke-gray-200" />
             </BaseTooltip.Popup>
           </BaseTooltip.Positioner>
         </BaseTooltip.Portal>
@@ -49,7 +49,7 @@ export interface HelperTooltipProps {
 export function HelperTooltip({ content, className }: HelperTooltipProps) {
   return (
     <Tooltip content={content} className={className}>
-      <Icon size="md" className="text-gray-500 hover:text-gray-700 cursor-help">
+      <Icon size="md" className="pb:text-gray-500 hover:pb:text-gray-700 pb:cursor-help">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"

@@ -23,16 +23,16 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     }
 
     return (
-      <div className="relative">
+      <div className="pb:relative">
         {leftIcon && (
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <span className="text-gray-500 sm:text-sm">{leftIcon}</span>
+          <div className="pb:pointer-events-none pb:absolute pb:inset-y-0 pb:left-0 pb:flex pb:items-center pb:pl-3">
+            <span className="pb:text-gray-500 sm:pb:text-sm">{leftIcon}</span>
           </div>
         )}
         <BaseInput ref={ref} id={id} className={inputClasses} {...props} />
         {rightIcon && (
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-            <span className="text-gray-500 sm:text-sm">{rightIcon}</span>
+          <div className="pb:pointer-events-none pb:absolute pb:inset-y-0 pb:right-0 pb:flex pb:items-center pb:pr-3">
+            <span className="pb:text-gray-500 sm:pb:text-sm">{rightIcon}</span>
           </div>
         )}
       </div>

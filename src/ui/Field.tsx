@@ -54,7 +54,7 @@ export const Field = React.forwardRef<HTMLDivElement, FieldProps>(
             isHorizontal ? "flex-row items-center gap-2" : "flex-col gap-1.5",
           )}
         >
-          {labelOnRight && <div className="relative">{children}</div>}
+          {labelOnRight && <div className="pb:relative">{children}</div>}
 
           {label && (
             <BaseField.Label
@@ -67,8 +67,8 @@ export const Field = React.forwardRef<HTMLDivElement, FieldProps>(
                   )}
                   {...props}
                 >
-                  <span className="flex items-center gap-1">
-                    {icon && <span className="flex-shrink-0">{icon}</span>}
+                  <span className="pb:flex pb:items-center pb:gap-1">
+                    {icon && <span className="pb:flex-shrink-0">{icon}</span>}
                     {label}
                   </span>
                 </Label>
@@ -76,7 +76,7 @@ export const Field = React.forwardRef<HTMLDivElement, FieldProps>(
             />
           )}
 
-          {!labelOnRight && <div className="relative">{children}</div>}
+          {!labelOnRight && <div className="pb:relative">{children}</div>}
         </div>
 
         {description && (

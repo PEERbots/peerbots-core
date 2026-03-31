@@ -40,9 +40,9 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
 
     return (
       <div className={cn("w-full flex items-center gap-4", className)}>
-        {icon && <div className="text-gray-500 shrink-0">{icon}</div>}
+        {icon && <div className="pb:text-gray-500 pb:shrink-0">{icon}</div>}
 
-        <div className="flex-grow flex items-center h-8 min-w-[120px]">
+        <div className="pb:flex-grow pb:flex pb:items-center pb:h-8 pb:min-w-[120px]">
           <BaseSlider.Root
             ref={ref}
             min={min}
@@ -77,11 +77,11 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
               className,
             )}
           >
-            <BaseSlider.Control className="flex items-center w-full h-full relative cursor-pointer">
-              <BaseSlider.Track className="relative bg-gray-200 rounded-full w-full h-1.5 overflow-hidden transition-colors group-hover:bg-gray-300">
-                <BaseSlider.Indicator className="absolute bg-primary rounded-full h-full" />
+            <BaseSlider.Control className="pb:flex pb:items-center pb:w-full pb:h-full pb:relative pb:cursor-pointer">
+              <BaseSlider.Track className="pb:relative pb:bg-gray-200 pb:rounded-full pb:w-full pb:h-1.5 pb:overflow-hidden pb:transition-colors group-hover:pb:bg-gray-300">
+                <BaseSlider.Indicator className="pb:absolute pb:bg-primary pb:rounded-full pb:h-full" />
               </BaseSlider.Track>
-              <BaseSlider.Thumb className="z-10 block w-4.5 h-4.5 bg-white shadow-md rounded-full border-2 border-primary focus:outline-none focus:ring-4 focus:ring-primary/20 cursor-grab active:cursor-grabbing hover:scale-110 active:scale-95 transition-transform" />
+              <BaseSlider.Thumb className="pb:z-10 pb:block pb:w-4.5 pb:h-4.5 pb:bg-white pb:shadow-md pb:rounded-full pb:border-2 pb:border-primary focus:pb:outline-none focus:pb:ring-4 focus:pb:ring-primary/20 pb:cursor-grab active:pb:cursor-grabbing hover:pb:scale-110 active:pb:scale-95 pb:transition-transform" />
             </BaseSlider.Control>
           </BaseSlider.Root>
         </div>

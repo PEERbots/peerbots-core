@@ -10,7 +10,7 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div className="w-[450px] border border-gray-200 rounded-lg shadow-sm bg-white overflow-hidden p-4">
+      <div className="pb:w-[450px] pb:border pb:border-gray-200 pb:rounded-lg pb:shadow-sm pb:bg-white pb:overflow-hidden pb:p-4">
         <Story />
       </div>
     ),
@@ -27,7 +27,7 @@ export const Default: Story = {
     children: (
       <UIText
         variant="small"
-        className="p-4 bg-gray-50 rounded-md border border-gray-100 text-black text-center"
+        className="pb:p-4 pb:bg-gray-50 pb:rounded-md pb:border pb:border-gray-100 pb:text-black pb:text-center"
       >
         Panel content goes here.
       </UIText>

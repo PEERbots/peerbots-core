@@ -21,8 +21,8 @@ const InteractiveSlider = (props: React.ComponentProps<typeof Slider>) => {
   );
 
   return (
-    <div className="space-y-2">
-      <div className="w-80">
+    <div className="pb:space-y-2">
+      <div className="pb:w-80">
         <Slider
           {...props}
           value={value}
@@ -33,7 +33,7 @@ const InteractiveSlider = (props: React.ComponentProps<typeof Slider>) => {
           }}
         />
       </div>
-      <Text variant="small" className="text-slate-500">
+      <Text variant="small" className="pb:text-slate-500">
         Value: {value}
       </Text>
     </div>
@@ -50,7 +50,7 @@ const RangeChangeableSlider = ({
   const [val, setVal] = useState(50);
 
   return (
-    <div className="space-y-4 border p-4 rounded-lg bg-white shadow-sm">
+    <div className="pb:space-y-4 pb:border pb:p-4 pb:rounded-lg pb:bg-white pb:shadow-sm">
       <Slider
         {...args}
         min={min}
@@ -58,11 +58,11 @@ const RangeChangeableSlider = ({
         value={val}
         onChange={(v: number | number[]) => setVal(Array.isArray(v) ? v[0] : v)}
       />
-      <div className="flex space-x-4">
-        <div className="flex flex-col gap-1">
+      <div className="pb:flex pb:space-x-4">
+        <div className="pb:flex pb:flex-col pb:gap-1">
           <Text
             variant="small"
-            className="uppercase text-slate-400 font-bold text-[10px]"
+            className="pb:uppercase pb:text-slate-400 pb:font-bold pb:text-[10px]"
           >
             Min
           </Text>
@@ -70,13 +70,13 @@ const RangeChangeableSlider = ({
             type="number"
             value={min}
             onChange={(e) => setMin(Number(e.target.value))}
-            className="w-20"
+            className="pb:w-20"
           />
         </div>
-        <div className="flex flex-col gap-1">
+        <div className="pb:flex pb:flex-col pb:gap-1">
           <Text
             variant="small"
-            className="uppercase text-slate-400 font-bold text-[10px]"
+            className="pb:uppercase pb:text-slate-400 pb:font-bold pb:text-[10px]"
           >
             Max
           </Text>
@@ -84,11 +84,11 @@ const RangeChangeableSlider = ({
             type="number"
             value={max}
             onChange={(e) => setMax(Number(e.target.value))}
-            className="w-20"
+            className="pb:w-20"
           />
         </div>
-        <div className="flex flex-col justify-end">
-          <Text variant="small" className="text-slate-600 font-medium">
+        <div className="pb:flex pb:flex-col pb:justify-end">
+          <Text variant="small" className="pb:text-slate-600 pb:font-medium">
             Current: {val}
           </Text>
         </div>
@@ -108,20 +108,20 @@ export const Default: Story = {
 
 export const Variations: Story = {
   render: () => (
-    <div className="flex flex-col gap-12 p-4">
-      <div className="space-y-4">
-        <Heading level={4} className="text-sm font-medium text-black uppercase">
+    <div className="pb:flex pb:flex-col pb:gap-12 pb:p-4">
+      <div className="pb:space-y-4">
+        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:uppercase">
           Width Responsiveness
         </Heading>
-        <div className="space-y-6">
-          <div className="space-y-1">
-            <Text variant="small" className="italic text-black">
+        <div className="pb:space-y-6">
+          <div className="pb:space-y-1">
+            <Text variant="small" className="pb:italic pb:text-black">
               Full Width (Container Default)
             </Text>
             <Slider defaultValue={30} />
           </div>
-          <div className="space-y-1 w-40">
-            <Text variant="small" className="italic text-black">
+          <div className="pb:space-y-1 pb:w-40">
+            <Text variant="small" className="pb:italic pb:text-black">
               Narrow (w-40)
             </Text>
             <Slider defaultValue={70} />
@@ -129,8 +129,8 @@ export const Variations: Story = {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <Heading level={4} className="text-sm font-medium text-black uppercase">
+      <div className="pb:space-y-4">
+        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:uppercase">
           Dynamic Range Test
         </Heading>
         <RangeChangeableSlider args={{}} />

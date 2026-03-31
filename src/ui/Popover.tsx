@@ -33,7 +33,7 @@ export function Popover({
             )}
           >
             {children}
-            <BasePopover.Arrow className="fill-white stroke-gray-200" />
+            <BasePopover.Arrow className="pb:fill-white pb:stroke-gray-200" />
           </BasePopover.Popup>
         </BasePopover.Positioner>
       </BasePopover.Portal>

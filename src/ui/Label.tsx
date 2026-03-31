@@ -17,7 +17,7 @@ export function Label({ children, tooltip, className, ...props }: LabelProps) {
       )}
       {...props}
     >
-      <div className="flex items-center gap-1">
+      <div className="pb:flex pb:items-center pb:gap-1">
         {children}
         {tooltip && <HelperTooltip content={tooltip} />}
       </div>

@@ -23,7 +23,7 @@ export const Default: Story = {
 
 export const Variations: Story = {
   render: () => (
-    <div className="flex flex-col gap-4 w-[600px] bg-gray-100 p-8">
+    <div className="pb:flex pb:flex-col pb:gap-4 pb:w-[600px] pb:bg-gray-100 pb:p-8">
       <Alert
         level="Error"
         message="Critical connection failure!"

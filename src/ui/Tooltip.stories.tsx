@@ -13,7 +13,7 @@ const meta: Meta<typeof Tooltip> = {
   },
   decorators: [
     (Story) => (
-      <div className="flex h-32 items-center justify-center">
+      <div className="pb:flex pb:h-32 pb:items-center pb:justify-center">
         <Story />
       </div>
     ),
@@ -33,34 +33,34 @@ export const Default: Story = {
 export const Variations: Story = {
   decorators: [
     (Story) => (
-      <div className="p-12">
+      <div className="pb:p-12">
         <Story />
       </div>
     ),
   ],
   render: () => (
-    <div className="flex flex-col gap-16">
-      <div className="space-y-4">
-        <Heading level={4} className="text-sm font-medium text-black uppercase">
+    <div className="pb:flex pb:flex-col pb:gap-16">
+      <div className="pb:space-y-4">
+        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:uppercase">
           Placements & Triggers
         </Heading>
-        <div className="flex flex-wrap gap-8 items-center justify-center">
+        <div className="pb:flex pb:flex-wrap pb:gap-8 pb:items-center pb:justify-center">
           <Tooltip content="Tooltip on button">
             <Button>On Button</Button>
           </Tooltip>
           <Tooltip content="Simple span trigger">
-            <span className="cursor-help underline decoration-dotted">
+            <span className="pb:cursor-help pb:underline pb:decoration-dotted">
               On Text
             </span>
           </Tooltip>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <Heading level={4} className="text-sm font-medium text-black uppercase">
+      <div className="pb:space-y-4">
+        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:uppercase">
           Configurations
         </Heading>
-        <div className="flex flex-wrap gap-8 items-center justify-center">
+        <div className="pb:flex pb:flex-wrap pb:gap-8 pb:items-center pb:justify-center">
           <Tooltip content="I appear slowly" delay="slow">
             <Button variant="secondary">Slow Delay (1s)</Button>
           </Tooltip>
@@ -70,11 +70,11 @@ export const Variations: Story = {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <Heading level={4} className="text-sm font-medium text-black uppercase">
+      <div className="pb:space-y-4">
+        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:uppercase">
           Helper Tooltip
         </Heading>
-        <div className="flex flex-wrap gap-8 items-center justify-center">
+        <div className="pb:flex pb:flex-wrap pb:gap-8 pb:items-center pb:justify-center">
           <HelperTooltip content="I'm a helper" />
           <HelperTooltip content="This is a much longer message that is trying to illustrate what happens when we have a long message for the helper tooltip." />
         </div>
