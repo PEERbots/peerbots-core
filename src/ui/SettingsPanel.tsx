@@ -34,13 +34,13 @@ export function SettingsPanel({
   headingLevel = 3,
 }: SettingsPanelProps) {
   const content = (
-    <div className={cn("flex flex-col", contentClassName)}>{children}</div>
+    <div className={cn("pb:flex pb:flex-col", contentClassName)}>{children}</div>
   );
 
   return (
     <div
       className={cn(
-        "m-2 p-4 bg-white shadow-xl rounded-lg flex flex-1 flex-col",
+        "pb:m-2 pb:p-4 pb:bg-white pb:shadow-xl pb:rounded-lg pb:flex pb:flex-1 pb:flex-col",
         className,
       )}
     >

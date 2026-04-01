@@ -19,11 +19,11 @@ export interface TabRadioProps<T extends string> {
 
 const variantStyles = {
   default:
-    "data-[pressed]:bg-white data-[pressed]:text-gray-900 data-[pressed]:shadow-sm data-[pressed]:ring-1 data-[pressed]:ring-gray-200",
+    "pb:data-[pressed]:bg-white pb:data-[pressed]:text-gray-900 pb:data-[pressed]:shadow-sm pb:data-[pressed]:ring-1 pb:data-[pressed]:ring-gray-200",
   primary:
-    "data-[pressed]:bg-primary/20 data-[pressed]:shadow-sm data-[pressed]:ring-1 data-[pressed]:ring-primary",
+    "pb:data-[pressed]:bg-primary/20 pb:data-[pressed]:shadow-sm pb:data-[pressed]:ring-1 pb:data-[pressed]:ring-primary",
   danger:
-    "data-[pressed]:bg-danger/20 data-[pressed]:shadow-sm data-[pressed]:ring-1 data-[pressed]:ring-danger",
+    "pb:data-[pressed]:bg-danger/20 pb:data-[pressed]:shadow-sm pb:data-[pressed]:ring-1 pb:data-[pressed]:ring-danger",
 };
 
 export function TabRadio<T extends string>({
@@ -42,7 +42,7 @@ export function TabRadio<T extends string>({
       }}
       aria-label={ariaLabel}
       className={cn(
-        "inline-flex p-1 space-x-1 bg-gray-100 rounded-lg border border-gray-200",
+        "pb:inline-flex pb:p-1 pb:space-x-1 pb:bg-gray-100 pb:rounded-lg pb:border pb:border-gray-200",
         className,
       )}
     >
@@ -53,9 +53,9 @@ export function TabRadio<T extends string>({
             value={option.value}
             disabled={option.disabled}
             className={cn(
-              "relative cursor-pointer px-3 py-1.5 text-sm font-medium rounded-md transition-all flex items-center justify-center outline-none",
-              "text-gray-600 hover:text-gray-900 hover:bg-gray-200",
-              "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-600",
+              "pb:relative pb:cursor-pointer pb:px-3 pb:py-1.5 pb:text-sm pb:font-medium pb:rounded-md pb:transition-all pb:flex pb:items-center pb:justify-center pb:outline-none",
+              "pb:text-gray-600 pb:hover:text-gray-900 pb:hover:bg-gray-200",
+              "pb:disabled:opacity-50 pb:disabled:cursor-not-allowed pb:disabled:hover:bg-transparent pb:disabled:hover:text-gray-600",
               variantStyles[variant],
             )}
           >

@@ -28,7 +28,7 @@ export function Popover({
         <BasePopover.Positioner side={side} align={align} sideOffset={5}>
           <BasePopover.Popup
             className={cn(
-              "z-50 w-72 rounded-md border bg-white p-4 shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+              "pb:z-50 pb:w-72 pb:rounded-md pb:border pb:bg-white pb:p-4 pb:shadow-md pb:outline-none pb:data-[state=open]:animate-in pb:data-[state=closed]:animate-out pb:data-[state=closed]:fade-out-0 pb:data-[state=open]:fade-in-0 pb:data-[state=closed]:zoom-out-95 pb:data-[state=open]:zoom-in-95",
               className,
             )}
           >

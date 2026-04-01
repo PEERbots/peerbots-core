@@ -20,8 +20,8 @@ export function Alert({ level, message, action }: AlertUIProps) {
   return (
     <div
       className={
-        "flex w-full p-4 m-1 text-sm rounded-lg bg-white border border-solid transition-opacity ease-in-out delay-150 duration-300 " +
-        (showAlert ? " " : " hidden")
+        "pb:flex pb:w-full pb:p-4 pb:m-1 pb:text-sm pb:rounded-lg pb:bg-white pb:border pb:border-solid pb:transition-opacity pb:ease-in-out pb:delay-150 pb:duration-300 " +
+        (showAlert ? " " : " pb:hidden")
       }
     >
       <span>

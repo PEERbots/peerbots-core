@@ -12,10 +12,10 @@ export interface IconProps extends React.SVGProps<SVGSVGElement> {
 export const Icon = React.forwardRef<SVGSVGElement, IconProps>(
   ({ className, size = "md", name, children, ...props }, ref) => {
     const sizes = {
-      sm: "w-3 h-3",
-      md: "w-4 h-4",
-      lg: "w-6 h-6",
-      xl: "w-8 h-8",
+      sm: "pb:w-3 pb:h-3",
+      md: "pb:w-4 pb:h-4",
+      lg: "pb:w-6 pb:h-6",
+      xl: "pb:w-8 pb:h-8",
     };
 
     const iconContent = name ? icons[name] : children;
@@ -30,7 +30,7 @@ export const Icon = React.forwardRef<SVGSVGElement, IconProps>(
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className={cn(sizes[size], "inline-block", className)}
+        className={cn(sizes[size], "pb:inline-block", className)}
         {...props}
       >
         {iconContent}

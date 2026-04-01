@@ -49,7 +49,7 @@ export function AuthFormUI({
         {title || defaultTitle}
       </Heading>
 
-      <form className="md:pb:m-10 sm:pb:m-4 pb:space-y-4" action={formAction}>
+      <form className="pb:md:m-10 pb:sm:m-4 pb:space-y-4" action={formAction}>
         {description && (
           <Text className="pb:text-center pb:mb-6" variant="muted">
             {description}
@@ -120,7 +120,7 @@ export function AuthFormUI({
                   variant="ghost"
                   size="sm"
                   onClick={() => onModeChange("signing in")}
-                  className="pb:underline pb:p-0 pb:h-auto hover:pb:bg-transparent"
+                  className="pb:underline pb:p-0 pb:h-auto pb:hover:bg-transparent"
                 >
                   Sign in
                 </Button>
@@ -134,7 +134,7 @@ export function AuthFormUI({
                     variant="ghost"
                     size="sm"
                     onClick={() => onModeChange("resetting password")}
-                    className="pb:underline pb:p-0 pb:h-auto hover:pb:bg-transparent"
+                    className="pb:underline pb:p-0 pb:h-auto pb:hover:bg-transparent"
                   >
                     Reset password.
                   </Button>
@@ -153,7 +153,7 @@ export function AuthFormUI({
                     variant="ghost"
                     size="sm"
                     onClick={() => onModeChange("signing up")}
-                    className="pb:underline pb:p-0 pb:h-auto hover:pb:bg-transparent"
+                    className="pb:underline pb:p-0 pb:h-auto pb:hover:bg-transparent"
                   >
                     Sign up
                   </Button>
@@ -168,7 +168,7 @@ export function AuthFormUI({
                     variant="ghost"
                     size="sm"
                     onClick={() => onModeChange("signing up")}
-                    className="pb:underline pb:p-0 pb:h-auto hover:pb:bg-transparent"
+                    className="pb:underline pb:p-0 pb:h-auto pb:hover:bg-transparent"
                   >
                     Sign up
                   </Button>
@@ -187,7 +187,7 @@ export function AuthFormUI({
                     variant="ghost"
                     size="sm"
                     onClick={() => onModeChange("signing in")}
-                    className="pb:underline pb:p-0 pb:h-auto hover:pb:bg-transparent"
+                    className="pb:underline pb:p-0 pb:h-auto pb:hover:bg-transparent"
                   >
                     Sign In
                   </Button>

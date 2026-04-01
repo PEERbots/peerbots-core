@@ -10,9 +10,9 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, leftIcon, rightIcon, id, ...props }, ref) => {
     const inputClasses = cn(
-      "block w-full rounded-md border-0 px-1.5 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6 bg-primary/10 appearance-none",
-      leftIcon && "pl-10",
-      rightIcon && "pr-10",
+      "pb:block pb:w-full pb:rounded-md pb:border-0 pb:px-1.5 pb:py-1.5 pb:text-gray-900 pb:shadow-sm pb:ring-1 pb:ring-inset pb:ring-gray-300 pb:placeholder:text-gray-400 pb:focus:ring-2 pb:focus:ring-inset pb:focus:ring-primary pb:sm:text-sm pb:sm:leading-6 pb:bg-primary/10 pb:appearance-none",
+      leftIcon && "pb:pl-10",
+      rightIcon && "pb:pr-10",
       className,
     );
 
@@ -26,13 +26,13 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       <div className="pb:relative">
         {leftIcon && (
           <div className="pb:pointer-events-none pb:absolute pb:inset-y-0 pb:left-0 pb:flex pb:items-center pb:pl-3">
-            <span className="pb:text-gray-500 sm:pb:text-sm">{leftIcon}</span>
+            <span className="pb:text-gray-500 pb:sm:text-sm">{leftIcon}</span>
           </div>
         )}
         <BaseInput ref={ref} id={id} className={inputClasses} {...props} />
         {rightIcon && (
           <div className="pb:pointer-events-none pb:absolute pb:inset-y-0 pb:right-0 pb:flex pb:items-center pb:pr-3">
-            <span className="pb:text-gray-500 sm:pb:text-sm">{rightIcon}</span>
+            <span className="pb:text-gray-500 pb:sm:text-sm">{rightIcon}</span>
           </div>
         )}
       </div>

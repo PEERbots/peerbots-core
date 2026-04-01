@@ -7,19 +7,19 @@ function cn(...inputs: ClassValue[]) {
 }
 
 const headingSizes = {
-  1: "text-4xl font-bold",
-  2: "text-3xl font-bold",
-  3: "text-2xl font-bold",
-  4: "text-xl font-bold",
-  5: "text-lg font-bold",
-  6: "text-base font-bold",
+  1: "pb:text-4xl pb:font-bold",
+  2: "pb:text-3xl pb:font-bold",
+  3: "pb:text-2xl pb:font-bold",
+  4: "pb:text-xl pb:font-bold",
+  5: "pb:text-lg pb:font-bold",
+  6: "pb:text-base pb:font-bold",
 };
 
 const textVariants = {
-  default: "text-base text-slate-950",
-  muted: "text-sm text-slate-600",
-  error: "text-sm text-red-600 font-medium",
-  small: "text-xs text-slate-600",
+  default: "pb:text-base pb:text-slate-950",
+  muted: "pb:text-sm pb:text-slate-600",
+  error: "pb:text-sm pb:text-red-600 pb:font-medium",
+  small: "pb:text-xs pb:text-slate-600",
 };
 
 interface HeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {

@@ -42,16 +42,16 @@ export const Field = React.forwardRef<HTMLDivElement, FieldProps>(
       <BaseField.Root
         ref={ref}
         className={cn(
-          "flex w-full",
-          isHorizontal ? "flex-col gap-1" : "flex-col gap-1.5",
+          "pb:flex pb:w-full",
+          isHorizontal ? "pb:flex-col pb:gap-1" : "pb:flex-col pb:gap-1.5",
           className as string,
         )}
         {...props}
       >
         <div
           className={cn(
-            "flex",
-            isHorizontal ? "flex-row items-center gap-2" : "flex-col gap-1.5",
+            "pb:flex",
+            isHorizontal ? "pb:flex-row pb:items-center pb:gap-2" : "pb:flex-col pb:gap-1.5",
           )}
         >
           {labelOnRight && <div className="pb:relative">{children}</div>}
@@ -62,8 +62,8 @@ export const Field = React.forwardRef<HTMLDivElement, FieldProps>(
                 <Label
                   tooltip={tooltip}
                   className={cn(
-                    "mb-0",
-                    labelWeight === "normal" && "font-normal",
+                    "pb:mb-0",
+                    labelWeight === "normal" && "pb:font-normal",
                   )}
                   {...props}
                 >
@@ -82,8 +82,8 @@ export const Field = React.forwardRef<HTMLDivElement, FieldProps>(
         {description && (
           <BaseField.Description
             className={cn(
-              "text-xs text-gray-500",
-              labelOnRight && "ml-7", // Aligns description with label text when child is on left
+              "pb:text-xs pb:text-gray-500",
+              labelOnRight && "pb:ml-7", // Aligns description with label text when child is on left
             )}
           >
             {description}
@@ -93,8 +93,8 @@ export const Field = React.forwardRef<HTMLDivElement, FieldProps>(
         {error && (
           <BaseField.Error
             className={cn(
-              "text-xs text-red-600 font-medium",
-              labelOnRight && "ml-7",
+              "pb:text-xs pb:text-red-600 pb:font-medium",
+              labelOnRight && "pb:ml-7",
             )}
           >
             {error}

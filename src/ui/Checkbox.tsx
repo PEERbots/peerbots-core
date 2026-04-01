@@ -21,9 +21,9 @@ export const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
           }
         }}
         className={cn(
-          "flex h-5 w-5 shrink-0 items-center justify-center rounded border border-gray-300 bg-white shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-          "hover:border-primary hover:bg-primary/5",
-          "data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:text-white",
+          "pb:flex pb:h-5 pb:w-5 pb:shrink-0 pb:items-center pb:justify-center pb:rounded pb:border pb:border-gray-300 pb:bg-white pb:shadow-sm pb:transition-all pb:focus-visible:outline-none pb:focus-visible:ring-2 pb:focus-visible:ring-primary pb:focus-visible:ring-offset-2 pb:disabled:cursor-not-allowed pb:disabled:opacity-50",
+          "pb:hover:border-primary pb:hover:bg-primary/5",
+          "pb:data-[state=checked]:bg-primary pb:data-[state=checked]:border-primary pb:data-[state=checked]:text-white",
           className,
         )}
         {...(props as ComponentPropsWithoutRef<typeof BaseCheckbox.Root>)}

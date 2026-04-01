@@ -30,9 +30,9 @@ export function BasePanel({
   };
 
   return (
-    <div className={`space-y-1 p-1 ${className}`}>
+    <div className={`pb:space-y-1 pb:p-1 ${className}`}>
       <div
-        className={`flex items-center justify-between px-1 mb-1 border-b border-solid border-gray-400 pb-1 ${headerClassName}`}
+        className={`pb:flex pb:items-center pb:justify-between pb:px-1 pb:mb-1 pb:border pb:border-solid pb:border-gray-400 pb:pb-1 ${headerClassName}`}
       >
         <Heading level={headingLevel} className="pb:text-lg">
           {title}
@@ -41,7 +41,7 @@ export function BasePanel({
           variant="ghost"
           size="sm"
           onClick={handleClose}
-          className="pb:p-1 pb:rounded hover:pb:bg-gray-100 pb:h-auto"
+          className="pb:p-1 pb:rounded pb:hover:bg-gray-100 pb:h-auto"
           aria-label={`Close ${title} Panel`}
         >
           <Icon size="md" className="pb:h-5 pb:w-5">

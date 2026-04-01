@@ -25,7 +25,7 @@ export function TabSelection({
 }: TabSelectionProps) {
   return (
     <div
-      className={`overflow-x-auto max-h-20 text-sm whitespace-nowrap ${className}`}
+      className={`pb:overflow-x-auto pb:max-h-20 pb:text-sm pb:whitespace-nowrap ${className}`}
     >
       {tabs.map((tab) => {
         const isActive = tab.id === activeTabId;
@@ -33,10 +33,10 @@ export function TabSelection({
           <div
             key={tab.id}
             className={
-              "inline-block align-middle m-1 px-2 py-2 cursor-pointer rounded-sm " +
+              "pb:inline-block pb:align-middle pb:m-1 pb:px-2 pb:py-2 pb:cursor-pointer pb:rounded-sm " +
               (isActive
-                ? "font-bold bg-primary/30"
-                : "font-gray-300 bg-gray-200")
+                ? "pb:font-bold pb:bg-primary/30"
+                : "pb:font-gray-300 pb:bg-gray-200")
             }
             onClick={() => onTabClick(tab.id)}
           >

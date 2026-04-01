@@ -45,7 +45,7 @@ export const SliderWithNumberField = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "flex flex-row items-center gap-4 w-full min-w-0 sm:flex-nowrap flex-wrap",
+          "pb:flex pb:flex-row pb:items-center pb:gap-4 pb:w-full pb:min-w-0 pb:sm:flex-nowrap pb:flex-wrap",
           className,
         )}
         {...props}
@@ -62,7 +62,7 @@ export const SliderWithNumberField = React.forwardRef<
             className="pb:w-full"
           />
         </div>
-        <div className={cn(inputWidth, "shrink-0")}>
+        <div className={cn(inputWidth, "pb:shrink-0")}>
           <NumberField
             value={value}
             defaultValue={defaultValue}

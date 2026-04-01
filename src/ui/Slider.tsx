@@ -39,7 +39,7 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
     };
 
     return (
-      <div className={cn("w-full flex items-center gap-4", className)}>
+      <div className={cn("pb:w-full pb:flex pb:items-center pb:gap-4", className)}>
         {icon && <div className="pb:text-gray-500 pb:shrink-0">{icon}</div>}
 
         <div className="pb:flex-grow pb:flex pb:items-center pb:h-8 pb:min-w-[120px]">
@@ -72,16 +72,16 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
               handleChange(val as number | number[], event);
             }}
             className={cn(
-              "relative flex items-center w-full h-full group touch-none select-none",
-              disabled && "opacity-50 cursor-not-allowed",
+              "pb:relative pb:flex pb:items-center pb:w-full pb:h-full pb:group pb:touch-none pb:select-none",
+              disabled && "pb:opacity-50 pb:cursor-not-allowed",
               className,
             )}
           >
             <BaseSlider.Control className="pb:flex pb:items-center pb:w-full pb:h-full pb:relative pb:cursor-pointer">
-              <BaseSlider.Track className="pb:relative pb:bg-gray-200 pb:rounded-full pb:w-full pb:h-1.5 pb:overflow-hidden pb:transition-colors group-hover:pb:bg-gray-300">
+              <BaseSlider.Track className="pb:relative pb:bg-gray-200 pb:rounded-full pb:w-full pb:h-1.5 pb:overflow-hidden pb:transition-colors group-pb:hover:bg-gray-300">
                 <BaseSlider.Indicator className="pb:absolute pb:bg-primary pb:rounded-full pb:h-full" />
               </BaseSlider.Track>
-              <BaseSlider.Thumb className="pb:z-10 pb:block pb:w-4.5 pb:h-4.5 pb:bg-white pb:shadow-md pb:rounded-full pb:border-2 pb:border-primary focus:pb:outline-none focus:pb:ring-4 focus:pb:ring-primary/20 pb:cursor-grab active:pb:cursor-grabbing hover:pb:scale-110 active:pb:scale-95 pb:transition-transform" />
+              <BaseSlider.Thumb className="pb:z-10 pb:block pb:w-4.5 pb:h-4.5 pb:bg-white pb:shadow-md pb:rounded-full pb:border-2 pb:border-primary focus:pb:outline-none focus:pb:ring-4 focus:pb:ring-primary/20 pb:cursor-grab active:pb:cursor-grabbing pb:hover:scale-110 active:pb:scale-95 pb:transition-transform" />
             </BaseSlider.Control>
           </BaseSlider.Root>
         </div>
