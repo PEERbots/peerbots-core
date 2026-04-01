@@ -5,14 +5,19 @@
   },
   "version": "0.2.0",
   "main": "dist/index.js",
+  "style": "./dist/index.css",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "style": "./dist/index.css",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
-    "./theme.css": "./dist/index.css"
+    "./theme.css": {
+      "style": "./dist/index.css",
+      "default": "./dist/index.css"
+    }
   },
   "license": "GPL-3.0-only",
   "author": "Peerbots",
