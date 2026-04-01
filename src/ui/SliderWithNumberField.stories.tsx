@@ -41,7 +41,7 @@ export const Default: Story = {
     defaultValue: 50,
   },
   render: (args) => (
-    <div className="w-80 p-4">
+    <div className="pb:w-80 pb:p-4">
       <InteractiveSliderWithNumberField
         {...(args as React.ComponentProps<typeof SliderWithNumberField>)}
       />
@@ -51,28 +51,28 @@ export const Default: Story = {
 
 export const Variations: Story = {
   render: () => (
-    <div className="flex flex-col gap-12 p-4">
-      <div className="space-y-4">
-        <Heading level={4} className="text-sm font-medium text-black uppercase">
+    <div className="pb:flex pb:flex-col pb:gap-12 pb:p-4">
+      <div className="pb:space-y-4">
+        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:uppercase">
           Responsive Layouts
         </Heading>
-        <div className="space-y-8 max-w-lg">
-          <div className="space-y-2">
-            <Text variant="small" className="font-bold underline">
+        <div className="pb:space-y-8 pb:max-w-lg">
+          <div className="pb:space-y-2">
+            <Text variant="small" className="pb:font-bold pb:underline">
               Flexible (Full width of container)
             </Text>
             <InteractiveSliderWithNumberField defaultValue={50} />
           </div>
 
-          <div className="space-y-2 w-64 border-l border-r border-dotted px-2 bg-gray-50 py-4">
-            <Text variant="small" className="font-bold underline">
+          <div className="pb:space-y-2 pb:w-64 pb:border-l pb:border-r pb:border-dotted pb:px-2 pb:bg-gray-50 pb:py-4">
+            <Text variant="small" className="pb:font-bold pb:underline">
               Narrow Container (w-64)
             </Text>
             <InteractiveSliderWithNumberField defaultValue={50} />
           </div>
 
-          <div className="space-y-2 w-48 border-l border-r border-dotted px-2 bg-gray-50 py-4">
-            <Text variant="small" className="font-bold underline">
+          <div className="pb:space-y-2 pb:w-48 pb:border-l pb:border-r pb:border-dotted pb:px-2 pb:bg-gray-50 pb:py-4">
+            <Text variant="small" className="pb:font-bold pb:underline">
               Very Narrow (w-48) - Wraps
             </Text>
             <InteractiveSliderWithNumberField defaultValue={50} />
@@ -80,12 +80,12 @@ export const Variations: Story = {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <Heading level={4} className="text-sm font-medium text-black uppercase">
+      <div className="pb:space-y-4">
+        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:uppercase">
           Configuration
         </Heading>
-        <div className="space-y-4 max-w-sm">
-          <div className="space-y-1">
+        <div className="pb:space-y-4 pb:max-w-sm">
+          <div className="pb:space-y-1">
             <Text variant="small">Custom Step (0.5)</Text>
             <InteractiveSliderWithNumberField
               step={0.5}

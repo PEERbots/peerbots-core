@@ -27,8 +27,8 @@ export const Default: Story = {
 const InteractiveExample = (args: React.ComponentProps<typeof NumberField>) => {
   const [value, setValue] = useState<number | null>(args.defaultValue ?? 10);
   return (
-    <div className="space-y-2">
-      <div className="max-w-[200px]">
+    <div className="pb:space-y-2">
+      <div className="pb:max-w-[200px]">
         <NumberField
           {...args}
           value={value}
@@ -42,20 +42,20 @@ const InteractiveExample = (args: React.ComponentProps<typeof NumberField>) => {
 
 export const Variations: Story = {
   render: () => (
-    <div className="flex flex-col gap-12 p-4">
-      <div className="space-y-4">
-        <Heading level={4} className="text-sm font-medium text-black uppercase">
+    <div className="pb:flex pb:flex-col pb:gap-12 pb:p-4">
+      <div className="pb:space-y-4">
+        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:uppercase">
           Configuration
         </Heading>
-        <div className="grid gap-8">
-          <div className="space-y-2">
-            <Text variant="small" className="font-bold">
+        <div className="pb:grid pb:gap-8">
+          <div className="pb:space-y-2">
+            <Text variant="small" className="pb:font-bold">
               With Buttons & Large Step
             </Text>
             <NumberField showButtons defaultValue={50} step={10} />
           </div>
-          <div className="space-y-2">
-            <Text variant="small" className="font-bold">
+          <div className="pb:space-y-2">
+            <Text variant="small" className="pb:font-bold">
               Small Step (0.1) & Limits (0-1)
             </Text>
             <NumberField
@@ -66,8 +66,8 @@ export const Variations: Story = {
               max={1}
             />
           </div>
-          <div className="space-y-2">
-            <Text variant="small" className="font-bold">
+          <div className="pb:space-y-2">
+            <Text variant="small" className="pb:font-bold">
               Disabled
             </Text>
             <NumberField disabled defaultValue={123} />
@@ -75,8 +75,8 @@ export const Variations: Story = {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <Heading level={4} className="text-sm font-medium text-black uppercase">
+      <div className="pb:space-y-4">
+        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:uppercase">
           Interactive State
         </Heading>
         <InteractiveExample showButtons={true} />

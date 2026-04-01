@@ -26,7 +26,7 @@ export function Dropdown({
         <BaseMenu.Positioner align={align} sideOffset={5}>
           <BaseMenu.Popup
             className={cn(
-              "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-white p-1 shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+              "pb:z-50 pb:min-w-[8rem] pb:overflow-hidden pb:rounded-md pb:border pb:bg-white pb:p-1 pb:shadow-md pb:data-[state=open]:animate-in pb:data-[state=closed]:animate-out pb:data-[state=closed]:fade-out-0 pb:data-[state=open]:fade-in-0 pb:data-[state=closed]:zoom-out-95 pb:data-[state=open]:zoom-in-95",
               className,
             )}
           >
@@ -45,7 +45,7 @@ export const DropdownItem = React.forwardRef<
   <BaseMenu.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors data-[highlighted]:bg-gray-100 data-[highlighted]:text-gray-900",
+      "pb:relative pb:flex pb:cursor-default pb:select-none pb:items-center pb:rounded-sm pb:px-2 pb:py-1.5 pb:text-sm pb:outline-none pb:transition-colors pb:data-[highlighted]:bg-gray-100 pb:data-[highlighted]:text-gray-900",
       className,
     )}
     {...props}
@@ -59,7 +59,7 @@ export const DropdownSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <BaseMenu.Separator
     ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-gray-100", className)}
+    className={cn("pb:-mx-1 pb:my-1 pb:h-px pb:bg-gray-100", className)}
     {...props}
   />
 ));

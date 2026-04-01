@@ -37,12 +37,12 @@ export const Default: Story = {
 
 export const Variations: Story = {
   render: () => (
-    <div className="flex flex-col gap-8">
-      <div className="space-y-4">
-        <Heading level={4} className="text-sm font-medium text-black italic">
+    <div className="pb:flex pb:flex-col pb:gap-8">
+      <div className="pb:space-y-4">
+        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:italic">
           Variants
         </Heading>
-        <div className="flex flex-wrap gap-4 items-center">
+        <div className="pb:flex pb:flex-wrap pb:gap-4 pb:items-center">
           <Button variant="primary">Primary</Button>
           <Button variant="secondary">Secondary</Button>
           <Button variant="danger">Danger</Button>
@@ -51,32 +51,32 @@ export const Variations: Story = {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <Heading level={4} className="text-sm font-medium text-black italic">
+      <div className="pb:space-y-4">
+        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:italic">
           Sizes
         </Heading>
-        <div className="flex flex-wrap gap-4 items-end">
+        <div className="pb:flex pb:flex-wrap pb:gap-4 pb:items-end">
           <Button size="sm">Small</Button>
           <Button size="md">Medium</Button>
           <Button size="lg">Large</Button>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <Heading level={4} className="text-sm font-medium text-black italic">
+      <div className="pb:space-y-4">
+        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:italic">
           States
         </Heading>
-        <div className="flex flex-wrap gap-4 items-center">
+        <div className="pb:flex pb:flex-wrap pb:gap-4 pb:items-center">
           <Button isLoading>Loading</Button>
           <Button disabled>Disabled</Button>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <Heading level={4} className="text-sm font-medium text-black italic">
+      <div className="pb:space-y-4">
+        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:italic">
           With Icons
         </Heading>
-        <div className="flex flex-wrap gap-4 items-center">
+        <div className="pb:flex pb:flex-wrap pb:gap-4 pb:items-center">
           <Button leftIcon={<Icon name="cloudArrowUp" />}>Upload</Button>
           <Button variant="secondary" rightIcon={<Icon name="chevronRight" />}>
             Next
@@ -84,11 +84,11 @@ export const Variations: Story = {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <Heading level={4} className="text-sm font-medium text-black italic">
+      <div className="pb:space-y-4">
+        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:italic">
           Icon Only
         </Heading>
-        <div className="flex flex-wrap gap-4 items-center">
+        <div className="pb:flex pb:flex-wrap pb:gap-4 pb:items-center">
           <Button size="sm">
             <Icon name="plus" />
           </Button>

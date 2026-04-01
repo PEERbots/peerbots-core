@@ -20,7 +20,7 @@ export const Default: Story = {
       "signing up" | "signing in" | "resetting password"
     >("signing in");
     return (
-      <div className="w-[400px]">
+      <div className="pb:w-[400px]">
         <AuthFormUI
           mode={mode}
           onModeChange={setMode}
@@ -39,7 +39,7 @@ export const Default: Story = {
 export const Variations: Story = {
   render: () => {
     return (
-      <div className="flex flex-col gap-10 w-[400px]">
+      <div className="pb:flex pb:flex-col pb:gap-10 pb:w-[400px]">
         <AuthFormUI
           mode="signing up"
           onModeChange={() => {}}

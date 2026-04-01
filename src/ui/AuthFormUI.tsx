@@ -44,28 +44,28 @@ export function AuthFormUI({
         : "Reset Password";
 
   return (
-    <div className="text-left overflow-hidden">
-      <Heading level={2} className="text-center mb-2">
+    <div className="pb:text-left pb:overflow-hidden">
+      <Heading level={2} className="pb:text-center pb:mb-2">
         {title || defaultTitle}
       </Heading>
 
-      <form className="md:m-10 sm:m-4 space-y-4" action={formAction}>
+      <form className="pb:md:m-10 pb:sm:m-4 pb:space-y-4" action={formAction}>
         {description && (
-          <Text className="text-center mb-6" variant="muted">
+          <Text className="pb:text-center pb:mb-6" variant="muted">
             {description}
           </Text>
         )}
 
         {mode === "resetting password" && (
-          <Text className="text-center font-bold text-dark-primary">
+          <Text className="pb:text-center pb:font-bold pb:text-dark-primary">
             {actionState.message}
           </Text>
         )}
-        <Text className="text-center" variant="error">
+        <Text className="pb:text-center" variant="error">
           {actionState.error}
         </Text>
 
-        <div className="space-y-4">
+        <div className="pb:space-y-4">
           <Field
             id="email"
             label="Email"
@@ -105,14 +105,14 @@ export function AuthFormUI({
           )}
         </div>
 
-        <div className="text-center mt-6 space-y-4">
+        <div className="pb:text-center pb:mt-6 pb:space-y-4">
           {mode === "signing up" && <SubmitButton label="Sign Up" />}
           {mode === "signing in" && <SubmitButton label="Sign In" />}
           {mode === "resetting password" && (
             <SubmitButton label="Reset Password" />
           )}
 
-          <div className="text-center text-sm text-gray-500">
+          <div className="pb:text-center pb:text-sm pb:text-gray-500">
             {mode === "signing up" && (
               <Text>
                 Already have an account?{" "}
@@ -120,31 +120,31 @@ export function AuthFormUI({
                   variant="ghost"
                   size="sm"
                   onClick={() => onModeChange("signing in")}
-                  className="underline p-0 h-auto hover:bg-transparent"
+                  className="pb:underline pb:p-0 pb:h-auto pb:hover:bg-transparent"
                 >
                   Sign in
                 </Button>
               </Text>
             )}
             {mode === "signing in" && (
-              <div className="flex flex-col gap-2">
+              <div className="pb:flex pb:flex-col pb:gap-2">
                 <Text>
                   Forgot your password?{" "}
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => onModeChange("resetting password")}
-                    className="underline p-0 h-auto hover:bg-transparent"
+                    className="pb:underline pb:p-0 pb:h-auto pb:hover:bg-transparent"
                   >
                     Reset password.
                   </Button>
                 </Text>
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300"></div>
+                <div className="pb:relative">
+                  <div className="pb:absolute pb:inset-0 pb:flex pb:items-center">
+                    <div className="pb:w-full pb:border-t pb:border-gray-300"></div>
                   </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">or</span>
+                  <div className="pb:relative pb:flex pb:justify-center pb:text-sm">
+                    <span className="pb:px-2 pb:bg-white pb:text-gray-500">or</span>
                   </div>
                 </div>
                 <Text>
@@ -153,7 +153,7 @@ export function AuthFormUI({
                     variant="ghost"
                     size="sm"
                     onClick={() => onModeChange("signing up")}
-                    className="underline p-0 h-auto hover:bg-transparent"
+                    className="pb:underline pb:p-0 pb:h-auto pb:hover:bg-transparent"
                   >
                     Sign up
                   </Button>
@@ -161,24 +161,24 @@ export function AuthFormUI({
               </div>
             )}
             {mode === "resetting password" && (
-              <div className="flex flex-col gap-2">
+              <div className="pb:flex pb:flex-col pb:gap-2">
                 <Text>
                   Don&apos;t have an account?{" "}
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => onModeChange("signing up")}
-                    className="underline p-0 h-auto hover:bg-transparent"
+                    className="pb:underline pb:p-0 pb:h-auto pb:hover:bg-transparent"
                   >
                     Sign up
                   </Button>
                 </Text>
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300"></div>
+                <div className="pb:relative">
+                  <div className="pb:absolute pb:inset-0 pb:flex pb:items-center">
+                    <div className="pb:w-full pb:border-t pb:border-gray-300"></div>
                   </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">or</span>
+                  <div className="pb:relative pb:flex pb:justify-center pb:text-sm">
+                    <span className="pb:px-2 pb:bg-white pb:text-gray-500">or</span>
                   </div>
                 </div>
                 <Text>
@@ -187,7 +187,7 @@ export function AuthFormUI({
                     variant="ghost"
                     size="sm"
                     onClick={() => onModeChange("signing in")}
-                    className="underline p-0 h-auto hover:bg-transparent"
+                    className="pb:underline pb:p-0 pb:h-auto pb:hover:bg-transparent"
                   >
                     Sign In
                   </Button>
@@ -198,12 +198,12 @@ export function AuthFormUI({
         </div>
 
         {mode !== "resetting password" && onGoogleSignIn && (
-          <div className="text-center mt-4">
+          <div className="pb:text-center pb:mt-4">
             <Button
               variant="secondary"
               onClick={onGoogleSignIn}
               type="button"
-              className="w-full flex items-center justify-center gap-2"
+              className="pb:w-full pb:flex pb:items-center pb:justify-center pb:gap-2"
             >
               <Icon name="google" stroke="none" />
               {mode === "signing up" && <span>Sign up with Google</span>}

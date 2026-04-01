@@ -17,7 +17,7 @@ const StatefulCheckbox = (
 ) => {
   const [checked, setChecked] = React.useState(props.checked || false);
   return (
-    <div className="flex items-center space-x-2">
+    <div className="pb:flex pb:items-center pb:space-x-2">
       <Checkbox
         {...props}
         id="terms"
@@ -26,7 +26,7 @@ const StatefulCheckbox = (
       />
       <label
         htmlFor="terms"
-        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        className="pb:text-sm pb:font-medium pb:leading-none peer-disabled:pb:cursor-not-allowed peer-disabled:pb:opacity-70"
       >
         {props.label || "Accept terms and conditions"}
       </label>
@@ -40,12 +40,12 @@ export const Default: Story = {
 
 export const Variations: Story = {
   render: () => (
-    <div className="flex flex-col gap-8 p-4">
-      <div className="space-y-4">
-        <Heading level={4} className="text-sm font-medium text-black uppercase">
+    <div className="pb:flex pb:flex-col pb:gap-8 pb:p-4">
+      <div className="pb:space-y-4">
+        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:uppercase">
           States
         </Heading>
-        <div className="flex flex-col gap-4">
+        <div className="pb:flex pb:flex-col pb:gap-4">
           <StatefulCheckbox label="Default Unchecked" />
           <StatefulCheckbox label="Default Checked" checked={true} />
           <StatefulCheckbox label="Disabled Unchecked" disabled={true} />

@@ -28,12 +28,12 @@ export function Tooltip({
           <BaseTooltip.Positioner sideOffset={8}>
             <BaseTooltip.Popup
               className={cn(
-                "z-50 rounded shadow-lg bg-white p-2 text-xs text-center whitespace-normal max-w-xs text-gray-900 border border-gray-200",
+                "pb:z-50 pb:rounded pb:shadow-lg pb:bg-white pb:p-2 pb:text-xs pb:text-center pb:whitespace-normal pb:max-w-xs pb:text-gray-900 pb:border pb:border-gray-200",
                 className,
               )}
             >
               {content}
-              <BaseTooltip.Arrow className="fill-white stroke-gray-200" />
+              <BaseTooltip.Arrow className="pb:fill-white pb:stroke-gray-200" />
             </BaseTooltip.Popup>
           </BaseTooltip.Positioner>
         </BaseTooltip.Portal>
@@ -49,7 +49,7 @@ export interface HelperTooltipProps {
 export function HelperTooltip({ content, className }: HelperTooltipProps) {
   return (
     <Tooltip content={content} className={className}>
-      <Icon size="md" className="text-gray-500 hover:text-gray-700 cursor-help">
+      <Icon size="md" className="pb:text-gray-500 pb:hover:text-gray-700 pb:cursor-help">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"

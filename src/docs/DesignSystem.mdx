@@ -1,0 +1,46 @@
+import { Meta, Canvas, Story } from "@storybook/addon-docs/blocks";
+import * as TypographyStories from "../ui/Typography.stories";
+import * as ColorStories from "../ui/Colors.stories";
+
+<Meta title="Design System" />
+
+## Colors
+
+These colors are defined in `src/styles/theme.css`. and are used throughout the application via Tailwind classes.
+
+<Canvas of={ColorStories.Variations} />
+
+## Typography
+
+**Font Family**: `Avenir`, `Nunito`, sans-serif.
+
+<Canvas of={TypographyStories.Variations} />
+
+
+# Peerbots Design System
+
+The Peerbots design system ensures a consistent, friendly, and accessible experience across the platforms.
+
+## Design Philosophy
+
+- **Friendly & Approachable**: Use rounded corners, soft shadows, and vibrant colors.
+- **Accessible**: High contrast for critical buttons and readable font sizes.
+- **Responsive**: Adapts gracefully to various screen sizes, from phones to tablets.
+
+### Utilities
+
+Use these common utility classes for consistency:
+
+- `btn-primary`: For the main action on a page/modal.
+- `btn-secondary`: For alternative actions.
+- `btn-danger`: For irreversible or dangerous actions.
+- `input-base`: For text inputs and textareas.
+- `range-primary`: For slider inputs.
+
+## Evolving the System
+
+This design system is a living document.
+
+- **New Needs**: When new features require UI elements not covered here, agents and developers should propose a new pattern.
+- **Documentation**: Any new repeatable pattern, component, or utility introduced (especially if driven by user needs) **must** be added to this document to remain the source of truth.
+- **Refinement**: Periodic audits should be conducted to ensure hardcoded styles are migrated to the design system.

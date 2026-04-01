@@ -29,11 +29,11 @@ export function Collapsible({
       <Button
         variant={variant}
         size={size}
-        className="w-full justify-between font-medium"
+        className="pb:w-full pb:justify-between pb:font-medium"
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         rightIcon={
-          <Icon className="h-5 w-5 text-gray-600" strokeWidth="2.5">
+          <Icon className="pb:h-5 pb:w-5 pb:text-gray-600" strokeWidth="2.5">
             {isOpen ? (
               <path d="M4.5 15.75l7.5-7.5 7.5 7.5" />
             ) : (
@@ -45,7 +45,7 @@ export function Collapsible({
         <span>{title}</span>
       </Button>
       {isOpen && (
-        <div className="px-4 pt-4 pb-2 text-sm text-gray-500">{children}</div>
+        <div className="pb:px-4 pb:pt-4 pb:pb-2 pb:text-sm pb:text-gray-500">{children}</div>
       )}
     </div>
   );

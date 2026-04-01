@@ -34,13 +34,13 @@ export function SettingsPanel({
   headingLevel = 3,
 }: SettingsPanelProps) {
   const content = (
-    <div className={cn("flex flex-col", contentClassName)}>{children}</div>
+    <div className={cn("pb:flex pb:flex-col", contentClassName)}>{children}</div>
   );
 
   return (
     <div
       className={cn(
-        "m-2 p-4 bg-white shadow-xl rounded-lg flex flex-1 flex-col",
+        "pb:m-2 pb:p-4 pb:bg-white pb:shadow-xl pb:rounded-lg pb:flex pb:flex-1 pb:flex-col",
         className,
       )}
     >
@@ -48,7 +48,7 @@ export function SettingsPanel({
         <Collapsible
           title={
             typeof title === "string" ? (
-              <Heading level={headingLevel} className="text-gray-600">
+              <Heading level={headingLevel} className="pb:text-gray-600">
                 {title}
               </Heading>
             ) : (
@@ -63,9 +63,9 @@ export function SettingsPanel({
       ) : (
         <>
           {title && (
-            <div className="flex items-center justify-between mb-2 empty:hidden">
+            <div className="pb:flex pb:items-center pb:justify-between pb:mb-2 empty:hidden">
               {typeof title === "string" ? (
-                <Heading level={headingLevel} className="text-gray-600">
+                <Heading level={headingLevel} className="pb:text-gray-600">
                   {title}
                 </Heading>
               ) : (

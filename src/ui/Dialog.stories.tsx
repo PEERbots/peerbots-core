@@ -16,11 +16,11 @@ type Story = StoryObj<typeof Dialog>;
 export const Default: Story = {
   render: () => (
     <Dialog trigger={<Button>Open Default Dialog</Button>}>
-      <DialogTitle className="text-xl font-bold mb-2">Dialog Title</DialogTitle>
-      <DialogDescription className="text-black mb-6">
+      <DialogTitle className="pb:text-xl pb:font-bold pb:mb-2">Dialog Title</DialogTitle>
+      <DialogDescription className="pb:text-black pb:mb-6">
         This is a description of the dialog content.
       </DialogDescription>
-      <div className="flex justify-end gap-2">
+      <div className="pb:flex pb:justify-end pb:gap-2">
         <DialogClose render={<Button variant="secondary">Cancel</Button>} />
         <DialogClose render={<Button variant="primary">Confirm</Button>} />
       </div>

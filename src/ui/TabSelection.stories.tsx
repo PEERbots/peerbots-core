@@ -31,7 +31,7 @@ export const Default: Story = {
     }));
 
     return (
-      <div className="w-[600px] border p-4 bg-gray-50">
+      <div className="pb:w-[600px] pb:border pb:p-4 pb:bg-gray-50">
         <TabSelection
           tabs={tabsWithActions}
           activeTabId={activeTab}

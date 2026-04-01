@@ -31,20 +31,20 @@ export const Default: Story = {
 
 export const Variations: Story = {
   render: () => (
-    <div className="flex flex-col gap-8 p-4 max-w-sm">
-      <div className="space-y-4">
-        <Heading level={4} className="text-sm font-medium text-black uppercase">
+    <div className="pb:flex pb:flex-col pb:gap-8 pb:p-4 pb:max-w-sm">
+      <div className="pb:space-y-4">
+        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:uppercase">
           Option Types
         </Heading>
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <Text variant="small" className="font-bold">
+        <div className="pb:space-y-4">
+          <div className="pb:space-y-1">
+            <Text variant="small" className="pb:font-bold">
               String Options
             </Text>
             <Select options={simpleOptions} />
           </div>
-          <div className="space-y-1">
-            <Text variant="small" className="font-bold">
+          <div className="pb:space-y-1">
+            <Text variant="small" className="pb:font-bold">
               Object Options (Label/Value)
             </Text>
             <Select options={objectOptions} defaultValue="apple" />
@@ -52,13 +52,13 @@ export const Variations: Story = {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <Heading level={4} className="text-sm font-medium text-black uppercase">
+      <div className="pb:space-y-4">
+        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:uppercase">
           States
         </Heading>
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <Text variant="small" className="font-bold">
+        <div className="pb:space-y-4">
+          <div className="pb:space-y-1">
+            <Text variant="small" className="pb:font-bold">
               Disabled
             </Text>
             <Select

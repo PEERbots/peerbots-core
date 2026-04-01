@@ -8,7 +8,7 @@ export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
 export function Skeleton({ className, ...props }: SkeletonProps) {
   return (
     <div
-      className={cn("animate-pulse rounded-md bg-gray-200/50", className)}
+      className={cn("pb:animate-pulse pb:rounded-md pb:bg-gray-200/50", className)}
       {...props}
     />
   );

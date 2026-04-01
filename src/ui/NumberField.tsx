@@ -41,7 +41,7 @@ export const NumberField = React.forwardRef<HTMLDivElement, NumberFieldProps>(
     const numberId = propsId || generatedId;
 
     return (
-      <div className="w-full">
+      <div className="pb:w-full">
         <BaseNumberField.Root
           ref={ref}
           value={value}
@@ -57,19 +57,19 @@ export const NumberField = React.forwardRef<HTMLDivElement, NumberFieldProps>(
           }}
           disabled={disabled}
           readOnly={readOnly}
-          className={cn("flex flex-col gap-1", className)}
+          className={cn("pb:flex pb:flex-col pb:gap-1", className)}
           {...props}
         >
           <div
             className={cn(
-              "group relative flex items-center rounded-md border-0 bg-primary/10 ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-primary shadow-sm",
-              disabled && "opacity-50 cursor-not-allowed",
+              "pb:group pb:relative pb:flex pb:items-center pb:rounded-md pb:border-0 pb:bg-primary/10 pb:ring-1 pb:ring-inset pb:ring-gray-300 pb:focus-within:ring-2 pb:focus-within:ring-primary pb:shadow-sm",
+              disabled && "pb:opacity-50 pb:cursor-not-allowed",
             )}
           >
             {showButtons && (
               <BaseNumberField.Decrement
                 aria-label="Decrement"
-                className="relative z-20 flex items-center justify-center w-8 h-9 text-gray-500 hover:text-gray-700 hover:bg-gray-100/50 rounded-l-md border-r border-gray-300 disabled:opacity-30 cursor-pointer"
+                className="pb:relative pb:z-20 pb:flex pb:items-center pb:justify-center pb:w-8 pb:h-9 pb:text-gray-500 pb:hover:text-gray-700 pb:hover:bg-gray-100/50 pb:rounded-l-md pb:border-r pb:border-gray-300 disabled:pb:opacity-30 pb:cursor-pointer"
               >
                 <Icon size="sm">
                   <path
@@ -85,15 +85,15 @@ export const NumberField = React.forwardRef<HTMLDivElement, NumberFieldProps>(
               id={numberId}
               placeholder={placeholder}
               className={cn(
-                "block w-full bg-transparent border-0 px-3 py-1.5 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6 text-center appearance-none relative z-0",
-                !showButtons && "rounded-md",
+                "pb:block pb:w-full pb:bg-transparent pb:border-0 pb:px-3 pb:py-1.5 pb:text-gray-900 pb:placeholder:text-gray-400 pb:focus:ring-0 pb:sm:text-sm pb:sm:leading-6 pb:text-center pb:appearance-none pb:relative pb:z-0",
+                !showButtons && "pb:rounded-md",
               )}
             />
 
             {showButtons && (
               <BaseNumberField.Increment
                 aria-label="Increment"
-                className="relative z-20 flex items-center justify-center w-8 h-9 text-gray-500 hover:text-gray-700 hover:bg-gray-100/50 rounded-r-md border-l border-gray-300 disabled:opacity-30 cursor-pointer"
+                className="pb:relative pb:z-20 pb:flex pb:items-center pb:justify-center pb:w-8 pb:h-9 pb:text-gray-500 pb:hover:text-gray-700 pb:hover:bg-gray-100/50 pb:rounded-r-md pb:border-l pb:border-gray-300 disabled:pb:opacity-30 pb:cursor-pointer"
               >
                 <Icon size="sm">
                   <path
@@ -105,7 +105,7 @@ export const NumberField = React.forwardRef<HTMLDivElement, NumberFieldProps>(
               </BaseNumberField.Increment>
             )}
 
-            <BaseNumberField.ScrubArea className="absolute inset-0 z-10 cursor-ew-resize opacity-0 hover:opacity-10 transition-opacity bg-primary/5 rounded-md pointer-events-none group-hover:pointer-events-auto" />
+            <BaseNumberField.ScrubArea className="pb:absolute pb:inset-0 pb:z-10 pb:cursor-ew-resize pb:opacity-0 pb:hover:opacity-10 pb:transition-opacity pb:bg-primary/5 pb:rounded-md pb:pointer-events-none group-pb:hover:pointer-events-auto" />
           </div>
         </BaseNumberField.Root>
       </div>

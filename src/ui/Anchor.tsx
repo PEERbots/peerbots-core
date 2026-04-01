@@ -8,7 +8,7 @@ const Anchor = React.forwardRef<HTMLAnchorElement, AnchorProps>(
   ({ className, href, target, ...props }, ref) => {
     const isInternal = href && !href.startsWith("http") && !target;
     const commonClass = cn(
-      "font-medium text-teal-700 underline underline-offset-4 hover:text-teal-900 cursor-pointer",
+      "pb:font-medium pb:text-teal-700 pb:underline pb:underline-offset-4 pb:hover:text-teal-900 pb:cursor-pointer",
       className,
     );
 

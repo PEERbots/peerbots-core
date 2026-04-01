@@ -19,18 +19,18 @@ export const Default: Story = {};
 
 export const Variations: Story = {
   render: () => (
-    <div className="flex flex-col gap-12 p-4">
-      <div className="space-y-2">
-        <Text variant="small" className="font-bold underline uppercase">
+    <div className="pb:flex pb:flex-col pb:gap-12 pb:p-4">
+      <div className="pb:space-y-2">
+        <Text variant="small" className="pb:font-bold pb:underline pb:uppercase">
           With Tooltip
         </Text>
         <Label tooltip="Extra information here.">Hover the help icon</Label>
       </div>
-      <div className="space-y-2">
-        <Text variant="small" className="font-bold underline uppercase">
+      <div className="pb:space-y-2">
+        <Text variant="small" className="pb:font-bold pb:underline pb:uppercase">
           With Associated Input
         </Text>
-        <div className="space-y-1">
+        <div className="pb:space-y-1">
           <Label htmlFor="v-input" tooltip="This is required">
             Email Address
           </Label>

@@ -43,9 +43,9 @@ export function DistributionBarChart({
   if (data.length === 0) return null;
 
   return (
-    <div className="mb-6" role="img" aria-label={alt}>
+    <div className="pb:mb-6" role="img" aria-label={alt}>
       {label && (
-        <label className="text-xs uppercase font-bold text-gray-400 block mb-2 px-1">
+        <label className="pb:text-xs pb:uppercase pb:font-bold pb:text-gray-400 pb:block pb:mb-2 pb:px-1">
           {label}
         </label>
       )}

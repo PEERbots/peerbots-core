@@ -21,21 +21,21 @@ export const Default: Story = {
 
 export const Variations: Story = {
   render: () => (
-    <div className="flex flex-col space-y-3">
+    <div className="pb:flex pb:flex-col pb:space-y-3">
       {/* Circle Skeleton */}
-      <Skeleton className="h-12 w-12 rounded-full" />
+      <Skeleton className="pb:h-12 pb:w-12 pb:rounded-full" />
 
       {/* Rectangular Skeletons */}
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-[250px]" />
-        <Skeleton className="h-4 w-[200px]" />
+      <div className="pb:space-y-2">
+        <Skeleton className="pb:h-4 pb:w-[250px]" />
+        <Skeleton className="pb:h-4 pb:w-[200px]" />
       </div>
 
-      <div className="flex items-center space-x-4 mt-6">
-        <Skeleton className="h-12 w-12 rounded-full" />
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-[250px]" />
-          <Skeleton className="h-4 w-[200px]" />
+      <div className="pb:flex pb:items-center pb:space-x-4 pb:mt-6">
+        <Skeleton className="pb:h-12 pb:w-12 pb:rounded-full" />
+        <div className="pb:space-y-2">
+          <Skeleton className="pb:h-4 pb:w-[250px]" />
+          <Skeleton className="pb:h-4 pb:w-[200px]" />
         </div>
       </div>
     </div>

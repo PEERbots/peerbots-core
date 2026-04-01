@@ -12,12 +12,12 @@ export function Label({ children, tooltip, className, ...props }: LabelProps) {
   return (
     <label
       className={cn(
-        "relative block text-sm font-bold leading-6 text-gray-600 mb-1 group-focus-within:text-gray-800",
+        "pb:relative pb:block pb:text-sm pb:font-bold pb:leading-6 pb:text-gray-600 pb:mb-1 pb:group-focus-within:text-gray-800",
         className,
       )}
       {...props}
     >
-      <div className="flex items-center gap-1">
+      <div className="pb:flex pb:items-center pb:gap-1">
         {children}
         {tooltip && <HelperTooltip content={tooltip} />}
       </div>
