@@ -14,7 +14,19 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
+    "./theme": {
+      "style": "./dist/styles/theme.css",
+      "default": "./dist/styles/theme.css"
+    },
+    "./styles": {
+      "style": "./dist/index.css",
+      "default": "./dist/index.css"
+    },
     "./theme.css": {
+      "style": "./dist/styles/theme.css",
+      "default": "./dist/styles/theme.css"
+    },
+    "./dist/index.css": {
       "style": "./dist/index.css",
       "default": "./dist/index.css"
     }
@@ -26,7 +38,7 @@
     "url": "git+https://github.com/peerbots/peerbots-core.git"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --minify",
+    "build": "tsup src/index.ts src/styles/theme.css --format cjs,esm --dts --minify",
     "changeset": "changeset",
     "release": "changeset publish",
     "storybook": "storybook dev -p 6006",

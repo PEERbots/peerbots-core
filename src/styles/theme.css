@@ -1,5 +1,3 @@
-@import "tailwindcss" prefix(pb);
-
 @theme {
     --color-primary: #46d9d9;
     /* --color-old-dark-primary: #5fc7cc; */
@@ -19,42 +17,4 @@
             var(--tw-gradient-stops));
 
     --font-sans: "Avenir", "Nunito", sans-serif;
-}
-
-@utility input-base {
-    @apply pb:bg-primary/10 pb:border pb:border-b-2 pb:border-gray-300 pb:focus:border-gray-600 pb:py-2 pb:px-2;
-}
-
-@utility btn-primary {
-    @apply pb:bg-primary pb:hover:bg-dark-primary pb:text-gray-900 pb:font-bold pb:py-1 pb:px-2 pb:my-1 pb:mx-2 pb:rounded-md pb:disabled:bg-gray-400 pb:disabled:hover:bg-gray-300 pb:disabled:cursor-not-allowed pb:cursor-pointer;
-}
-
-@utility btn-secondary {
-    @apply pb:bg-gray-100 pb:hover:bg-gray-200 pb:text-gray-800 pb:font-normal pb:py-1 pb:px-2 pb:my-1 pb:mx-2 pb:rounded-md pb:disabled:bg-gray-400 pb:disabled:hover:bg-gray-300 pb:disabled:cursor-not-allowed pb:cursor-pointer;
-}
-
-@utility btn-danger {
-    @apply pb:bg-danger pb:hover:opacity-80 pb:text-gray-900 pb:font-bold pb:py-1 pb:px-2 pb:my-1 pb:mx-2 pb:rounded-md pb:disabled:bg-gray-400 pb:disabled:hover:bg-gray-300 pb:disabled:cursor-not-allowed pb:cursor-pointer;
-}
-
-@utility range-primary {
-    @apply pb:accent-primary pb:bg-gray-100 pb:rounded-md pb:cursor-pointer;
-}
-
-.range-vertical {
-    writing-mode: vertical-lr;
-}
-
-.pb-tooltip,
-.pb-tooltip-slow {
-    @apply pb:absolute pb:invisible pb:opacity-0;
-}
-
-/* Using siblings so that hovering over the invisible tooltip doesn't trigger the tooltip */
-.pb-has-tooltip:hover+.pb-tooltip {
-    @apply pb:visible pb:opacity-100 pb:z-50 pb:transition-opacity pb:delay-300 pb:ease-in-out;
-}
-
-.pb-has-tooltip:hover+.pb-tooltip-slow {
-    @apply pb:visible pb:opacity-100 pb:z-50 pb:transition-opacity pb:delay-1000 pb:ease-in-out;
 }
