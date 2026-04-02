@@ -28,8 +28,10 @@ If you only want to use the Peerbots color palette and typography in your own cu
 ```tsx
 // In JavaScript/TypeScript
 import "@peerbots/core/theme";
+```
 
-// OR in CSS
+```css
+/* In CSS */
 @import "@peerbots/core/theme";
 ```
 
