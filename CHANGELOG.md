@@ -1,5 +1,11 @@
 # @peerbots/core
 
+## 0.2.2
+
+### Patch Changes
+
+- 932a896: Export './dist/index.css' as an explicit subpath to correctly resolve imports in external apps.
+
 ## 0.2.1
 
 ### Patch Changes
