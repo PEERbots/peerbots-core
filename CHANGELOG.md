@@ -1,5 +1,11 @@
 # @peerbots/core
 
+## 0.2.3
+
+### Patch Changes
+
+- aa2c045: Postcss bundling of css
+
 ## 0.2.2
 
 ### Patch Changes
