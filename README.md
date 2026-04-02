@@ -2,6 +2,8 @@
 
 This package contains the core components for the Peerbots UI and theming. It provides the base for the Peerbots design system to be reused across repositories.
 
+[**Browse Storybook**](https://main--69ce9e8ef541367e5769da26.chromatic.com)
+
 ## Installation
 
 ```bash
