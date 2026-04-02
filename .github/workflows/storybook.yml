@@ -1,46 +1,43 @@
-name: Storybook
+name: "Storybook Preview & Publishing"
 
-on:
-  push:
-    branches:
-      - main
+on: [push, pull_request]
 
 permissions:
+  pull-requests: write
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
+  chromatic:
+    name: Run Chromatic
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Storybook
-        run: npm run build-storybook
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Publish to Chromatic
+        id: chromatic
+        uses: chromaui/action@latest
         with:
-          path: './storybook-static'
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && (steps.chromatic.outputs.storybookUrl != '' || steps.chromatic.outputs.buildUrl != '')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STORYBOOK_URL: ${{ steps.chromatic.outputs.storybookUrl }}
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body "🚀 **Storybook Preview Ready!**
+          
+          You can view the live components for this PR here:
+          $STORYBOOK_URL"
