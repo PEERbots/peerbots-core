@@ -1,0 +1,1 @@
+import{r as s}from"./iframe-D13rUlhB.js";import{a as n,u as a}from"./floating-ui.utils.dom-wHRPQCF9.js";function f(r,o){const t=s.useRef(r),e=n(o);a(()=>{t.current!==r&&e(t.current)},[r,e]),a(()=>{t.current=r},[r])}export{f as u};

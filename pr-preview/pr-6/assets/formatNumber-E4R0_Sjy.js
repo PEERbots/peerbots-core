@@ -1,0 +1,1 @@
+const a=new Map;function i(t,r){const n=JSON.stringify({locale:t,options:r}),e=a.get(n);if(e)return e;const o=new Intl.NumberFormat(t,r);return a.set(n,o),o}function m(t,r,n){return t==null?"":i(r,n).format(t)}function c(t,r,n){return m(t,r,{...n,maximumFractionDigits:20})}export{c as a,m as f,i as g};

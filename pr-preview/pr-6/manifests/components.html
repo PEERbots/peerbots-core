@@ -1,0 +1,5136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Components Manifest</title>
+  <style>
+      :root {
+          --bg: #0b0c10;
+          --panel: #121318;
+          --muted: #9aa0a6;
+          --fg: #e8eaed;
+          --ok: #22c55e;
+          --info: #1e88e5;
+          --err: #c62828;
+          --ok-bg: #0c1a13;
+          --info-bg: #0c1624;
+          --err-bg: #1a0e0e;
+          --chip: #1f2330;
+          --border: #2b2f3a;
+          --link: #8ab4f8;
+          --active-ring: 1px; /* 1px active ring for pills and toggles */
+      }
+
+      * {
+          box-sizing: border-box;
+      }
+
+      html,
+      body {
+          margin: 0;
+          background: var(--bg);
+          color: var(--fg);
+          font: 14px/1.5 system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Ubuntu,
+          Cantarell,
+          'Helvetica Neue',
+          Arial,
+          'Noto Sans';
+      }
+
+      .wrap {
+          max-width: 1100px;
+          margin: 0 auto;
+          padding: 16px 20px;
+      }
+
+      header {
+          position: sticky;
+          top: 0;
+          backdrop-filter: blur(6px);
+          background: color-mix(in srgb, var(--bg) 84%, transparent);
+          border-bottom: 1px solid var(--border);
+          z-index: 10;
+      }
+
+      h1 {
+          font-size: 20px;
+          margin: 0 0 6px;
+      }
+
+      .summary {
+          display: flex;
+          gap: 12px;
+          flex-wrap: wrap;
+          align-items: center;
+      }
+
+      /* Top filter pills */
+      .filter-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          background: var(--panel);
+          text-decoration: none;
+          cursor: pointer;
+          user-select: none;
+          color: var(--fg);
+      }
+
+      .filter-pill.ok {
+          color: #b9f6ca;
+          border-color: color-mix(in srgb, var(--ok) 55%, var(--border));
+          background: color-mix(in srgb, var(--ok) 18%, #000);
+      }
+
+      .filter-pill.info {
+          color: #b3d9ff;
+          border-color: color-mix(in srgb, var(--info) 55%, var(--border));
+          background: var(--info-bg);
+      }
+
+      .filter-pill.err {
+          color: #ff9aa0;
+          border-color: color-mix(in srgb, var(--err) 55%, var(--border));
+          background: var(--err-bg);
+      }
+
+      .filter-pill.all {
+          color: #d7dbe0;
+          border-color: var(--border);
+          background: var(--panel);
+      }
+
+      .filter-pill[aria-disabled='true'] {
+          cursor: default;
+          text-decoration: none;
+      }
+
+      .filter-pill:focus,
+      .filter-pill:active {
+          outline: none;
+          box-shadow: none;
+      }
+
+      /* Selected top pill ring via :target */
+      #filter-all:target ~ header .filter-pill[data-k='all'],
+      #filter-errors:target ~ header .filter-pill[data-k='errors'],
+      #filter-infos:target ~ header .filter-pill[data-k='infos'],
+      #filter-story-errors:target ~ header .filter-pill[data-k='story-errors'],
+      #filter-doc-errors:target ~ header .filter-pill[data-k='docs'],
+      #filter-docs:target ~ header .filter-pill[data-k='docs'] {
+          box-shadow: 0 0 0 var(--active-ring) currentColor;
+          border-color: currentColor;
+      }
+
+      /* Hidden targets for filtering */
+      #filter-all,
+      #filter-errors,
+      #filter-infos,
+      #filter-story-errors,
+      #filter-doc-errors,
+      #filter-docs {
+          display: none;
+      }
+
+      main {
+          padding: 36px 0 40px;
+      }
+
+      .grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 18px;
+      }
+
+      /* one card per row */
+
+      .card {
+          border: 1px solid var(--border);
+          background: var(--panel);
+          border-radius: 14px;
+          padding: 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+      }
+
+      .head {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+      }
+
+      .title {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+      }
+
+      .title h2 {
+          font-size: 16px;
+          margin: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+      }
+
+      .meta {
+          font-size: 12px;
+          color: var(--muted);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+      }
+
+      .kv {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+      }
+
+      .chip {
+          font-size: 12px;
+          padding: 4px 8px;
+          border-radius: 999px;
+          background: var(--chip);
+          border: 1px solid var(--border);
+      }
+
+      .hint {
+          color: var(--muted);
+          font-size: 12px;
+      }
+
+      .badges {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+      }
+
+      /* Per-card badges: labels become toggles when clickable */
+      .badge {
+          font-size: 12px;
+          padding: 3px 8px;
+          border-radius: 999px;
+          border: 1px solid var(--border);
+          background: var(--chip);
+          color: #d7dbe0;
+      }
+
+      .badge.ok {
+          color: #b9f6ca;
+          border-color: color-mix(in srgb, var(--ok) 55%, var(--border));
+      }
+
+      .badge.info {
+          color: #b3d9ff;
+          border-color: color-mix(in srgb, var(--info) 55%, var(--border));
+      }
+
+      .badge.err {
+          color: #ff9aa0;
+          border-color: color-mix(in srgb, var(--err) 55%, var(--border));
+      }
+
+      .as-toggle {
+          cursor: pointer;
+      }
+
+      /* 1px ring on active toggle */
+      .tg-err:checked + label.as-toggle,
+      .tg-info:checked + label.as-toggle,
+      .tg-stories:checked + label.as-toggle,
+      .tg-docs:checked + label.as-toggle,
+      .tg-content:checked + label.as-toggle,
+      .tg-props:checked + label.as-toggle {
+          box-shadow: 0 0 0 var(--active-ring) currentColor;
+          border-color: currentColor;
+      }
+
+      /* Panels: hidden by default, shown when respective toggle checked */
+      .panels {
+          display: grid;
+          gap: 10px;
+      }
+
+      .panel {
+          display: none;
+      }
+
+      .tg-err:checked ~ .panels .panel-err {
+          display: grid;
+      }
+
+      .tg-info:checked ~ .panels .panel-info {
+          display: grid;
+          gap: 8px;
+      }
+
+      .tg-stories:checked ~ .panels .panel-stories {
+          display: grid;
+          gap: 8px;
+      }
+
+      .tg-docs:checked ~ .panels .panel-docs {
+          display: grid;
+          gap: 8px;
+      }
+
+      .tg-content:checked ~ .panels .panel-content {
+          display: grid;
+          gap: 8px;
+      }
+
+      .tg-props:checked ~ .panels .panel-props {
+          display: grid;
+      }
+
+      /* Colored notes for prop type error + info */
+      .note {
+          padding: 12px;
+          border: 1px solid var(--border);
+          border-radius: 10px;
+      }
+
+      .note.err {
+          border-color: color-mix(in srgb, var(--err) 55%, var(--border));
+          background: var(--err-bg);
+          color: #ffd1d4;
+      }
+
+      .note.info {
+          border-color: color-mix(in srgb, var(--info) 55%, var(--border));
+          background: var(--info-bg);
+          color: #d6e8ff;
+      }
+
+      .note.ok {
+          border-color: color-mix(in srgb, var(--ok) 55%, var(--border));
+          background: var(--ok-bg);
+          color: var(--fg);
+      }
+
+      .note-title {
+          font-weight: 600;
+          margin-bottom: 6px;
+      }
+
+      .note-body {
+          white-space: normal;
+      }
+
+      /* Story error cards */
+      .ex {
+          padding: 10px;
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          background: #0f131b;
+      }
+
+      .ex.err {
+          border-color: color-mix(in srgb, var(--err) 55%, var(--border));
+      }
+
+      .row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: wrap;
+      }
+
+      .status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          display: inline-block;
+      }
+
+      .dot-ok {
+          background: var(--ok);
+      }
+
+      .dot-err {
+          background: var(--err);
+      }
+
+      .ex-name {
+          font-weight: 600;
+      }
+
+      /* Error groups (visible in errors filter) */
+      .error-groups {
+          display: none;
+          margin-bottom: 16px;
+      }
+
+      .group {
+          border: 1px solid var(--border);
+          background: var(--panel);
+          border-radius: 14px;
+          overflow: hidden;
+      }
+
+      .group + .group {
+          margin-top: 12px;
+      }
+
+      .group-header {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 14px;
+          cursor: pointer;
+          border-bottom: 1px solid var(--border);
+      }
+
+      .group-header:hover {
+          background: #141722;
+      }
+
+      .group-title {
+          font-weight: 600;
+          flex: 1;
+      }
+
+      .group-count {
+          font-size: 12px;
+          color: var(--muted);
+      }
+
+      .group-cards {
+          display: none;
+          padding: 12px;
+      }
+
+      .group .card {
+          margin: 12px 0;
+      }
+
+      .group .card:first-child {
+          margin-top: 0;
+      }
+
+      .group .card:last-child {
+          margin-bottom: 0;
+      }
+
+      /* caret rotation */
+      .group-tg:checked + label .caret {
+          transform: rotate(90deg);
+      }
+
+      .caret {
+          transition: transform 0.15s ease;
+      }
+
+      /* toggle body */
+      .group-tg:checked ~ .group-cards {
+          display: block;
+      }
+
+      /* CSS-only filtering of cards via top pills */
+      #filter-errors:target ~ main .card:not(.has-error):not(.has-story-error) {
+          display: none;
+      }
+
+      #filter-infos:target ~ main .card:not(.has-info) {
+          display: none;
+      }
+
+      #filter-story-errors:target ~ main .card:not(.has-story-error) {
+          display: none;
+      }
+
+      #filter-doc-errors:target ~ main .card:not(.has-doc-error) {
+          display: none;
+      }
+
+      #filter-docs:target ~ main .card:has(> .tg-docs),
+      #filter-docs:target ~ main .card.is-doc {
+          display: block;
+      }
+
+      #filter-docs:target ~ main .card:not(:has(> .tg-docs)):not(.is-doc) {
+          display: none;
+      }
+
+      #filter-all:target ~ main .card {
+          display: block;
+      }
+
+      /* In errors view, hide standalone component-error cards in the regular grid (they will appear in groups) */
+      #filter-errors:target ~ main .grid .card.has-error {
+          display: none;
+      }
+
+      /* Show grouped section only in errors view */
+      #filter-errors:target ~ main .error-groups {
+          display: block;
+      }
+
+      /* Section titles */
+      .section-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--muted);
+          margin: 24px 0 12px;
+          padding-bottom: 8px;
+          border-bottom: 1px solid var(--border);
+      }
+      .section-title:first-child {
+          margin-top: 0;
+      }
+
+      /* When a toggle is checked, show the corresponding panel */
+      .card > .tg-err:checked ~ .panels .panel-err {
+          display: grid;
+      }
+      
+      .card > .tg-info:checked ~ .panels .panel-info {
+          display: grid;
+      }
+      
+      .card > .tg-stories:checked ~ .panels .panel-stories {
+          display: grid;
+      }
+
+      .card > .tg-docs:checked ~ .panels .panel-docs {
+          display: grid;
+      }
+
+      .card > .tg-content:checked ~ .panels .panel-content {
+          display: grid;
+      }
+
+      /* Add vertical spacing around panels only when any panel is visible */
+      .card > .tg-err:checked ~ .panels,
+      .card > .tg-info:checked ~ .panels,
+      .card > .tg-stories:checked ~ .panels,
+      .card > .tg-docs:checked ~ .panels,
+      .card > .tg-content:checked ~ .panels,
+      .card > .tg-props:checked ~ .panels {
+          margin: 10px 0;
+      }
+
+      /* Optional: a subtle 1px ring on the active badge, using :has() if available */
+      @supports selector(.card:has(.tg-err:checked)) {
+          .card:has(.tg-err:checked) label[for$='-err'],
+          .card:has(.tg-info:checked) label[for$='-info'],
+          .card:has(.tg-stories:checked) label[for$='-stories'],
+          .card:has(.tg-docs:checked) label[for$='-docs'],
+          .card:has(.tg-content:checked) label[for$='-content'],
+          .card:has(.tg-props:checked) label[for$='-props'] {
+              box-shadow: 0 0 0 1px currentColor;
+              border-color: currentColor;
+          }
+      }
+
+      /* Wrap long lines in code blocks at ~120 characters */
+      pre, code {
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      }
+      pre {
+          white-space: pre-wrap;
+          overflow-wrap: anywhere;
+          word-break: break-word;
+          overflow-x: auto; /* fallback for extremely long tokens */
+          margin: 8px 0 0;
+      }
+      pre > code {
+          display: block;
+          white-space: inherit;
+          overflow-wrap: inherit;
+          word-break: inherit;
+          inline-size: min(100%, 120ch);
+      }
+
+      /* MDX content container for docs */
+      .mdx-content {
+          background: #0f131b;
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          padding: 12px;
+          max-height: 400px;
+          overflow-y: auto;
+          margin-top: 8px;
+      }
+  </style>
+</head>
+<body>
+<!-- Hidden targets for the top-level filters -->
+<span id="filter-all"></span>
+<span id="filter-errors"></span>
+<span id="filter-infos"></span>
+<span id="filter-story-errors"></span>
+<span id="filter-doc-errors"></span>
+<span id="filter-docs"></span>
+<header>
+  <div class="wrap">
+    <h1>Manifest Debugger</h1>
+    <div class="summary"><a class="filter-pill all" data-k="all" href="#filter-all">All</a><a class="filter-pill err" data-k="errors" href="#filter-errors">2/28 prop type errors</a><a class="filter-pill info" data-k="infos" href="#filter-infos">26/28 infos</a><span class="filter-pill ok" aria-disabled="true">54 stories ok</span><a class="filter-pill ok" data-k="docs" href="#filter-docs">1 doc ok</a></div>
+  </div>
+</header>
+<main>
+  <div class="wrap">
+    <div class="note info" style="margin-bottom: 16px;">
+            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>0.6s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
+            <pre><code>typescript: {
+  reactDocgen: 'react-docgen-typescript',
+}</code></pre>
+            Note: <code>react-docgen-typescript</code> can be slower. If performance is acceptable for your project, it generally produces better results.
+            <a href="https://storybook.js.org/docs/api/main-config/main-config-typescript#reactdocgen" target="_blank">Learn more</a>
+          </div>
+    <h2 class="section-title">Components</h2>
+    <div class="grid" role="list">
+      
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Alert">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> Alert</h2>
+      <div class="badges">
+        <label for="c-0-ui-alert-props" class="badge ok as-toggle">3 prop types</label>
+        <label for="c-0-ui-alert-info" class="badge info as-toggle">1 info</label>
+        <label for="c-0-ui-alert-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/Alert.stories.tsx">ui-alert · ./src/ui/Alert.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-0-ui-alert-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-0-ui-alert-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-0-ui-alert-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">3 prop types</span>
+            </div>
+            <pre><code>Component: src/ui/Alert.tsx::Alert</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>action?: AlertAction
+
+level: &quot;Error&quot; | &quot;Warning&quot; | &quot;Success&quot; | &quot;Info&quot;
+
+message: React.ReactNode</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Alert } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;Alert level=&quot;Info&quot; message=&quot;This is a simple informational alert.&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-4 pb:w-[600px] pb:bg-gray-100 pb:p-8&quot;&gt;
+    &lt;Alert
+      level=&quot;Error&quot;
+      message=&quot;Critical connection failure!&quot;
+      action={{ name: &quot;Retry&quot;, callback: () =&gt; alert(&quot;Retrying...&quot;) }}
+    /&gt;
+    &lt;Alert level=&quot;Warning&quot; message=&quot;Your session is about to expire.&quot; /&gt;
+    &lt;Alert level=&quot;Success&quot; message=&quot;Settings saved successfully.&quot; /&gt;
+    &lt;Alert
+      level=&quot;Info&quot;
+      message=&quot;New firmware update available.&quot;
+      action={{ name: &quot;View&quot;, callback: () =&gt; alert(&quot;Viewing update...&quot;) }}
+    /&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Anchor">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> Anchor</h2>
+      <div class="badges">
+        
+        <label for="c-1-ui-anchor-info" class="badge info as-toggle">1 info</label>
+        <label for="c-1-ui-anchor-stories" class="badge ok as-toggle">1 story</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/Anchor.stories.tsx">ui-anchor · ./src/ui/Anchor.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-1-ui-anchor-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-1-ui-anchor-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Anchor } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;Anchor href=&quot;https://peerbots.org&quot;&gt;Visit Peerbots&lt;/Anchor&gt;;</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="AuthFormUI">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> AuthFormUI</h2>
+      <div class="badges">
+        <label for="c-2-ui-authformui-props" class="badge ok as-toggle">7 prop types</label>
+        <label for="c-2-ui-authformui-info" class="badge info as-toggle">1 info</label>
+        <label for="c-2-ui-authformui-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/AuthFormUI.stories.tsx">ui-authformui · ./src/ui/AuthFormUI.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-2-ui-authformui-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-2-ui-authformui-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-2-ui-authformui-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">7 prop types</span>
+            </div>
+            <pre><code>Component: src/ui/AuthFormUI.tsx::AuthFormUI</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>actionState: { error: string; message: string }
+
+description?: React.ReactNode
+
+formAction: (payload: FormData) =&gt; void
+
+mode: &quot;signing up&quot; | &quot;signing in&quot; | &quot;resetting password&quot;
+
+onGoogleSignIn?: () =&gt; void
+
+onModeChange: (mode: AuthFormMode) =&gt; void
+
+title?: React.ReactNode</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { AuthFormUI } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = function Render() {
+  const [mode, setMode] = useState&lt;
+    &quot;signing up&quot; | &quot;signing in&quot; | &quot;resetting password&quot;
+  &gt;(&quot;signing in&quot;);
+  return (
+    &lt;div className=&quot;pb:w-[400px]&quot;&gt;
+      &lt;AuthFormUI
+        mode={mode}
+        onModeChange={setMode}
+        formAction={async () =&gt; {
+          await new Promise((resolve) =&gt; setTimeout(resolve, 1000));
+        }}
+        actionState={{ error: &quot;&quot;, message: &quot;&quot; }}
+        onGoogleSignIn={() =&gt; alert(&quot;Google Sign In clicked&quot;)}
+        description=&quot;Sign in to simplify connecting to robots, and synchronize your work across devices.&quot;
+      /&gt;
+    &lt;/div&gt;
+  );
+};</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; {
+  return (
+    &lt;div className=&quot;pb:flex pb:flex-col pb:gap-10 pb:w-[400px]&quot;&gt;
+      &lt;AuthFormUI
+        mode=&quot;signing up&quot;
+        onModeChange={() =&gt; {}}
+        formAction={async () =&gt; {}}
+        actionState={{ error: &quot;&quot;, message: &quot;&quot; }}
+        onGoogleSignIn={() =&gt; {}}
+        description=&quot;Sign up description&quot;
+      /&gt;
+      &lt;AuthFormUI
+        mode=&quot;resetting password&quot;
+        onModeChange={() =&gt; {}}
+        formAction={async () =&gt; {}}
+        actionState={{ error: &quot;&quot;, message: &quot;Email sent!&quot; }}
+      /&gt;
+      &lt;AuthFormUI
+        mode=&quot;signing in&quot;
+        onModeChange={() =&gt; {}}
+        formAction={async () =&gt; {}}
+        actionState={{ error: &quot;Invalid email or password&quot;, message: &quot;&quot; }}
+        description=&quot;Sign in description&quot;
+      /&gt;
+    &lt;/div&gt;
+  );
+};</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="BasePanel">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> BasePanel</h2>
+      <div class="badges">
+        <label for="c-3-ui-basepanel-props" class="badge ok as-toggle">7 prop types</label>
+        <label for="c-3-ui-basepanel-info" class="badge info as-toggle">1 info</label>
+        <label for="c-3-ui-basepanel-stories" class="badge ok as-toggle">1 story</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/BasePanel.stories.tsx">ui-basepanel · ./src/ui/BasePanel.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-3-ui-basepanel-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-3-ui-basepanel-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-3-ui-basepanel-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">7 prop types</span>
+            </div>
+            <pre><code>Component: src/ui/BasePanel.tsx::BasePanel</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>children: ReactNode
+
+className?: string = &quot;&quot;
+
+headerClassName?: string = &quot;&quot;
+
+headingLevel?: 1 | 2 | 3 | 4 | 5 | 6 = 2
+
+onClose?: () =&gt; void
+
+setPanel?: (panel: string) =&gt; void = (panel: string) =&gt; { }
+
+title: string</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { BasePanel, Text as UIText } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;BasePanel title=&quot;Example Panel&quot;&gt;(&lt;UIText
+      variant=&quot;small&quot;
+      className=&quot;pb:p-4 pb:bg-gray-50 pb:rounded-md pb:border pb:border-gray-100 pb:text-black pb:text-center&quot;
+    &gt;Panel content goes here.
+            &lt;/UIText&gt;)&lt;/BasePanel&gt;;</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Button">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> Button</h2>
+      <div class="badges">
+        <label for="c-4-ui-button-props" class="badge ok as-toggle">8 prop types</label>
+        <label for="c-4-ui-button-info" class="badge info as-toggle">1 info</label>
+        <label for="c-4-ui-button-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/Button.stories.tsx">ui-button · ./src/ui/Button.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-4-ui-button-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-4-ui-button-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-4-ui-button-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">8 prop types</span>
+            </div>
+            <pre><code>Component: src/ui/Button.tsx::Button</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>isIconOnly?: boolean
+
+isLoading?: boolean = false
+
+leftIcon?: React.ReactNode
+
+nativeButton?: boolean
+
+render?: BaseButton.Props[&quot;render&quot;]
+
+rightIcon?: React.ReactNode
+
+size?: &quot;sm&quot; | &quot;md&quot; | &quot;lg&quot; = &quot;md&quot;
+
+variant?: &quot;primary&quot; | &quot;secondary&quot; | &quot;danger&quot; | &quot;ghost&quot; | &quot;ghostly-danger&quot; = &quot;primary&quot;</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Button, Heading, Icon } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;Button variant=&quot;primary&quot;&gt;Button&lt;/Button&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-8&quot;&gt;
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:italic&quot;&gt;
+        Variants
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:flex pb:flex-wrap pb:gap-4 pb:items-center&quot;&gt;
+        &lt;Button variant=&quot;primary&quot;&gt;Primary&lt;/Button&gt;
+        &lt;Button variant=&quot;secondary&quot;&gt;Secondary&lt;/Button&gt;
+        &lt;Button variant=&quot;danger&quot;&gt;Danger&lt;/Button&gt;
+        &lt;Button variant=&quot;ghost&quot;&gt;Ghost&lt;/Button&gt;
+        &lt;Button variant=&quot;ghostly-danger&quot;&gt;Ghostly Danger&lt;/Button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:italic&quot;&gt;
+        Sizes
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:flex pb:flex-wrap pb:gap-4 pb:items-end&quot;&gt;
+        &lt;Button size=&quot;sm&quot;&gt;Small&lt;/Button&gt;
+        &lt;Button size=&quot;md&quot;&gt;Medium&lt;/Button&gt;
+        &lt;Button size=&quot;lg&quot;&gt;Large&lt;/Button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:italic&quot;&gt;
+        States
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:flex pb:flex-wrap pb:gap-4 pb:items-center&quot;&gt;
+        &lt;Button isLoading&gt;Loading&lt;/Button&gt;
+        &lt;Button disabled&gt;Disabled&lt;/Button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:italic&quot;&gt;
+        With Icons
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:flex pb:flex-wrap pb:gap-4 pb:items-center&quot;&gt;
+        &lt;Button leftIcon={&lt;Icon name=&quot;cloudArrowUp&quot; /&gt;}&gt;Upload&lt;/Button&gt;
+        &lt;Button variant=&quot;secondary&quot; rightIcon={&lt;Icon name=&quot;chevronRight&quot; /&gt;}&gt;
+          Next
+        &lt;/Button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:italic&quot;&gt;
+        Icon Only
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:flex pb:flex-wrap pb:gap-4 pb:items-center&quot;&gt;
+        &lt;Button size=&quot;sm&quot;&gt;
+          &lt;Icon name=&quot;plus&quot; /&gt;
+        &lt;/Button&gt;
+        &lt;Button size=&quot;md&quot;&gt;
+          &lt;Icon name=&quot;plus&quot; /&gt;
+        &lt;/Button&gt;
+        &lt;Button size=&quot;lg&quot;&gt;
+          &lt;Icon name=&quot;plus&quot; /&gt;
+        &lt;/Button&gt;
+        &lt;Button variant=&quot;ghost&quot; size=&quot;sm&quot; aria-label=&quot;Close&quot;&gt;
+          &lt;Icon name=&quot;close&quot; /&gt;
+        &lt;/Button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Checkbox">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> Checkbox</h2>
+      <div class="badges">
+        
+        <label for="c-5-ui-checkbox-info" class="badge info as-toggle">1 info</label>
+        <label for="c-5-ui-checkbox-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/Checkbox.stories.tsx">ui-checkbox · ./src/ui/Checkbox.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-5-ui-checkbox-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-5-ui-checkbox-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Checkbox, Heading } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;StatefulCheckbox /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-8 pb:p-4&quot;&gt;
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        States
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:flex pb:flex-col pb:gap-4&quot;&gt;
+        &lt;StatefulCheckbox label=&quot;Default Unchecked&quot; /&gt;
+        &lt;StatefulCheckbox label=&quot;Default Checked&quot; checked={true} /&gt;
+        &lt;StatefulCheckbox label=&quot;Disabled Unchecked&quot; disabled={true} /&gt;
+        &lt;StatefulCheckbox
+          label=&quot;Disabled Checked&quot;
+          disabled={true}
+          checked={true}
+        /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Collapsible">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> Collapsible</h2>
+      <div class="badges">
+        <label for="c-6-ui-collapsible-props" class="badge ok as-toggle">6 prop types</label>
+        <label for="c-6-ui-collapsible-info" class="badge info as-toggle">1 info</label>
+        <label for="c-6-ui-collapsible-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/Collapsible.stories.tsx">ui-collapsible · ./src/ui/Collapsible.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-6-ui-collapsible-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-6-ui-collapsible-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-6-ui-collapsible-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">6 prop types</span>
+            </div>
+            <pre><code>Component: src/ui/Collapsible.tsx::Collapsible</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>children: React.ReactNode
+
+className?: string
+
+defaultOpen?: boolean = false
+
+/**
+ * The size of the trigger button
+ */
+size?: ButtonProps[&quot;size&quot;] = &quot;md&quot;
+
+title: React.ReactNode
+
+/**
+ * The variant of the trigger button
+ */
+variant?: ButtonProps[&quot;variant&quot;] = &quot;secondary&quot;</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Collapsible, Heading } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;Collapsible title=&quot;Click to expand&quot;&gt;(&lt;div className=&quot;pb:p-4 pb:bg-gray-50 pb:rounded-md&quot;&gt;This is the collapsible content. It can contain any elements.
+            &lt;/div&gt;)&lt;/Collapsible&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-8 pb:p-4&quot;&gt;
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        States &amp; Styling
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:space-y-4&quot;&gt;
+        &lt;Collapsible title=&quot;Initially Open&quot; defaultOpen={true}&gt;
+          &lt;div className=&quot;pb:p-4 pb:bg-gray-50 pb:rounded-md&quot;&gt;
+            This content is visible by default.
+          &lt;/div&gt;
+        &lt;/Collapsible&gt;
+        &lt;Collapsible
+          title={&lt;span className=&quot;pb:font-bold pb:text-primary&quot;&gt;Styled Title&lt;/span&gt;}
+          className=&quot;pb:border pb:border-gray-200 pb:rounded-lg pb:overflow-hidden&quot;
+        &gt;
+          &lt;div className=&quot;pb:p-4&quot;&gt;Custom styled wrapper and title.&lt;/div&gt;
+        &lt;/Collapsible&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        Variants
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:space-y-4&quot;&gt;
+        &lt;Collapsible title=&quot;Secondary (Default)&quot; variant=&quot;secondary&quot;&gt;
+          &lt;div className=&quot;pb:p-4 pb:bg-gray-50 pb:rounded-md&quot;&gt;
+            Secondary variant content.
+          &lt;/div&gt;
+        &lt;/Collapsible&gt;
+        &lt;Collapsible title=&quot;Ghost&quot; variant=&quot;ghost&quot;&gt;
+          &lt;div className=&quot;pb:p-4 pb:bg-gray-50 pb:rounded-md&quot;&gt;
+            Ghost variant content.
+          &lt;/div&gt;
+        &lt;/Collapsible&gt;
+        &lt;Collapsible title=&quot;Primary&quot; variant=&quot;primary&quot;&gt;
+          &lt;div className=&quot;pb:p-4 pb:bg-gray-50 pb:rounded-md&quot;&gt;
+            Primary variant content.
+          &lt;/div&gt;
+        &lt;/Collapsible&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        Sizes
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:space-y-4&quot;&gt;
+        &lt;Collapsible title=&quot;Small&quot; size=&quot;sm&quot;&gt;
+          &lt;div className=&quot;pb:p-4 pb:bg-gray-50 pb:rounded-md&quot;&gt;Small size content.&lt;/div&gt;
+        &lt;/Collapsible&gt;
+        &lt;Collapsible title=&quot;Medium (Default)&quot; size=&quot;md&quot;&gt;
+          &lt;div className=&quot;pb:p-4 pb:bg-gray-50 pb:rounded-md&quot;&gt;
+            Medium size content.
+          &lt;/div&gt;
+        &lt;/Collapsible&gt;
+        &lt;Collapsible title=&quot;Large&quot; size=&quot;lg&quot;&gt;
+          &lt;div className=&quot;pb:p-4 pb:bg-gray-50 pb:rounded-md&quot;&gt;Large size content.&lt;/div&gt;
+        &lt;/Collapsible&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  has-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Colors">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-err"></span> Colors</h2>
+      <div class="badges">
+        <label for="c-7-ui-colors-err" class="badge err as-toggle">prop type error</label>
+        <label for="c-7-ui-colors-info" class="badge info as-toggle">2 infos</label>
+        <label for="c-7-ui-colors-stories" class="badge ok as-toggle">1 story</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/Colors.stories.tsx">ui-colors · ./src/ui/Colors.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  <input id="c-7-ui-colors-err" class="tg tg-err" type="checkbox" hidden />
+  <input id="c-7-ui-colors-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-7-ui-colors-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+
+  <div class="panels">
+    
+        <div class="panel panel-err">
+          
+    <div class="note err">
+      <div class="note-title">Prop type error</div>
+      <div class="note-body"><pre><code>We could not detect the component from your story file. Specify meta.component.
+  1 | import type { Meta, StoryObj } from &quot;@storybook/react&quot;;
+  2 |
+&gt; 3 | const meta: Meta = {
+    | ^
+  4 |   title: &quot;UI/Colors&quot;,
+  5 |   tags: [&quot;autodocs&quot;],
+  6 | };
+
+./src/ui/Colors.stories.tsx:
+import type { Meta, StoryObj } from &quot;@storybook/react&quot;;
+
+const meta: Meta = {
+  title: &quot;UI/Colors&quot;,
+  tags: [&quot;autodocs&quot;],
+};
+
+export default meta;
+
+export const Variations: StoryObj = {
+  render: () =&gt; (
+    &lt;div className=&quot;pb:flex pb:flex-col pb:gap-8 pb:p-4 pb:bg-white&quot;&gt;
+      &lt;div&gt;
+        &lt;h3 className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1 pb:mb-4&quot;&gt;
+          Theme Colors
+        &lt;/h3&gt;
+        &lt;div className=&quot;pb:grid pb:grid-cols-2 pb:md:grid-cols-3 pb:lg:grid-cols-5 pb:gap-4&quot;&gt;
+          &lt;ColorItem name=&quot;Primary&quot; variable=&quot;var(--pb-color-primary)&quot; /&gt;
+          &lt;ColorItem name=&quot;Secondary&quot; variable=&quot;var(--pb-color-secondary)&quot; /&gt;
+          &lt;ColorItem name=&quot;Accent&quot; variable=&quot;var(--pb-color-accent)&quot; /&gt;
+          &lt;ColorItem name=&quot;Danger&quot; variable=&quot;var(--pb-color-danger)&quot; /&gt;
+          &lt;ColorItem name=&quot;Light BG&quot; variable=&quot;var(--pb-color-light-bg)&quot; /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div&gt;
+        &lt;h3 className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1 pb:mb-4&quot;&gt;
+          Extended Accent Colors
+        &lt;/h3&gt;
+        &lt;div className=&quot;pb:grid pb:grid-cols-2 pb:md:grid-cols-3 pb:lg:grid-cols-4 pb:gap-4&quot;&gt;
+          &lt;ColorItem name=&quot;Accent HC&quot; variable=&quot;var(--pb-color-accent-hc)&quot; /&gt;
+          &lt;ColorItem name=&quot;Accent Two&quot; variable=&quot;var(--pb-color-accent-two)&quot; /&gt;
+          &lt;ColorItem
+            name=&quot;Accent Two HC&quot;
+            variable=&quot;var(--pb-color-accent-two-hc)&quot;
+          /&gt;
+          &lt;ColorItem name=&quot;Accent Three&quot; variable=&quot;var(--pb-color-accent-three)&quot; /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div&gt;
+        &lt;h3 className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1 pb:mb-4&quot;&gt;
+          UI Elements
+        &lt;/h3&gt;
+        &lt;div className=&quot;pb:grid pb:grid-cols-2 pb:md:grid-cols-3 pb:lg:grid-cols-4 pb:gap-4&quot;&gt;
+          &lt;ColorItem name=&quot;Sidebar BG&quot; variable=&quot;var(--pb-sidebar-bg)&quot; /&gt;
+          &lt;ColorItem name=&quot;Dark Primary&quot; variable=&quot;var(--pb-color-dark-primary)&quot; /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  ),
+};
+
+function ColorItem({ name, variable }: { name: string; variable: string }) {
+  return (
+    &lt;div className=&quot;pb:flex pb:flex-col pb:gap-2&quot;&gt;
+      &lt;div
+        className=&quot;pb:h-20 pb:w-full pb:rounded-md pb:shadow-inner pb:border pb:border-gray-100&quot;
+        style={{ backgroundColor: variable }}
+      /&gt;
+      &lt;div className=&quot;pb:flex pb:flex-col&quot;&gt;
+        &lt;span className=&quot;pb:text-sm pb:font-bold pb:text-gray-900&quot;&gt;{name}&lt;/span&gt;
+        &lt;code className=&quot;pb:text-xs pb:text-gray-500&quot;&gt;{variable}&lt;/code&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre></div>
+    </div>
+        </div>
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">Specify an @import jsdoc tag on your component or your stories meta such as @import import { Colors } from &#39;my-design-system&#39;;</div>
+    </div>
+        </div>
+    
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-8 pb:p-4 pb:bg-white&quot;&gt;
+    &lt;div&gt;
+      &lt;h3 className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1 pb:mb-4&quot;&gt;
+        Theme Colors
+      &lt;/h3&gt;
+      &lt;div className=&quot;pb:grid pb:grid-cols-2 pb:md:grid-cols-3 pb:lg:grid-cols-5 pb:gap-4&quot;&gt;
+        &lt;ColorItem name=&quot;Primary&quot; variable=&quot;var(--pb-color-primary)&quot; /&gt;
+        &lt;ColorItem name=&quot;Secondary&quot; variable=&quot;var(--pb-color-secondary)&quot; /&gt;
+        &lt;ColorItem name=&quot;Accent&quot; variable=&quot;var(--pb-color-accent)&quot; /&gt;
+        &lt;ColorItem name=&quot;Danger&quot; variable=&quot;var(--pb-color-danger)&quot; /&gt;
+        &lt;ColorItem name=&quot;Light BG&quot; variable=&quot;var(--pb-color-light-bg)&quot; /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div&gt;
+      &lt;h3 className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1 pb:mb-4&quot;&gt;
+        Extended Accent Colors
+      &lt;/h3&gt;
+      &lt;div className=&quot;pb:grid pb:grid-cols-2 pb:md:grid-cols-3 pb:lg:grid-cols-4 pb:gap-4&quot;&gt;
+        &lt;ColorItem name=&quot;Accent HC&quot; variable=&quot;var(--pb-color-accent-hc)&quot; /&gt;
+        &lt;ColorItem name=&quot;Accent Two&quot; variable=&quot;var(--pb-color-accent-two)&quot; /&gt;
+        &lt;ColorItem
+          name=&quot;Accent Two HC&quot;
+          variable=&quot;var(--pb-color-accent-two-hc)&quot;
+        /&gt;
+        &lt;ColorItem name=&quot;Accent Three&quot; variable=&quot;var(--pb-color-accent-three)&quot; /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div&gt;
+      &lt;h3 className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1 pb:mb-4&quot;&gt;
+        UI Elements
+      &lt;/h3&gt;
+      &lt;div className=&quot;pb:grid pb:grid-cols-2 pb:md:grid-cols-3 pb:lg:grid-cols-4 pb:gap-4&quot;&gt;
+        &lt;ColorItem name=&quot;Sidebar BG&quot; variable=&quot;var(--pb-sidebar-bg)&quot; /&gt;
+        &lt;ColorItem name=&quot;Dark Primary&quot; variable=&quot;var(--pb-color-dark-primary)&quot; /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Dialog">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> Dialog</h2>
+      <div class="badges">
+        <label for="c-8-ui-dialog-props" class="badge ok as-toggle">5 prop types</label>
+        <label for="c-8-ui-dialog-info" class="badge info as-toggle">1 info</label>
+        <label for="c-8-ui-dialog-stories" class="badge ok as-toggle">1 story</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/Dialog.stories.tsx">ui-dialog · ./src/ui/Dialog.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-8-ui-dialog-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-8-ui-dialog-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-8-ui-dialog-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">5 prop types</span>
+            </div>
+            <pre><code>Component: src/ui/Dialog.tsx::Dialog</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>children: React.ReactNode
+
+className?: string
+
+onOpenChange?: (open: boolean, event?: Event) =&gt; void
+
+open?: boolean
+
+trigger?: React.ReactNode</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Button, Dialog, DialogClose, DialogDescription, DialogTitle } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; (
+  &lt;Dialog trigger={&lt;Button&gt;Open Default Dialog&lt;/Button&gt;}&gt;
+    &lt;DialogTitle className=&quot;pb:text-xl pb:font-bold pb:mb-2&quot;&gt;Dialog Title&lt;/DialogTitle&gt;
+    &lt;DialogDescription className=&quot;pb:text-black pb:mb-6&quot;&gt;
+      This is a description of the dialog content.
+    &lt;/DialogDescription&gt;
+    &lt;div className=&quot;pb:flex pb:justify-end pb:gap-2&quot;&gt;
+      &lt;DialogClose render={&lt;Button variant=&quot;secondary&quot;&gt;Cancel&lt;/Button&gt;} /&gt;
+      &lt;DialogClose render={&lt;Button variant=&quot;primary&quot;&gt;Confirm&lt;/Button&gt;} /&gt;
+    &lt;/div&gt;
+  &lt;/Dialog&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="DistributionBarChart">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> DistributionBarChart</h2>
+      <div class="badges">
+        <label for="c-9-charts-distributionbarchart-props" class="badge ok as-toggle">8 prop types</label>
+        <label for="c-9-charts-distributionbarchart-info" class="badge info as-toggle">1 info</label>
+        <label for="c-9-charts-distributionbarchart-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/charts/DistributionBarChart.stories.tsx">charts-distributionbarchart · ./src/charts/DistributionBarChart.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-9-charts-distributionbarchart-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-9-charts-distributionbarchart-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-9-charts-distributionbarchart-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">8 prop types</span>
+            </div>
+            <pre><code>Component: src/charts/DistributionBarChart.tsx::DistributionBarChart</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>alt: string
+
+average?: number
+
+chartHeight?: number = 400
+
+chartWidth?: number = 600
+
+data: DistributionBarData[]
+
+label?: string
+
+referenceLineLabel?: string = &quot;Reference&quot;
+
+referenceLineValue?: number</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { DistributionBarChart } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;DistributionBarChart
+    alt=&quot;Default emotion distribution bar chart.&quot;
+    data={[
+      { label: &quot;Happy&quot;, count: 12, items: [&quot;Hello!&quot;, &quot;How are you?&quot;] },
+      { label: &quot;Sad&quot;, count: 3, items: [&quot;I am sad.&quot;] },
+      { label: &quot;Neutral&quot;, count: 20, items: [&quot;Okay.&quot;, &quot;Yes.&quot;, &quot;No.&quot;] },
+    ]}
+    average={11}
+    referenceLineValue={15}
+    referenceLineLabel=&quot;Target&quot;
+    label=&quot;Emotion&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; &lt;DistributionBarChart
+    alt=&quot;Color variation bar chart.&quot;
+    data={[
+      { label: &quot;Red&quot;, count: 15, fill: &quot;Red&quot; },
+      { label: &quot;Blue&quot;, count: 8, fill: &quot;Blue&quot; },
+      { label: &quot;White&quot;, count: 5, fill: &quot;White&quot; },
+      { label: &quot;Custom&quot;, count: 10, fill: &quot;#ff00ff&quot;, stroke: &quot;#000&quot; },
+    ]}
+    label=&quot;Color Variations&quot; /&gt;;</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="DistributionHistogram">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> DistributionHistogram</h2>
+      <div class="badges">
+        <label for="c-10-charts-distributionhistogram-props" class="badge ok as-toggle">8 prop types</label>
+        <label for="c-10-charts-distributionhistogram-info" class="badge info as-toggle">1 info</label>
+        <label for="c-10-charts-distributionhistogram-stories" class="badge ok as-toggle">4 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/charts/DistributionHistogram.stories.tsx">charts-distributionhistogram · ./src/charts/DistributionHistogram.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-10-charts-distributionhistogram-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-10-charts-distributionhistogram-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-10-charts-distributionhistogram-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">8 prop types</span>
+            </div>
+            <pre><code>Component: src/charts/DistributionHistogram.tsx::DistributionHistogram</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>alt: string
+
+average?: number
+
+chartHeight?: number = 400
+
+chartWidth?: number = 600
+
+data: DistributionHistogramData[]
+
+label: string
+
+referenceLineLabel?: string = &quot;Reference&quot;
+
+referenceLineValue?: number</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { DistributionHistogram } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;DistributionHistogram
+    alt=&quot;Default distribution histogram showing fake data.&quot;
+    data={fakeData}
+    label=&quot;Data&quot;
+    average={45}
+    referenceLineValue={80}
+    referenceLineLabel=&quot;Reference&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Without Reference Line</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const WithoutReferenceLine = () =&gt; &lt;DistributionHistogram
+    alt=&quot;Distribution histogram without reference line.&quot;
+    data={fakeData}
+    label=&quot;Data With Average&quot;
+    average={45} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Without Average</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const WithoutAverage = () =&gt; &lt;DistributionHistogram
+    alt=&quot;Distribution histogram without average line.&quot;
+    data={fakeData}
+    label=&quot;Data With Reference Line&quot;
+    referenceLineValue={80}
+    referenceLineLabel=&quot;Reference Label&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Without Average Or Reference Line</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const WithoutAverageOrReferenceLine = () =&gt; &lt;DistributionHistogram
+    alt=&quot;Distribution histogram without average or reference lines.&quot;
+    data={fakeData}
+    label=&quot;Data&quot; /&gt;;</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  no-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Field">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> Field</h2>
+      <div class="badges">
+        <label for="c-11-ui-field-props" class="badge ok as-toggle">8 prop types</label>
+        
+        <label for="c-11-ui-field-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/Field.stories.tsx">ui-field · ./src/ui/Field.stories.tsx</div>
+    
+    <div class="hint">A wrapper component that provides a label, description, and error message for form controls. Uses Base UI&#39;s Field primitives for accessibility.</div>
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  
+  <input id="c-11-ui-field-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-11-ui-field-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">8 prop types</span>
+            </div>
+            <pre><code>Component: src/ui/Field.tsx::Field</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>children: React.ReactNode
+
+description?: string
+
+error?: string
+
+icon?: React.ReactNode
+
+label?: string
+
+labelPlacement?: &quot;top&quot; | &quot;left&quot; | &quot;right&quot; = &quot;top&quot;
+
+labelWeight?: &quot;bold&quot; | &quot;normal&quot; = &quot;bold&quot;
+
+tooltip?: string</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import {
+    Checkbox,
+    Field,
+    Heading,
+    Icon,
+    Input,
+    NumberField,
+    Select,
+    Slider,
+    SliderWithNumberField,
+    Switch,
+} from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;Field
+    label=&quot;Email Address&quot;
+    description=&quot;We&#39;ll never share your email.&quot;
+    tooltip=&quot;Enter your primary email address&quot;&gt;&lt;Input placeholder=&quot;you@example.com&quot; /&gt;&lt;/Field&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-12 pb:p-4 pb:max-w-2xl&quot;&gt;
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading
+        level={4}
+        className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider&quot;
+      &gt;
+        Basic Inputs
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:grid pb:gap-6&quot;&gt;
+        &lt;Field
+          label=&quot;Text Input&quot;
+          description=&quot;Standard text field&quot;
+          tooltip=&quot;Helping text&quot;
+        &gt;
+          &lt;Input placeholder=&quot;Enter something...&quot; /&gt;
+        &lt;/Field&gt;
+        &lt;Field label=&quot;Password&quot; error=&quot;Password is too weak&quot;&gt;
+          &lt;Input type=&quot;password&quot; defaultValue=&quot;123&quot; /&gt;
+        &lt;/Field&gt;
+        &lt;Field label=&quot;Number Field&quot;&gt;
+          &lt;NumberField showButtons defaultValue={10} /&gt;
+        &lt;/Field&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading
+        level={4}
+        className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider&quot;
+      &gt;
+        Selection &amp; Toggles
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:grid pb:gap-6&quot;&gt;
+        &lt;Field label=&quot;Select Language&quot;&gt;
+          &lt;Select
+            options={[
+              { label: &quot;English&quot;, value: &quot;en&quot; },
+              { label: &quot;Spanish&quot;, value: &quot;es&quot; },
+              { label: &quot;French&quot;, value: &quot;fr&quot; },
+            ]}
+            placeholder=&quot;Choose a language&quot;
+          /&gt;
+        &lt;/Field&gt;
+        &lt;Field
+          label=&quot;Enable Notifications&quot;
+          className=&quot;pb:flex-row pb:items-center pb:justify-between&quot;
+        &gt;
+          &lt;Switch /&gt;
+        &lt;/Field&gt;
+        &lt;Field
+          label=&quot;Enable automation&quot;
+          labelPlacement=&quot;right&quot;
+          labelWeight=&quot;normal&quot;
+        &gt;
+          &lt;Checkbox id=&quot;automation&quot; /&gt;
+        &lt;/Field&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading
+        level={4}
+        className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider&quot;
+      &gt;
+        Sliders
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:grid pb:gap-6&quot;&gt;
+        &lt;Field label=&quot;Simple Slider&quot; tooltip=&quot;Adjust volume&quot;&gt;
+          &lt;Slider defaultValue={50} /&gt;
+        &lt;/Field&gt;
+        &lt;Field label=&quot;Sensitivity&quot;&gt;
+          &lt;SliderWithNumberField
+            min={0}
+            max={10}
+            step={0.1}
+            defaultValue={5}
+          /&gt;
+        &lt;/Field&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading
+        level={4}
+        className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider&quot;
+      &gt;
+        Layout Variations
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:grid pb:gap-6&quot;&gt;
+        &lt;Field
+          label=&quot;Label on Left&quot;
+          labelPlacement=&quot;left&quot;
+          description=&quot;Label to the left&quot;
+        &gt;
+          &lt;Input placeholder=&quot;Enter text...&quot; /&gt;
+        &lt;/Field&gt;
+        &lt;Field
+          label=&quot;Label on Right&quot;
+          labelPlacement=&quot;right&quot;
+          description=&quot;Label to the right&quot;
+        &gt;
+          &lt;Input placeholder=&quot;Enter text...&quot; /&gt;
+        &lt;/Field&gt;
+        &lt;Field label=&quot;With Search Icon&quot; icon={&lt;Icon name=&quot;search&quot; /&gt;}&gt;
+          &lt;Input placeholder=&quot;Search...&quot; /&gt;
+        &lt;/Field&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading
+        level={4}
+        className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider&quot;
+      &gt;
+        Field Groups
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:border pb:rounded-lg pb:p-6 pb:bg-gray-50/50&quot;&gt;
+        &lt;Heading level={5} className=&quot;pb:font-bold pb:mb-4&quot;&gt;
+          Settings Group
+        &lt;/Heading&gt;
+        &lt;div className=&quot;pb:flex pb:flex-col pb:gap-4&quot;&gt;
+          &lt;Field
+            label=&quot;Break up long sentences&quot;
+            labelPlacement=&quot;right&quot;
+            labelWeight=&quot;normal&quot;
+            description=&quot;Ensures buttons don&#39;t have too much text&quot;
+          &gt;
+            &lt;Checkbox id=&quot;group-opt-1&quot; /&gt;
+          &lt;/Field&gt;
+          &lt;Field
+            label=&quot;Detect emotions&quot;
+            labelPlacement=&quot;right&quot;
+            labelWeight=&quot;normal&quot;
+            error=&quot;Requires active connection&quot;
+          &gt;
+            &lt;Checkbox id=&quot;group-opt-2&quot; /&gt;
+          &lt;/Field&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Icon">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> Icon</h2>
+      <div class="badges">
+        <label for="c-12-ui-icon-props" class="badge ok as-toggle">2 prop types</label>
+        <label for="c-12-ui-icon-info" class="badge info as-toggle">1 info</label>
+        <label for="c-12-ui-icon-stories" class="badge ok as-toggle">3 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/Icon.stories.tsx">ui-icon · ./src/ui/Icon.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-12-ui-icon-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-12-ui-icon-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-12-ui-icon-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">2 prop types</span>
+            </div>
+            <pre><code>Component: src/ui/Icon.tsx::Icon</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>name?: keyof typeof iconPaths | keyof typeof complexIcons
+
+size?: &quot;sm&quot; | &quot;md&quot; | &quot;lg&quot; | &quot;xl&quot; = &quot;md&quot;</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Icon, Text } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;Icon className=&quot;text-green-500&quot;&gt;{CheckPath}&lt;/Icon&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Named Icons</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const NamedIcons = () =&gt; (
+  &lt;div className=&quot;pb:grid pb:grid-cols-6 pb:gap-4 pb:p-4&quot;&gt;
+    {[
+      &quot;arrowDown&quot;,
+      &quot;arrowDownToLine&quot;,
+      &quot;arrowDownTray&quot;,
+      &quot;arrowPath&quot;,
+      &quot;arrowRightOnRectangle&quot;,
+      &quot;arrowUp&quot;,
+      &quot;arrowUpFromLine&quot;,
+      &quot;arrowUpTray&quot;,
+      &quot;arrowsPointingIn&quot;,
+      &quot;arrowsPointingOut&quot;,
+      &quot;arrowsRightLeft&quot;,
+      &quot;arrowsUpDown&quot;,
+      &quot;check&quot;,
+      &quot;checkCircle&quot;,
+      &quot;chevronDownSmall&quot;,
+      &quot;chevronDownTable&quot;,
+      &quot;chevronRight&quot;,
+      &quot;chevronUpSmall&quot;,
+      &quot;chevronUpTable&quot;,
+      &quot;clipboard&quot;,
+      &quot;close&quot;,
+      &quot;cloudArrowUp&quot;,
+      &quot;code&quot;,
+      &quot;document&quot;,
+      &quot;edit&quot;,
+      &quot;envelope&quot;,
+      &quot;exclamationCircle&quot;,
+      &quot;exclamationTriangle&quot;,
+      &quot;export&quot;,
+      &quot;externalLink&quot;,
+      &quot;eye&quot;,
+      &quot;folder&quot;,
+      &quot;google&quot;,
+      &quot;home&quot;,
+      &quot;import&quot;,
+      &quot;lock&quot;,
+      &quot;lockClosed&quot;,
+      &quot;magnifyingGlassPlus&quot;,
+      &quot;megaphone&quot;,
+      &quot;minus&quot;,
+      &quot;pencilSquare&quot;,
+      &quot;pencilSquareContinued&quot;,
+      &quot;play&quot;,
+      &quot;plus&quot;,
+      &quot;questionMarkCircle&quot;,
+      &quot;search&quot;,
+      &quot;shoppingCart&quot;,
+      &quot;speakerWave&quot;,
+      &quot;squares&quot;,
+      &quot;tableCells&quot;,
+      &quot;userCircle&quot;,
+      &quot;x&quot;,
+      &quot;xCircle&quot;,
+      &quot;zap&quot;,
+    ].map((name) =&gt; (
+      &lt;div key={name} className=&quot;pb:flex pb:flex-col pb:items-center&quot;&gt;
+        &lt;Icon name={name as IconName} /&gt;
+        &lt;Text variant=&quot;small&quot;&gt;{name}&lt;/Text&gt;
+      &lt;/div&gt;
+    ))}
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-12 pb:p-4&quot;&gt;
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold pb:underline pb:uppercase&quot;&gt;
+        Different Sizes
+      &lt;/Text&gt;
+      &lt;div className=&quot;pb:flex pb:items-end pb:gap-4&quot;&gt;
+        &lt;Icon size=&quot;sm&quot;&gt;{CheckPath}&lt;/Icon&gt;
+        &lt;Icon size=&quot;md&quot;&gt;{CheckPath}&lt;/Icon&gt;
+        &lt;Icon size=&quot;lg&quot;&gt;{CheckPath}&lt;/Icon&gt;
+        &lt;Icon size=&quot;xl&quot;&gt;{CheckPath}&lt;/Icon&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold pb:underline pb:uppercase&quot;&gt;
+        Different Content &amp; Colors
+      &lt;/Text&gt;
+      &lt;div className=&quot;pb:flex pb:gap-4&quot;&gt;
+        &lt;Icon className=&quot;pb:text-red-500&quot;&gt;{XPath}&lt;/Icon&gt;
+        &lt;Icon className=&quot;pb:text-primary&quot;&gt;{CheckPath}&lt;/Icon&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold pb:underline pb:uppercase&quot;&gt;
+        Using Named Icons
+      &lt;/Text&gt;
+      &lt;div className=&quot;pb:flex pb:gap-4&quot;&gt;
+        &lt;Icon name=&quot;check&quot; className=&quot;pb:text-green-500&quot; /&gt;
+        &lt;Icon name=&quot;x&quot; className=&quot;pb:text-red-500&quot; /&gt;
+        &lt;Icon name=&quot;plus&quot; className=&quot;pb:text-blue-500&quot; /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Input">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> Input</h2>
+      <div class="badges">
+        <label for="c-13-ui-input-props" class="badge ok as-toggle">2 prop types</label>
+        <label for="c-13-ui-input-info" class="badge info as-toggle">1 info</label>
+        <label for="c-13-ui-input-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/Input.stories.tsx">ui-input · ./src/ui/Input.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-13-ui-input-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-13-ui-input-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-13-ui-input-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">2 prop types</span>
+            </div>
+            <pre><code>Component: src/ui/Input.tsx::Input</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>leftIcon?: React.ReactNode
+
+rightIcon?: React.ReactNode</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Heading, Input, Text } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;Input placeholder=&quot;Enter text...&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-8 pb:p-4 pb:max-w-sm&quot;&gt;
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        Input Styles
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:space-y-4&quot;&gt;
+        &lt;div className=&quot;pb:space-y-1&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold&quot;&gt;
+            With Placeholder
+          &lt;/Text&gt;
+          &lt;Input placeholder=&quot;Type here...&quot; /&gt;
+        &lt;/div&gt;
+        &lt;div className=&quot;pb:space-y-1&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold&quot;&gt;
+            With Value
+          &lt;/Text&gt;
+          &lt;Input defaultValue=&quot;Initial value&quot; /&gt;
+        &lt;/div&gt;
+        &lt;div className=&quot;pb:space-y-1&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold&quot;&gt;
+            Password Type
+          &lt;/Text&gt;
+          &lt;Input type=&quot;password&quot; placeholder=&quot;Password...&quot; /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        States
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:space-y-4&quot;&gt;
+        &lt;div className=&quot;pb:space-y-1&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold&quot;&gt;
+            Disabled
+          &lt;/Text&gt;
+          &lt;Input disabled defaultValue=&quot;Can&#39;t edit me&quot; /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Label">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> Label</h2>
+      <div class="badges">
+        <label for="c-14-ui-label-props" class="badge ok as-toggle">3 prop types</label>
+        <label for="c-14-ui-label-info" class="badge info as-toggle">1 info</label>
+        <label for="c-14-ui-label-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/Label.stories.tsx">ui-label · ./src/ui/Label.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-14-ui-label-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-14-ui-label-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-14-ui-label-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">3 prop types</span>
+            </div>
+            <pre><code>Component: src/ui/Label.tsx::Label</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>children: React.ReactNode
+
+className?: string
+
+tooltip?: string</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Input, Label, Text } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;Label&gt;Label Text&lt;/Label&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-12 pb:p-4&quot;&gt;
+    &lt;div className=&quot;pb:space-y-2&quot;&gt;
+      &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold pb:underline pb:uppercase&quot;&gt;
+        With Tooltip
+      &lt;/Text&gt;
+      &lt;Label tooltip=&quot;Extra information here.&quot;&gt;Hover the help icon&lt;/Label&gt;
+    &lt;/div&gt;
+    &lt;div className=&quot;pb:space-y-2&quot;&gt;
+      &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold pb:underline pb:uppercase&quot;&gt;
+        With Associated Input
+      &lt;/Text&gt;
+      &lt;div className=&quot;pb:space-y-1&quot;&gt;
+        &lt;Label htmlFor=&quot;v-input&quot; tooltip=&quot;This is required&quot;&gt;
+          Email Address
+        &lt;/Label&gt;
+        &lt;Input id=&quot;v-input&quot; placeholder=&quot;user@example.com&quot; /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="NumberField">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> NumberField</h2>
+      <div class="badges">
+        <label for="c-15-ui-numberfield-props" class="badge ok as-toggle">12 prop types</label>
+        <label for="c-15-ui-numberfield-info" class="badge info as-toggle">1 info</label>
+        <label for="c-15-ui-numberfield-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/NumberField.stories.tsx">ui-numberfield · ./src/ui/NumberField.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-15-ui-numberfield-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-15-ui-numberfield-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-15-ui-numberfield-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">12 prop types</span>
+            </div>
+            <pre><code>Component: src/ui/NumberField.tsx::NumberField</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>className?: string
+
+defaultValue?: number
+
+disabled?: boolean
+
+id?: string
+
+max?: number
+
+min?: number
+
+onChange?: (value: number | null, event: Event) =&gt; void
+
+placeholder?: string
+
+readOnly?: boolean
+
+showButtons?: boolean = false
+
+step?: number
+
+value?: number | null</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Heading, NumberField, Text } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;NumberField placeholder=&quot;Enter a number...&quot; min={0} max={100} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-12 pb:p-4&quot;&gt;
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        Configuration
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:grid pb:gap-8&quot;&gt;
+        &lt;div className=&quot;pb:space-y-2&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold&quot;&gt;
+            With Buttons &amp; Large Step
+          &lt;/Text&gt;
+          &lt;NumberField showButtons defaultValue={50} step={10} /&gt;
+        &lt;/div&gt;
+        &lt;div className=&quot;pb:space-y-2&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold&quot;&gt;
+            Small Step (0.1) &amp; Limits (0-1)
+          &lt;/Text&gt;
+          &lt;NumberField
+            showButtons
+            defaultValue={0.5}
+            step={0.1}
+            min={0}
+            max={1}
+          /&gt;
+        &lt;/div&gt;
+        &lt;div className=&quot;pb:space-y-2&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold&quot;&gt;
+            Disabled
+          &lt;/Text&gt;
+          &lt;NumberField disabled defaultValue={123} /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        Interactive State
+      &lt;/Heading&gt;
+      &lt;InteractiveExample showButtons={true} /&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Select">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> Select</h2>
+      <div class="badges">
+        <label for="c-16-ui-select-props" class="badge ok as-toggle">9 prop types</label>
+        <label for="c-16-ui-select-info" class="badge info as-toggle">1 info</label>
+        <label for="c-16-ui-select-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/Select.stories.tsx">ui-select · ./src/ui/Select.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-16-ui-select-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-16-ui-select-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-16-ui-select-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">9 prop types</span>
+            </div>
+            <pre><code>Component: src/ui/Select.tsx::Select</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>className?: string
+
+defaultValue?: string | number
+
+disabled?: boolean
+
+id?: string
+
+onChange?: (value: string | number | null, event: Event) =&gt; void
+
+onFocus?: React.FocusEventHandler&lt;HTMLButtonElement&gt;
+
+options: (string | SelectOption)[]
+
+placeholder?: string = &quot;Select...&quot;
+
+value?: string | number</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Heading, Select, Text } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;Select options={simpleOptions} placeholder=&quot;Select an option...&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-8 pb:p-4 pb:max-w-sm&quot;&gt;
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        Option Types
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:space-y-4&quot;&gt;
+        &lt;div className=&quot;pb:space-y-1&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold&quot;&gt;
+            String Options
+          &lt;/Text&gt;
+          &lt;Select options={simpleOptions} /&gt;
+        &lt;/div&gt;
+        &lt;div className=&quot;pb:space-y-1&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold&quot;&gt;
+            Object Options (Label/Value)
+          &lt;/Text&gt;
+          &lt;Select options={objectOptions} defaultValue=&quot;apple&quot; /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        States
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:space-y-4&quot;&gt;
+        &lt;div className=&quot;pb:space-y-1&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold&quot;&gt;
+            Disabled
+          &lt;/Text&gt;
+          &lt;Select
+            options={simpleOptions}
+            disabled
+            placeholder=&quot;Can&#39;t select&quot;
+          /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Separator">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> Separator</h2>
+      <div class="badges">
+        <label for="c-17-ui-separator-props" class="badge ok as-toggle">2 prop types</label>
+        <label for="c-17-ui-separator-info" class="badge info as-toggle">1 info</label>
+        <label for="c-17-ui-separator-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/Separator.stories.tsx">ui-separator · ./src/ui/Separator.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-17-ui-separator-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-17-ui-separator-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-17-ui-separator-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">2 prop types</span>
+            </div>
+            <pre><code>Component: src/ui/Separator.tsx::Separator</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>className?: string
+
+orientation?: &quot;horizontal&quot; | &quot;vertical&quot; = &quot;horizontal&quot;</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Heading, Separator, Text } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;div className=&quot;pb:w-64&quot;&gt;
+    &lt;Text&gt;Above the separator&lt;/Text&gt;
+    &lt;Separator orientation=&quot;horizontal&quot; className=&quot;pb:my-4&quot; /&gt;
+    &lt;Text&gt;Below the separator&lt;/Text&gt;
+&lt;/div&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-12 pb:p-4&quot;&gt;
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        Horizontal (Default)
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:w-64&quot;&gt;
+        &lt;Text variant=&quot;small&quot;&gt;Item A&lt;/Text&gt;
+        &lt;Separator className=&quot;pb:my-2&quot; /&gt;
+        &lt;Text variant=&quot;small&quot;&gt;Item B&lt;/Text&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        Vertical
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:flex pb:h-8 pb:items-center pb:gap-4 pb:text-sm&quot;&gt;
+        &lt;Text variant=&quot;small&quot;&gt;Option 1&lt;/Text&gt;
+        &lt;Separator orientation=&quot;vertical&quot; /&gt;
+        &lt;Text variant=&quot;small&quot;&gt;Option 2&lt;/Text&gt;
+        &lt;Separator orientation=&quot;vertical&quot; /&gt;
+        &lt;Text variant=&quot;small&quot;&gt;Option 3&lt;/Text&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  no-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="SettingsPanel">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> SettingsPanel</h2>
+      <div class="badges">
+        <label for="c-18-ui-settingspanel-props" class="badge ok as-toggle">7 prop types</label>
+        
+        <label for="c-18-ui-settingspanel-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/SettingsPanel.stories.tsx">ui-settingspanel · ./src/ui/SettingsPanel.stories.tsx</div>
+    
+    <div class="hint">A standardized panel for settings sections. Provides a consistent look with white background, shadow, and rounded corners.</div>
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  
+  <input id="c-18-ui-settingspanel-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-18-ui-settingspanel-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">7 prop types</span>
+            </div>
+            <pre><code>Component: src/ui/SettingsPanel.tsx::SettingsPanel</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>/**
+ * The content of the panel
+ */
+children: ReactNode
+
+/**
+ * Custom class for the panel wrapper
+ */
+className?: string
+
+/**
+ * Whether the panel is collapsible
+ */
+collapsible?: boolean
+
+/**
+ * Custom class for the content area
+ */
+contentClassName?: string
+
+/**
+ * Default state of the collapsible panel
+ */
+defaultOpen?: boolean = true
+
+/**
+ * The heading level for the title
+ */
+headingLevel?: 1 | 2 | 3 | 4 | 5 | 6 = 3
+
+/**
+ * The title of the section
+ */
+title?: ReactNode</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Button, Checkbox, Heading, Label, SettingsPanel, Text } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;SettingsPanel title=&quot;Account Settings&quot;&gt;(&lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Text&gt;This is the content of the settings panel.&lt;/Text&gt;
+      &lt;div className=&quot;pb:flex pb:gap-2&quot;&gt;
+        &lt;Button variant=&quot;primary&quot;&gt;Save Changes&lt;/Button&gt;
+        &lt;Button variant=&quot;secondary&quot;&gt;Cancel&lt;/Button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;)&lt;/SettingsPanel&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-12 pb:p-4 pb:max-w-2xl pb:bg-gray-50&quot;&gt;
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        Default
+      &lt;/Heading&gt;
+      &lt;SettingsPanel title=&quot;Notification Settings&quot;&gt;
+        &lt;div className=&quot;pb:space-y-4&quot;&gt;
+          &lt;Text&gt;Manage how you receive notifications.&lt;/Text&gt;
+          &lt;div className=&quot;pb:flex pb:items-center pb:gap-2 pb:p-2 pb:rounded pb:bg-white&quot;&gt;
+            &lt;Checkbox id=&quot;email-notif&quot; /&gt;
+            &lt;Label htmlFor=&quot;email-notif&quot; className=&quot;pb:text-sm&quot;&gt;
+              Email Notifications
+            &lt;/Label&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/SettingsPanel&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        No Title
+      &lt;/Heading&gt;
+      &lt;SettingsPanel&gt;
+        &lt;Text className=&quot;pb:italic&quot;&gt;
+          Panel without a title rendered as a simple container.
+        &lt;/Text&gt;
+      &lt;/SettingsPanel&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        Collapsible States
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:space-y-4&quot;&gt;
+        &lt;SettingsPanel title=&quot;Collapsible (Default Open)&quot; collapsible={true}&gt;
+          &lt;Text&gt;This panel can be toggled and starts open.&lt;/Text&gt;
+        &lt;/SettingsPanel&gt;
+        &lt;SettingsPanel
+          title=&quot;Collapsible (Default Closed)&quot;
+          collapsible={true}
+          defaultOpen={false}
+        &gt;
+          &lt;Text&gt;This panel starts closed to save space.&lt;/Text&gt;
+        &lt;/SettingsPanel&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Skeleton">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> Skeleton</h2>
+      <div class="badges">
+        <label for="c-19-ui-skeleton-props" class="badge ok as-toggle">1 prop type</label>
+        <label for="c-19-ui-skeleton-info" class="badge info as-toggle">1 info</label>
+        <label for="c-19-ui-skeleton-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/Skeleton.stories.tsx">ui-skeleton · ./src/ui/Skeleton.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-19-ui-skeleton-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-19-ui-skeleton-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-19-ui-skeleton-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">1 prop type</span>
+            </div>
+            <pre><code>Component: src/ui/Skeleton.tsx::Skeleton</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>className?: string</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Skeleton } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;Skeleton className=&quot;w-[250px] h-4&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:space-y-3&quot;&gt;
+    {/* Circle Skeleton */}
+    &lt;Skeleton className=&quot;pb:h-12 pb:w-12 pb:rounded-full&quot; /&gt;
+
+    {/* Rectangular Skeletons */}
+    &lt;div className=&quot;pb:space-y-2&quot;&gt;
+      &lt;Skeleton className=&quot;pb:h-4 pb:w-[250px]&quot; /&gt;
+      &lt;Skeleton className=&quot;pb:h-4 pb:w-[200px]&quot; /&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:flex pb:items-center pb:space-x-4 pb:mt-6&quot;&gt;
+      &lt;Skeleton className=&quot;pb:h-12 pb:w-12 pb:rounded-full&quot; /&gt;
+      &lt;div className=&quot;pb:space-y-2&quot;&gt;
+        &lt;Skeleton className=&quot;pb:h-4 pb:w-[250px]&quot; /&gt;
+        &lt;Skeleton className=&quot;pb:h-4 pb:w-[200px]&quot; /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Slider">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> Slider</h2>
+      <div class="badges">
+        <label for="c-20-ui-slider-props" class="badge ok as-toggle">10 prop types</label>
+        <label for="c-20-ui-slider-info" class="badge info as-toggle">1 info</label>
+        <label for="c-20-ui-slider-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/Slider.stories.tsx">ui-slider · ./src/ui/Slider.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-20-ui-slider-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-20-ui-slider-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-20-ui-slider-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">10 prop types</span>
+            </div>
+            <pre><code>Component: src/ui/Slider.tsx::Slider</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>className?: string
+
+defaultValue?: number
+
+disabled?: boolean
+
+icon?: React.ReactNode
+
+max?: number = 100
+
+min?: number = 0
+
+name?: string
+
+onChange?: (value: number | number[], event: Event) =&gt; void
+
+step?: number = 1
+
+value?: number</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Heading, Input, Slider, Text } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;InteractiveSlider min={0} max={100} value={50} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-12 pb:p-4&quot;&gt;
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        Width Responsiveness
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:space-y-6&quot;&gt;
+        &lt;div className=&quot;pb:space-y-1&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:italic pb:text-black&quot;&gt;
+            Full Width (Container Default)
+          &lt;/Text&gt;
+          &lt;Slider defaultValue={30} /&gt;
+        &lt;/div&gt;
+        &lt;div className=&quot;pb:space-y-1 pb:w-40&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:italic pb:text-black&quot;&gt;
+            Narrow (w-40)
+          &lt;/Text&gt;
+          &lt;Slider defaultValue={70} /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        Dynamic Range Test
+      &lt;/Heading&gt;
+      &lt;RangeChangeableSlider args={{}} /&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="SliderWithNumberField">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> SliderWithNumberField</h2>
+      <div class="badges">
+        <label for="c-21-ui-sliderwithnumberfield-props" class="badge ok as-toggle">9 prop types</label>
+        <label for="c-21-ui-sliderwithnumberfield-info" class="badge info as-toggle">1 info</label>
+        <label for="c-21-ui-sliderwithnumberfield-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/SliderWithNumberField.stories.tsx">ui-sliderwithnumberfield · ./src/ui/SliderWithNumberField.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-21-ui-sliderwithnumberfield-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-21-ui-sliderwithnumberfield-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-21-ui-sliderwithnumberfield-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">9 prop types</span>
+            </div>
+            <pre><code>Component: src/ui/SliderWithNumberField.tsx::SliderWithNumberField</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>className?: string
+
+defaultValue?: number
+
+disabled?: boolean
+
+inputWidth?: string = &quot;w-20&quot;
+
+max?: number = 100
+
+min?: number = 0
+
+onChange?: (value: number, event: Event) =&gt; void
+
+step?: number = 1
+
+value?: number</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Heading, SliderWithNumberField, Text } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = (args) =&gt; (
+  &lt;div className=&quot;pb:w-80 pb:p-4&quot;&gt;
+    &lt;InteractiveSliderWithNumberField
+      {...(args as React.ComponentProps&lt;typeof SliderWithNumberField&gt;)}
+    /&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-12 pb:p-4&quot;&gt;
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        Responsive Layouts
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:space-y-8 pb:max-w-lg&quot;&gt;
+        &lt;div className=&quot;pb:space-y-2&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold pb:underline&quot;&gt;
+            Flexible (Full width of container)
+          &lt;/Text&gt;
+          &lt;InteractiveSliderWithNumberField defaultValue={50} /&gt;
+        &lt;/div&gt;
+
+        &lt;div className=&quot;pb:space-y-2 pb:w-64 pb:border-l pb:border-r pb:border-dotted pb:px-2 pb:bg-gray-50 pb:py-4&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold pb:underline&quot;&gt;
+            Narrow Container (w-64)
+          &lt;/Text&gt;
+          &lt;InteractiveSliderWithNumberField defaultValue={50} /&gt;
+        &lt;/div&gt;
+
+        &lt;div className=&quot;pb:space-y-2 pb:w-48 pb:border-l pb:border-r pb:border-dotted pb:px-2 pb:bg-gray-50 pb:py-4&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold pb:underline&quot;&gt;
+            Very Narrow (w-48) - Wraps
+          &lt;/Text&gt;
+          &lt;InteractiveSliderWithNumberField defaultValue={50} /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        Configuration
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:space-y-4 pb:max-w-sm&quot;&gt;
+        &lt;div className=&quot;pb:space-y-1&quot;&gt;
+          &lt;Text variant=&quot;small&quot;&gt;Custom Step (0.5)&lt;/Text&gt;
+          &lt;InteractiveSliderWithNumberField
+            step={0.5}
+            defaultValue={2.5}
+            min={0}
+            max={10}
+          /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Switch">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> Switch</h2>
+      <div class="badges">
+        <label for="c-22-ui-switch-props" class="badge ok as-toggle">7 prop types</label>
+        <label for="c-22-ui-switch-info" class="badge info as-toggle">1 info</label>
+        <label for="c-22-ui-switch-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/Switch.stories.tsx">ui-switch · ./src/ui/Switch.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-22-ui-switch-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-22-ui-switch-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-22-ui-switch-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">7 prop types</span>
+            </div>
+            <pre><code>Component: src/ui/Switch.tsx::Switch</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>checked?: boolean
+
+className?: string
+
+defaultChecked?: boolean
+
+disabled?: boolean
+
+id?: string
+
+name?: string
+
+onChange?: (checked: boolean, event: Event) =&gt; void</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Heading, Switch, Text } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;Switch aria-label=&quot;Default switch&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-12 pb:p-4&quot;&gt;
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        States
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:flex pb:flex-col pb:gap-4&quot;&gt;
+        &lt;div className=&quot;pb:flex pb:items-center pb:gap-2&quot;&gt;
+          &lt;Switch defaultChecked={false} aria-label=&quot;Unchecked switch&quot; /&gt;
+          &lt;Text variant=&quot;small&quot;&gt;Unchecked&lt;/Text&gt;
+        &lt;/div&gt;
+        &lt;div className=&quot;pb:flex pb:items-center pb:gap-2&quot;&gt;
+          &lt;Switch defaultChecked={true} aria-label=&quot;Checked switch&quot; /&gt;
+          &lt;Text variant=&quot;small&quot;&gt;Checked&lt;/Text&gt;
+        &lt;/div&gt;
+        &lt;div className=&quot;pb:flex pb:items-center pb:gap-2&quot;&gt;
+          &lt;Switch disabled aria-label=&quot;Disabled switch&quot; /&gt;
+          &lt;Text variant=&quot;small&quot;&gt;Disabled Unchecked&lt;/Text&gt;
+        &lt;/div&gt;
+        &lt;div className=&quot;pb:flex pb:items-center pb:gap-2&quot;&gt;
+          &lt;Switch
+            disabled
+            defaultChecked={true}
+            aria-label=&quot;Disabled checked switch&quot;
+          /&gt;
+          &lt;Text variant=&quot;small&quot;&gt;Disabled Checked&lt;/Text&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        Interactive
+      &lt;/Heading&gt;
+      &lt;InteractiveSwitch /&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="TabRadio">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> TabRadio</h2>
+      <div class="badges">
+        <label for="c-23-ui-tabradio-props" class="badge ok as-toggle">6 prop types</label>
+        <label for="c-23-ui-tabradio-info" class="badge info as-toggle">1 info</label>
+        <label for="c-23-ui-tabradio-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/TabRadio.stories.tsx">ui-tabradio · ./src/ui/TabRadio.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-23-ui-tabradio-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-23-ui-tabradio-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-23-ui-tabradio-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">6 prop types</span>
+            </div>
+            <pre><code>Component: src/ui/TabRadio.tsx::TabRadio</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>aria-label?: string
+
+className?: string
+
+onChange: (value: T | undefined) =&gt; void
+
+options: unknown
+
+value: T | undefined | null
+
+variant?: &quot;default&quot; | &quot;primary&quot; | &quot;danger&quot; = &quot;default&quot;</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Heading, Icon, TabRadio, Text } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;TabRadioWithState
+    options={textOptions as readonly TabRadioOption&lt;string&gt;[]}
+    value=&quot;daily&quot;
+    onChange={() =&gt; {}} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-12 pb:p-4 pb:min-w-[400px]&quot;&gt;
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        Variants
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:space-y-6&quot;&gt;
+        &lt;div className=&quot;pb:space-y-2&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:italic&quot;&gt;
+            Default
+          &lt;/Text&gt;
+          &lt;TabRadioWithState
+            options={textOptions as readonly TabRadioOption&lt;string&gt;[]}
+            value=&quot;daily&quot;
+            variant=&quot;default&quot;
+            onChange={() =&gt; {}}
+          /&gt;
+        &lt;/div&gt;
+        &lt;div className=&quot;pb:space-y-2&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:italic&quot;&gt;
+            Primary
+          &lt;/Text&gt;
+          &lt;TabRadioWithState
+            options={textOptions as readonly TabRadioOption&lt;string&gt;[]}
+            value=&quot;daily&quot;
+            variant=&quot;primary&quot;
+            onChange={() =&gt; {}}
+          /&gt;
+        &lt;/div&gt;
+        &lt;div className=&quot;pb:space-y-2&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:italic&quot;&gt;
+            Danger
+          &lt;/Text&gt;
+          &lt;TabRadioWithState
+            options={textOptions as readonly TabRadioOption&lt;string&gt;[]}
+            value=&quot;daily&quot;
+            variant=&quot;danger&quot;
+            onChange={() =&gt; {}}
+          /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        With Icons
+      &lt;/Heading&gt;
+      &lt;TabRadioWithState
+        value=&quot;Message&quot;
+        onChange={() =&gt; {}}
+        options={
+          [
+            {
+              value: &quot;Message&quot;,
+              label: (
+                &lt;div className=&quot;pb:flex pb:items-center pb:gap-1&quot;&gt;
+                  &lt;Icon size=&quot;sm&quot; className=&quot;pb:w-4 pb:h-4&quot;&gt;
+                    &lt;path
+                      strokeLinecap=&quot;round&quot;
+                      strokeLinejoin=&quot;round&quot;
+                      d=&quot;M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z&quot;
+                    /&gt;
+                  &lt;/Icon&gt;
+                  Message
+                &lt;/div&gt;
+              ),
+            },
+            {
+              value: &quot;Log&quot;,
+              label: (
+                &lt;div className=&quot;pb:flex pb:items-center pb:gap-1&quot;&gt;
+                  &lt;Icon size=&quot;sm&quot; className=&quot;pb:w-4 pb:h-4&quot;&gt;
+                    &lt;path
+                      strokeLinecap=&quot;round&quot;
+                      strokeLinejoin=&quot;round&quot;
+                      d=&quot;m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10&quot;
+                    /&gt;
+                  &lt;/Icon&gt;
+                  Log
+                &lt;/div&gt;
+              ),
+            },
+          ] as const
+        }
+      /&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="TabSelection">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> TabSelection</h2>
+      <div class="badges">
+        <label for="c-24-ui-tabselection-props" class="badge ok as-toggle">5 prop types</label>
+        <label for="c-24-ui-tabselection-info" class="badge info as-toggle">1 info</label>
+        <label for="c-24-ui-tabselection-stories" class="badge ok as-toggle">1 story</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/TabSelection.stories.tsx">ui-tabselection · ./src/ui/TabSelection.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-24-ui-tabselection-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-24-ui-tabselection-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-24-ui-tabselection-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">5 prop types</span>
+            </div>
+            <pre><code>Component: src/ui/TabSelection.tsx::TabSelection</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>activeTabId: string | null
+
+className?: string = &quot;&quot;
+
+onAddClick?: () =&gt; void
+
+onTabClick: (id: string) =&gt; void
+
+tabs: TabItem[]</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { TabSelection } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = function Render() {
+  const [activeTab, setActiveTab] = useState&lt;string&gt;(&quot;1&quot;);
+
+  const tabsWithActions = mockTabs.map((tab) =&gt; ({
+    ...tab,
+    onEdit: () =&gt; alert(`Editing ${tab.label}`),
+    onClose: () =&gt; alert(`Closing ${tab.label}`),
+  }));
+
+  return (
+    &lt;div className=&quot;pb:w-[600px] pb:border pb:p-4 pb:bg-gray-50&quot;&gt;
+      &lt;TabSelection
+        tabs={tabsWithActions}
+        activeTabId={activeTab}
+        onTabClick={setActiveTab}
+        onAddClick={() =&gt; alert(&quot;Add new tab clicked!&quot;)}
+      /&gt;
+    &lt;/div&gt;
+  );
+};</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="TextArea">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> TextArea</h2>
+      <div class="badges">
+        
+        <label for="c-25-ui-textarea-info" class="badge info as-toggle">1 info</label>
+        <label for="c-25-ui-textarea-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/TextArea.stories.tsx">ui-textarea · ./src/ui/TextArea.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-25-ui-textarea-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-25-ui-textarea-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Heading, Text, TextArea } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;TextArea placeholder=&quot;Type your message here...&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-12 pb:p-4 pb:max-w-lg&quot;&gt;
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        Styles &amp; Sizes
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:space-y-6&quot;&gt;
+        &lt;div className=&quot;pb:space-y-1&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold&quot;&gt;
+            With Predefined Value
+          &lt;/Text&gt;
+          &lt;TextArea defaultValue=&quot;This is some predefined text in the textarea.&quot; /&gt;
+        &lt;/div&gt;
+        &lt;div className=&quot;pb:space-y-1&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold&quot;&gt;
+            Large (10 rows)
+          &lt;/Text&gt;
+          &lt;TextArea
+            rows={10}
+            placeholder=&quot;A larger textarea for more content...&quot;
+          /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        States
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:space-y-1&quot;&gt;
+        &lt;Text variant=&quot;small&quot; className=&quot;pb:font-bold&quot;&gt;
+          Disabled
+        &lt;/Text&gt;
+        &lt;TextArea
+          disabled
+          placeholder=&quot;Cannot type here&quot;
+          defaultValue=&quot;Read only content&quot;
+        /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Tooltip">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> Tooltip</h2>
+      <div class="badges">
+        <label for="c-26-ui-tooltip-props" class="badge ok as-toggle">4 prop types</label>
+        <label for="c-26-ui-tooltip-info" class="badge info as-toggle">1 info</label>
+        <label for="c-26-ui-tooltip-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/Tooltip.stories.tsx">ui-tooltip · ./src/ui/Tooltip.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-26-ui-tooltip-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-26-ui-tooltip-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-26-ui-tooltip-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">4 prop types</span>
+            </div>
+            <pre><code>Component: src/ui/Tooltip.tsx::Tooltip</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>children: React.ReactNode
+
+className?: string
+
+content: React.ReactNode
+
+delay?: &quot;normal&quot; | &quot;slow&quot; = &quot;normal&quot;</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Button, Heading, HelperTooltip, Tooltip } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;Tooltip content=&quot;This is a tooltip&quot;&gt;&lt;span&gt;Hover me&lt;/span&gt;&lt;/Tooltip&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-16&quot;&gt;
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        Placements &amp; Triggers
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:flex pb:flex-wrap pb:gap-8 pb:items-center pb:justify-center&quot;&gt;
+        &lt;Tooltip content=&quot;Tooltip on button&quot;&gt;
+          &lt;Button&gt;On Button&lt;/Button&gt;
+        &lt;/Tooltip&gt;
+        &lt;Tooltip content=&quot;Simple span trigger&quot;&gt;
+          &lt;span className=&quot;pb:cursor-help pb:underline pb:decoration-dotted&quot;&gt;
+            On Text
+          &lt;/span&gt;
+        &lt;/Tooltip&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        Configurations
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:flex pb:flex-wrap pb:gap-8 pb:items-center pb:justify-center&quot;&gt;
+        &lt;Tooltip content=&quot;I appear slowly&quot; delay=&quot;slow&quot;&gt;
+          &lt;Button variant=&quot;secondary&quot;&gt;Slow Delay (1s)&lt;/Button&gt;
+        &lt;/Tooltip&gt;
+        &lt;Tooltip content=&quot;This is a very long tooltip message that should wrap nicely within the tooltip bounds instead of overflowing outside the container.&quot;&gt;
+          &lt;Button variant=&quot;ghost&quot;&gt;Long Content wrapping&lt;/Button&gt;
+        &lt;/Tooltip&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading level={4} className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase&quot;&gt;
+        Helper Tooltip
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:flex pb:flex-wrap pb:gap-8 pb:items-center pb:justify-center&quot;&gt;
+        &lt;HelperTooltip content=&quot;I&#39;m a helper&quot; /&gt;
+        &lt;HelperTooltip content=&quot;This is a much longer message that is trying to illustrate what happens when we have a long message for the helper tooltip.&quot; /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  has-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Typography">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-err"></span> Typography</h2>
+      <div class="badges">
+        <label for="c-27-ui-typography-err" class="badge err as-toggle">prop type error</label>
+        <label for="c-27-ui-typography-info" class="badge info as-toggle">1 info</label>
+        <label for="c-27-ui-typography-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/Typography.stories.tsx">ui-typography · ./src/ui/Typography.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  <input id="c-27-ui-typography-err" class="tg tg-err" type="checkbox" hidden />
+  <input id="c-27-ui-typography-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-27-ui-typography-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+
+  <div class="panels">
+    
+        <div class="panel panel-err">
+          
+    <div class="note err">
+      <div class="note-title">Prop type error</div>
+      <div class="note-body"><pre><code>We could not detect the component from your story file. Specify meta.component.
+  2 | import { Heading, Text } from &quot;./Typography&quot;;
+  3 |
+&gt; 4 | const meta: Meta = {
+    | ^
+  5 |   title: &quot;UI/Typography&quot;,
+  6 |   tags: [&quot;autodocs&quot;],
+  7 | };
+
+./src/ui/Typography.stories.tsx:
+import type { Meta, StoryObj } from &quot;@storybook/react&quot;;
+import { Heading, Text } from &quot;./Typography&quot;;
+
+const meta: Meta = {
+  title: &quot;UI/Typography&quot;,
+  tags: [&quot;autodocs&quot;],
+};
+
+export default meta;
+
+export const Default: StoryObj = {
+  render: () =&gt; (
+    &lt;div className=&quot;pb:space-y-4 pb:max-w-lg&quot;&gt;
+      &lt;Heading level={2}&gt;Core Typography&lt;/Heading&gt;
+      &lt;Text&gt;
+        The quick brown fox jumps over the lazy dog. This is our standard body
+        text used across the application.
+      &lt;/Text&gt;
+    &lt;/div&gt;
+  ),
+};
+
+export const Variations: StoryObj = {
+  render: () =&gt; (
+    &lt;div className=&quot;pb:flex pb:flex-col pb:gap-12 pb:p-4&quot;&gt;
+      &lt;div className=&quot;pb:space-y-4&quot;&gt;
+        &lt;Heading
+          level={4}
+          className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1&quot;
+        &gt;
+          Headings
+        &lt;/Heading&gt;
+        &lt;div className=&quot;pb:space-y-4&quot;&gt;
+          &lt;Heading level={1}&gt;Heading 1&lt;/Heading&gt;
+          &lt;Heading level={2}&gt;Heading 2&lt;/Heading&gt;
+          &lt;Heading level={3}&gt;Heading 3&lt;/Heading&gt;
+          &lt;Heading level={4}&gt;Heading 4&lt;/Heading&gt;
+          &lt;Heading level={5}&gt;Heading 5&lt;/Heading&gt;
+          &lt;Heading level={6}&gt;Heading 6&lt;/Heading&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div className=&quot;pb:space-y-4&quot;&gt;
+        &lt;Heading
+          level={4}
+          className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1&quot;
+        &gt;
+          Text Variants
+        &lt;/Heading&gt;
+        &lt;div className=&quot;pb:space-y-4&quot;&gt;
+          &lt;div className=&quot;pb:space-y-1&quot;&gt;
+            &lt;Text variant=&quot;small&quot; className=&quot;pb:italic pb:font-bold&quot;&gt;
+              Default
+            &lt;/Text&gt;
+            &lt;Text variant=&quot;default&quot;&gt;
+              The quick brown fox jumps over the lazy dog.
+            &lt;/Text&gt;
+          &lt;/div&gt;
+          &lt;div className=&quot;pb:space-y-1&quot;&gt;
+            &lt;Text variant=&quot;small&quot; className=&quot;pb:italic pb:font-bold&quot;&gt;
+              Small
+            &lt;/Text&gt;
+            &lt;Text variant=&quot;small&quot;&gt;
+              The quick brown fox jumps over the lazy dog.
+            &lt;/Text&gt;
+          &lt;/div&gt;
+          &lt;div className=&quot;pb:space-y-1&quot;&gt;
+            &lt;Text variant=&quot;small&quot; className=&quot;pb:italic pb:font-bold&quot;&gt;
+              Muted
+            &lt;/Text&gt;
+            &lt;Text variant=&quot;muted&quot;&gt;
+              The quick brown fox jumps over the lazy dog.
+            &lt;/Text&gt;
+          &lt;/div&gt;
+          &lt;div className=&quot;pb:space-y-1&quot;&gt;
+            &lt;Text variant=&quot;small&quot; className=&quot;pb:italic pb:font-bold&quot;&gt;
+              Error
+            &lt;/Text&gt;
+            &lt;Text variant=&quot;error&quot;&gt;
+              The quick brown fox jumps over the lazy dog.
+            &lt;/Text&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  ),
+};
+</code></pre></div>
+    </div>
+        </div>
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Heading, Text } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; (
+  &lt;div className=&quot;pb:space-y-4 pb:max-w-lg&quot;&gt;
+    &lt;Heading level={2}&gt;Core Typography&lt;/Heading&gt;
+    &lt;Text&gt;
+      The quick brown fox jumps over the lazy dog. This is our standard body
+      text used across the application.
+    &lt;/Text&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-12 pb:p-4&quot;&gt;
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading
+        level={4}
+        className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1&quot;
+      &gt;
+        Headings
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:space-y-4&quot;&gt;
+        &lt;Heading level={1}&gt;Heading 1&lt;/Heading&gt;
+        &lt;Heading level={2}&gt;Heading 2&lt;/Heading&gt;
+        &lt;Heading level={3}&gt;Heading 3&lt;/Heading&gt;
+        &lt;Heading level={4}&gt;Heading 4&lt;/Heading&gt;
+        &lt;Heading level={5}&gt;Heading 5&lt;/Heading&gt;
+        &lt;Heading level={6}&gt;Heading 6&lt;/Heading&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading
+        level={4}
+        className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1&quot;
+      &gt;
+        Text Variants
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:space-y-4&quot;&gt;
+        &lt;div className=&quot;pb:space-y-1&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:italic pb:font-bold&quot;&gt;
+            Default
+          &lt;/Text&gt;
+          &lt;Text variant=&quot;default&quot;&gt;
+            The quick brown fox jumps over the lazy dog.
+          &lt;/Text&gt;
+        &lt;/div&gt;
+        &lt;div className=&quot;pb:space-y-1&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:italic pb:font-bold&quot;&gt;
+            Small
+          &lt;/Text&gt;
+          &lt;Text variant=&quot;small&quot;&gt;
+            The quick brown fox jumps over the lazy dog.
+          &lt;/Text&gt;
+        &lt;/div&gt;
+        &lt;div className=&quot;pb:space-y-1&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:italic pb:font-bold&quot;&gt;
+            Muted
+          &lt;/Text&gt;
+          &lt;Text variant=&quot;muted&quot;&gt;
+            The quick brown fox jumps over the lazy dog.
+          &lt;/Text&gt;
+        &lt;/div&gt;
+        &lt;div className=&quot;pb:space-y-1&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:italic pb:font-bold&quot;&gt;
+            Error
+          &lt;/Text&gt;
+          &lt;Text variant=&quot;error&quot;&gt;
+            The quick brown fox jumps over the lazy dog.
+          &lt;/Text&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+    </div>
+    <div class="error-groups" role="region" aria-label="Prop type error groups">
+        <section class="group">
+          <input id="no-component-found-toggle" class="group-tg" type="checkbox" hidden />
+          <label for="no-component-found-toggle" class="group-header">
+            <span class="caret">▸</span>
+            <span class="group-title">No component found</span>
+            <span class="group-count">2</span>
+          </label>
+          <div class="group-cards">
+<article
+  class="card 
+  has-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Colors">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-err"></span> Colors</h2>
+      <div class="badges">
+        <label for="c-error-0-ui-colors-err" class="badge err as-toggle">prop type error</label>
+        <label for="c-error-0-ui-colors-info" class="badge info as-toggle">2 infos</label>
+        <label for="c-error-0-ui-colors-stories" class="badge ok as-toggle">1 story</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/Colors.stories.tsx">ui-colors · ./src/ui/Colors.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  <input id="c-error-0-ui-colors-err" class="tg tg-err" type="checkbox" hidden />
+  <input id="c-error-0-ui-colors-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-error-0-ui-colors-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+
+  <div class="panels">
+    
+        <div class="panel panel-err">
+          
+    <div class="note err">
+      <div class="note-title">Prop type error</div>
+      <div class="note-body"><pre><code>We could not detect the component from your story file. Specify meta.component.
+  1 | import type { Meta, StoryObj } from &quot;@storybook/react&quot;;
+  2 |
+&gt; 3 | const meta: Meta = {
+    | ^
+  4 |   title: &quot;UI/Colors&quot;,
+  5 |   tags: [&quot;autodocs&quot;],
+  6 | };
+
+./src/ui/Colors.stories.tsx:
+import type { Meta, StoryObj } from &quot;@storybook/react&quot;;
+
+const meta: Meta = {
+  title: &quot;UI/Colors&quot;,
+  tags: [&quot;autodocs&quot;],
+};
+
+export default meta;
+
+export const Variations: StoryObj = {
+  render: () =&gt; (
+    &lt;div className=&quot;pb:flex pb:flex-col pb:gap-8 pb:p-4 pb:bg-white&quot;&gt;
+      &lt;div&gt;
+        &lt;h3 className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1 pb:mb-4&quot;&gt;
+          Theme Colors
+        &lt;/h3&gt;
+        &lt;div className=&quot;pb:grid pb:grid-cols-2 pb:md:grid-cols-3 pb:lg:grid-cols-5 pb:gap-4&quot;&gt;
+          &lt;ColorItem name=&quot;Primary&quot; variable=&quot;var(--pb-color-primary)&quot; /&gt;
+          &lt;ColorItem name=&quot;Secondary&quot; variable=&quot;var(--pb-color-secondary)&quot; /&gt;
+          &lt;ColorItem name=&quot;Accent&quot; variable=&quot;var(--pb-color-accent)&quot; /&gt;
+          &lt;ColorItem name=&quot;Danger&quot; variable=&quot;var(--pb-color-danger)&quot; /&gt;
+          &lt;ColorItem name=&quot;Light BG&quot; variable=&quot;var(--pb-color-light-bg)&quot; /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div&gt;
+        &lt;h3 className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1 pb:mb-4&quot;&gt;
+          Extended Accent Colors
+        &lt;/h3&gt;
+        &lt;div className=&quot;pb:grid pb:grid-cols-2 pb:md:grid-cols-3 pb:lg:grid-cols-4 pb:gap-4&quot;&gt;
+          &lt;ColorItem name=&quot;Accent HC&quot; variable=&quot;var(--pb-color-accent-hc)&quot; /&gt;
+          &lt;ColorItem name=&quot;Accent Two&quot; variable=&quot;var(--pb-color-accent-two)&quot; /&gt;
+          &lt;ColorItem
+            name=&quot;Accent Two HC&quot;
+            variable=&quot;var(--pb-color-accent-two-hc)&quot;
+          /&gt;
+          &lt;ColorItem name=&quot;Accent Three&quot; variable=&quot;var(--pb-color-accent-three)&quot; /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div&gt;
+        &lt;h3 className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1 pb:mb-4&quot;&gt;
+          UI Elements
+        &lt;/h3&gt;
+        &lt;div className=&quot;pb:grid pb:grid-cols-2 pb:md:grid-cols-3 pb:lg:grid-cols-4 pb:gap-4&quot;&gt;
+          &lt;ColorItem name=&quot;Sidebar BG&quot; variable=&quot;var(--pb-sidebar-bg)&quot; /&gt;
+          &lt;ColorItem name=&quot;Dark Primary&quot; variable=&quot;var(--pb-color-dark-primary)&quot; /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  ),
+};
+
+function ColorItem({ name, variable }: { name: string; variable: string }) {
+  return (
+    &lt;div className=&quot;pb:flex pb:flex-col pb:gap-2&quot;&gt;
+      &lt;div
+        className=&quot;pb:h-20 pb:w-full pb:rounded-md pb:shadow-inner pb:border pb:border-gray-100&quot;
+        style={{ backgroundColor: variable }}
+      /&gt;
+      &lt;div className=&quot;pb:flex pb:flex-col&quot;&gt;
+        &lt;span className=&quot;pb:text-sm pb:font-bold pb:text-gray-900&quot;&gt;{name}&lt;/span&gt;
+        &lt;code className=&quot;pb:text-xs pb:text-gray-500&quot;&gt;{variable}&lt;/code&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre></div>
+    </div>
+        </div>
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">Specify an @import jsdoc tag on your component or your stories meta such as @import import { Colors } from &#39;my-design-system&#39;;</div>
+    </div>
+        </div>
+    
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-8 pb:p-4 pb:bg-white&quot;&gt;
+    &lt;div&gt;
+      &lt;h3 className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1 pb:mb-4&quot;&gt;
+        Theme Colors
+      &lt;/h3&gt;
+      &lt;div className=&quot;pb:grid pb:grid-cols-2 pb:md:grid-cols-3 pb:lg:grid-cols-5 pb:gap-4&quot;&gt;
+        &lt;ColorItem name=&quot;Primary&quot; variable=&quot;var(--pb-color-primary)&quot; /&gt;
+        &lt;ColorItem name=&quot;Secondary&quot; variable=&quot;var(--pb-color-secondary)&quot; /&gt;
+        &lt;ColorItem name=&quot;Accent&quot; variable=&quot;var(--pb-color-accent)&quot; /&gt;
+        &lt;ColorItem name=&quot;Danger&quot; variable=&quot;var(--pb-color-danger)&quot; /&gt;
+        &lt;ColorItem name=&quot;Light BG&quot; variable=&quot;var(--pb-color-light-bg)&quot; /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div&gt;
+      &lt;h3 className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1 pb:mb-4&quot;&gt;
+        Extended Accent Colors
+      &lt;/h3&gt;
+      &lt;div className=&quot;pb:grid pb:grid-cols-2 pb:md:grid-cols-3 pb:lg:grid-cols-4 pb:gap-4&quot;&gt;
+        &lt;ColorItem name=&quot;Accent HC&quot; variable=&quot;var(--pb-color-accent-hc)&quot; /&gt;
+        &lt;ColorItem name=&quot;Accent Two&quot; variable=&quot;var(--pb-color-accent-two)&quot; /&gt;
+        &lt;ColorItem
+          name=&quot;Accent Two HC&quot;
+          variable=&quot;var(--pb-color-accent-two-hc)&quot;
+        /&gt;
+        &lt;ColorItem name=&quot;Accent Three&quot; variable=&quot;var(--pb-color-accent-three)&quot; /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div&gt;
+      &lt;h3 className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1 pb:mb-4&quot;&gt;
+        UI Elements
+      &lt;/h3&gt;
+      &lt;div className=&quot;pb:grid pb:grid-cols-2 pb:md:grid-cols-3 pb:lg:grid-cols-4 pb:gap-4&quot;&gt;
+        &lt;ColorItem name=&quot;Sidebar BG&quot; variable=&quot;var(--pb-sidebar-bg)&quot; /&gt;
+        &lt;ColorItem name=&quot;Dark Primary&quot; variable=&quot;var(--pb-color-dark-primary)&quot; /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  has-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Typography">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-err"></span> Typography</h2>
+      <div class="badges">
+        <label for="c-error-1-ui-typography-err" class="badge err as-toggle">prop type error</label>
+        <label for="c-error-1-ui-typography-info" class="badge info as-toggle">1 info</label>
+        <label for="c-error-1-ui-typography-stories" class="badge ok as-toggle">2 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/ui/Typography.stories.tsx">ui-typography · ./src/ui/Typography.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  <input id="c-error-1-ui-typography-err" class="tg tg-err" type="checkbox" hidden />
+  <input id="c-error-1-ui-typography-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-error-1-ui-typography-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+
+  <div class="panels">
+    
+        <div class="panel panel-err">
+          
+    <div class="note err">
+      <div class="note-title">Prop type error</div>
+      <div class="note-body"><pre><code>We could not detect the component from your story file. Specify meta.component.
+  2 | import { Heading, Text } from &quot;./Typography&quot;;
+  3 |
+&gt; 4 | const meta: Meta = {
+    | ^
+  5 |   title: &quot;UI/Typography&quot;,
+  6 |   tags: [&quot;autodocs&quot;],
+  7 | };
+
+./src/ui/Typography.stories.tsx:
+import type { Meta, StoryObj } from &quot;@storybook/react&quot;;
+import { Heading, Text } from &quot;./Typography&quot;;
+
+const meta: Meta = {
+  title: &quot;UI/Typography&quot;,
+  tags: [&quot;autodocs&quot;],
+};
+
+export default meta;
+
+export const Default: StoryObj = {
+  render: () =&gt; (
+    &lt;div className=&quot;pb:space-y-4 pb:max-w-lg&quot;&gt;
+      &lt;Heading level={2}&gt;Core Typography&lt;/Heading&gt;
+      &lt;Text&gt;
+        The quick brown fox jumps over the lazy dog. This is our standard body
+        text used across the application.
+      &lt;/Text&gt;
+    &lt;/div&gt;
+  ),
+};
+
+export const Variations: StoryObj = {
+  render: () =&gt; (
+    &lt;div className=&quot;pb:flex pb:flex-col pb:gap-12 pb:p-4&quot;&gt;
+      &lt;div className=&quot;pb:space-y-4&quot;&gt;
+        &lt;Heading
+          level={4}
+          className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1&quot;
+        &gt;
+          Headings
+        &lt;/Heading&gt;
+        &lt;div className=&quot;pb:space-y-4&quot;&gt;
+          &lt;Heading level={1}&gt;Heading 1&lt;/Heading&gt;
+          &lt;Heading level={2}&gt;Heading 2&lt;/Heading&gt;
+          &lt;Heading level={3}&gt;Heading 3&lt;/Heading&gt;
+          &lt;Heading level={4}&gt;Heading 4&lt;/Heading&gt;
+          &lt;Heading level={5}&gt;Heading 5&lt;/Heading&gt;
+          &lt;Heading level={6}&gt;Heading 6&lt;/Heading&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div className=&quot;pb:space-y-4&quot;&gt;
+        &lt;Heading
+          level={4}
+          className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1&quot;
+        &gt;
+          Text Variants
+        &lt;/Heading&gt;
+        &lt;div className=&quot;pb:space-y-4&quot;&gt;
+          &lt;div className=&quot;pb:space-y-1&quot;&gt;
+            &lt;Text variant=&quot;small&quot; className=&quot;pb:italic pb:font-bold&quot;&gt;
+              Default
+            &lt;/Text&gt;
+            &lt;Text variant=&quot;default&quot;&gt;
+              The quick brown fox jumps over the lazy dog.
+            &lt;/Text&gt;
+          &lt;/div&gt;
+          &lt;div className=&quot;pb:space-y-1&quot;&gt;
+            &lt;Text variant=&quot;small&quot; className=&quot;pb:italic pb:font-bold&quot;&gt;
+              Small
+            &lt;/Text&gt;
+            &lt;Text variant=&quot;small&quot;&gt;
+              The quick brown fox jumps over the lazy dog.
+            &lt;/Text&gt;
+          &lt;/div&gt;
+          &lt;div className=&quot;pb:space-y-1&quot;&gt;
+            &lt;Text variant=&quot;small&quot; className=&quot;pb:italic pb:font-bold&quot;&gt;
+              Muted
+            &lt;/Text&gt;
+            &lt;Text variant=&quot;muted&quot;&gt;
+              The quick brown fox jumps over the lazy dog.
+            &lt;/Text&gt;
+          &lt;/div&gt;
+          &lt;div className=&quot;pb:space-y-1&quot;&gt;
+            &lt;Text variant=&quot;small&quot; className=&quot;pb:italic pb:font-bold&quot;&gt;
+              Error
+            &lt;/Text&gt;
+            &lt;Text variant=&quot;error&quot;&gt;
+              The quick brown fox jumps over the lazy dog.
+            &lt;/Text&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  ),
+};
+</code></pre></div>
+    </div>
+        </div>
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Heading, Text } from "@peerbots/core";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; (
+  &lt;div className=&quot;pb:space-y-4 pb:max-w-lg&quot;&gt;
+    &lt;Heading level={2}&gt;Core Typography&lt;/Heading&gt;
+    &lt;Text&gt;
+      The quick brown fox jumps over the lazy dog. This is our standard body
+      text used across the application.
+    &lt;/Text&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Variations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Variations = () =&gt; (
+  &lt;div className=&quot;pb:flex pb:flex-col pb:gap-12 pb:p-4&quot;&gt;
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading
+        level={4}
+        className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1&quot;
+      &gt;
+        Headings
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:space-y-4&quot;&gt;
+        &lt;Heading level={1}&gt;Heading 1&lt;/Heading&gt;
+        &lt;Heading level={2}&gt;Heading 2&lt;/Heading&gt;
+        &lt;Heading level={3}&gt;Heading 3&lt;/Heading&gt;
+        &lt;Heading level={4}&gt;Heading 4&lt;/Heading&gt;
+        &lt;Heading level={5}&gt;Heading 5&lt;/Heading&gt;
+        &lt;Heading level={6}&gt;Heading 6&lt;/Heading&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className=&quot;pb:space-y-4&quot;&gt;
+      &lt;Heading
+        level={4}
+        className=&quot;pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1&quot;
+      &gt;
+        Text Variants
+      &lt;/Heading&gt;
+      &lt;div className=&quot;pb:space-y-4&quot;&gt;
+        &lt;div className=&quot;pb:space-y-1&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:italic pb:font-bold&quot;&gt;
+            Default
+          &lt;/Text&gt;
+          &lt;Text variant=&quot;default&quot;&gt;
+            The quick brown fox jumps over the lazy dog.
+          &lt;/Text&gt;
+        &lt;/div&gt;
+        &lt;div className=&quot;pb:space-y-1&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:italic pb:font-bold&quot;&gt;
+            Small
+          &lt;/Text&gt;
+          &lt;Text variant=&quot;small&quot;&gt;
+            The quick brown fox jumps over the lazy dog.
+          &lt;/Text&gt;
+        &lt;/div&gt;
+        &lt;div className=&quot;pb:space-y-1&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:italic pb:font-bold&quot;&gt;
+            Muted
+          &lt;/Text&gt;
+          &lt;Text variant=&quot;muted&quot;&gt;
+            The quick brown fox jumps over the lazy dog.
+          &lt;/Text&gt;
+        &lt;/div&gt;
+        &lt;div className=&quot;pb:space-y-1&quot;&gt;
+          &lt;Text variant=&quot;small&quot; className=&quot;pb:italic pb:font-bold&quot;&gt;
+            Error
+          &lt;/Text&gt;
+          &lt;Text variant=&quot;error&quot;&gt;
+            The quick brown fox jumps over the lazy dog.
+          &lt;/Text&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article></div>
+        </section>
+      </div>
+    <h2 class="section-title">Unattached Docs</h2>
+    <div class="grid" role="list">
+      
+<article
+  class="card is-doc no-doc-error"
+  role="listitem"
+  aria-label="Docs">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> Design System</h2>
+      <div class="badges">
+        
+        <label for="doc-0-design-system-docs-content" class="badge ok as-toggle">view content</label>
+      </div>
+    </div>
+    <div class="meta" title="./src/docs/DesignSystem.mdx">design-system--docs · ./src/docs/DesignSystem.mdx</div>
+    
+  </div>
+
+  <!-- Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="doc-0-design-system-docs-content" class="tg tg-content" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-content">
+          <div class="mdx-content">
+            <pre><code>import { Meta, Canvas, Story } from &quot;@storybook/addon-docs/blocks&quot;;
+import * as TypographyStories from &quot;../ui/Typography.stories&quot;;
+import * as ColorStories from &quot;../ui/Colors.stories&quot;;
+
+&lt;Meta title=&quot;Design System&quot; /&gt;
+
+## Colors
+
+These colors are defined in `src/styles/theme.css`. and are used throughout the application via Tailwind classes.
+
+&lt;Canvas of={ColorStories.Variations} /&gt;
+
+## Typography
+
+**Font Family**: `Avenir`, `Nunito`, sans-serif.
+
+&lt;Canvas of={TypographyStories.Variations} /&gt;
+
+
+# Peerbots Design System
+
+The Peerbots design system ensures a consistent, friendly, and accessible experience across the platforms.
+
+## Design Philosophy
+
+- **Friendly &amp; Approachable**: Use rounded corners, soft shadows, and vibrant colors.
+- **Accessible**: High contrast for critical buttons and readable font sizes.
+- **Responsive**: Adapts gracefully to various screen sizes, from phones to tablets.
+
+### Utilities
+
+Use these common utility classes for consistency:
+
+- `btn-primary`: For the main action on a page/modal.
+- `btn-secondary`: For alternative actions.
+- `btn-danger`: For irreversible or dangerous actions.
+- `input-base`: For text inputs and textareas.
+- `range-primary`: For slider inputs.
+
+## Evolving the System
+
+This design system is a living document.
+
+- **New Needs**: When new features require UI elements not covered here, agents and developers should propose a new pattern.
+- **Documentation**: Any new repeatable pattern, component, or utility introduced (especially if driven by user needs) **must** be added to this document to remain the source of truth.
+- **Refinement**: Periodic audits should be conducted to ensure hardcoded styles are migrated to the design system.
+</code></pre>
+          </div>
+        </div>
+  </div>
+</article>
+    </div>
+    
+  </div>
+</main>
+</body>
+</html>  

@@ -1,0 +1,1 @@
+import{r as t}from"./iframe-D13rUlhB.js";function l(e){return e==null?void 0:`${e}-label`}function s(e,n){return e??n}const r=t.createContext(void 0),o={disableStyleElements:!1};function u(){return t.useContext(r)??o}export{l as g,s as r,u};

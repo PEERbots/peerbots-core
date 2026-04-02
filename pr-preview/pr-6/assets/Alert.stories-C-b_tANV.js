@@ -1,0 +1,19 @@
+import{j as r}from"./jsx-runtime-u17CrQMm.js";import{A as e}from"./Alert-B8xCjE9s.js";import"./iframe-D13rUlhB.js";import"./preload-helper-PPVm8Dsz.js";import"./Button-bHTpVbF1.js";import"./utils-BmGQd4RS.js";import"./bundle-mjs-Ce1ZTWB2.js";import"./useButton-D9tzRV-Q.js";import"./floating-ui.utils.dom-wHRPQCF9.js";import"./useRenderElement-CbcSstyx.js";import"./Input-ZT-7J1CR.js";import"./Input-2R42-Ccl.js";import"./useControlled-D18dhzFV.js";import"./owner-CvMgaIeV.js";import"./LabelableContext-DU2AqePP.js";import"./index-Bc5eE9t5.js";import"./index-0nySZKvk.js";import"./useLabelableId-B5RE_ULw.js";import"./useBaseUiId-C-sj7-By.js";import"./element-D2Kx1mQN.js";import"./detectBrowser-B_JuCNHz.js";import"./constants-CRqqCNE_.js";import"./Select-Nl3GrG_V.js";import"./Icon-DBJlkqnP.js";import"./visuallyHidden-COI6QeQH.js";import"./useOnFirstRender-CtD386ZA.js";import"./useTimeout-DzBo7X4D.js";import"./useOnMount-CaSRcZyW.js";import"./event-y5gTa7kU.js";import"./index-CbzWsoC_.js";import"./useOpenChangeComplete-BCUGvzLt.js";import"./useAnimationFrame-Cn-dUaus.js";import"./useValueAsRef-BINbF6HZ.js";import"./useValueChanged-Dd-7RhkP.js";import"./InternalBackdrop-DEciqa4c.js";import"./composite-BH_q_e9x.js";import"./floating-ui.utils-BPjIC1MX.js";import"./getDisabledMountTransitionStyles-DcnzfQve.js";import"./DirectionContext-BdY38WrA.js";import"./CSPContext-D2BQPVPk.js";import"./useCompositeListItem-D1kmGiIX.js";import"./ToolbarRootContext-Bn6ej6kI.js";import"./composite-DmhsLiSx.js";import"./clamp-DyuOe9kr.js";import"./Typography-Cmc6Gt2e.js";import"./Slider-Bo2kAj1Q.js";import"./formatNumber-E4R0_Sjy.js";import"./SliderWithNumberField-DxxCm5SB.js";import"./NumberField-BCLQ4VmX.js";import"./Tooltip-dSEDCyU0.js";import"./useSyncedFloatingRootContext-CcBzBcFp.js";import"./Dialog-C6joqWRh.js";import"./Separator-mvHYTzdr.js";import"./Collapsible-Xv3vPTNk.js";import"./Switch-mZBy1sYr.js";import"./useAriaLabelledBy-CMAIAX4y.js";import"./Label-A2YRJ0Jk.js";import"./TabRadio-DYuB9kqe.js";import"./Field-C7W8ui3f.js";import"./Anchor-DlxWK1YP.js";import"./TextArea-CRq6Ceee.js";import"./Checkbox-BD5OBAah.js";import"./SettingsPanel-CinWh_6Z.js";import"./Skeleton-ClvtQIYx.js";const br={title:"UI/Alert",component:e,parameters:{layout:"centered"}},t={args:{level:"Info",message:"This is a simple informational alert."}},i={render:()=>r.jsxs("div",{className:"pb:flex pb:flex-col pb:gap-4 pb:w-[600px] pb:bg-gray-100 pb:p-8",children:[r.jsx(e,{level:"Error",message:"Critical connection failure!",action:{name:"Retry",callback:()=>alert("Retrying...")}}),r.jsx(e,{level:"Warning",message:"Your session is about to expire."}),r.jsx(e,{level:"Success",message:"Settings saved successfully."}),r.jsx(e,{level:"Info",message:"New firmware update available.",action:{name:"View",callback:()=>alert("Viewing update...")}})]})};t.parameters={...t.parameters,docs:{...t.parameters?.docs,source:{originalSource:`{
+  args: {
+    level: "Info",
+    message: "This is a simple informational alert."
+  }
+}`,...t.parameters?.docs?.source}}};i.parameters={...i.parameters,docs:{...i.parameters?.docs,source:{originalSource:`{
+  render: () => <div className="pb:flex pb:flex-col pb:gap-4 pb:w-[600px] pb:bg-gray-100 pb:p-8">
+      <Alert level="Error" message="Critical connection failure!" action={{
+      name: "Retry",
+      callback: () => alert("Retrying...")
+    }} />
+      <Alert level="Warning" message="Your session is about to expire." />
+      <Alert level="Success" message="Settings saved successfully." />
+      <Alert level="Info" message="New firmware update available." action={{
+      name: "View",
+      callback: () => alert("Viewing update...")
+    }} />
+    </div>
+}`,...i.parameters?.docs?.source}}};const dr=["Default","Variations"];export{t as Default,i as Variations,dr as __namedExportsOrder,br as default};

@@ -1,0 +1,12 @@
+import{j as t}from"./jsx-runtime-u17CrQMm.js";import{D as e,a,b as p,c as r}from"./Dialog-C6joqWRh.js";import{B as i}from"./Button-bHTpVbF1.js";import"./iframe-D13rUlhB.js";import"./preload-helper-PPVm8Dsz.js";import"./utils-BmGQd4RS.js";import"./bundle-mjs-Ce1ZTWB2.js";import"./useRenderElement-CbcSstyx.js";import"./useOnFirstRender-CtD386ZA.js";import"./index-Bc5eE9t5.js";import"./index-0nySZKvk.js";import"./floating-ui.utils.dom-wHRPQCF9.js";import"./useBaseUiId-C-sj7-By.js";import"./detectBrowser-B_JuCNHz.js";import"./visuallyHidden-COI6QeQH.js";import"./owner-CvMgaIeV.js";import"./element-D2Kx1mQN.js";import"./constants-CRqqCNE_.js";import"./useTimeout-DzBo7X4D.js";import"./useOnMount-CaSRcZyW.js";import"./event-y5gTa7kU.js";import"./index-CbzWsoC_.js";import"./useOpenChangeComplete-BCUGvzLt.js";import"./useAnimationFrame-Cn-dUaus.js";import"./InternalBackdrop-DEciqa4c.js";import"./useValueAsRef-BINbF6HZ.js";import"./composite-BH_q_e9x.js";import"./floating-ui.utils-BPjIC1MX.js";import"./useValueChanged-Dd-7RhkP.js";import"./useSyncedFloatingRootContext-CcBzBcFp.js";import"./useButton-D9tzRV-Q.js";import"./composite-DmhsLiSx.js";const F={title:"UI/Dialog",component:e,parameters:{layout:"centered"}},o={render:()=>t.jsxs(e,{trigger:t.jsx(i,{children:"Open Default Dialog"}),children:[t.jsx(a,{className:"pb:text-xl pb:font-bold pb:mb-2",children:"Dialog Title"}),t.jsx(p,{className:"pb:text-black pb:mb-6",children:"This is a description of the dialog content."}),t.jsxs("div",{className:"pb:flex pb:justify-end pb:gap-2",children:[t.jsx(r,{render:t.jsx(i,{variant:"secondary",children:"Cancel"})}),t.jsx(r,{render:t.jsx(i,{variant:"primary",children:"Confirm"})})]})]})};o.parameters={...o.parameters,docs:{...o.parameters?.docs,source:{originalSource:`{
+  render: () => <Dialog trigger={<Button>Open Default Dialog</Button>}>
+      <DialogTitle className="pb:text-xl pb:font-bold pb:mb-2">Dialog Title</DialogTitle>
+      <DialogDescription className="pb:text-black pb:mb-6">
+        This is a description of the dialog content.
+      </DialogDescription>
+      <div className="pb:flex pb:justify-end pb:gap-2">
+        <DialogClose render={<Button variant="secondary">Cancel</Button>} />
+        <DialogClose render={<Button variant="primary">Confirm</Button>} />
+      </div>
+    </Dialog>
+}`,...o.parameters?.docs?.source}}};const G=["Default"];export{o as Default,G as __namedExportsOrder,F as default};
