@@ -1,5 +1,6 @@
 @import "tailwindcss" prefix(pb);
 @import "./theme.css";
+@source "../**/*.{ts,tsx}";
 
 @utility input-base {
     @apply pb:bg-primary/10 pb:border pb:border-b-2 pb:border-gray-300 pb:focus:border-gray-600 pb:py-2 pb:px-2;

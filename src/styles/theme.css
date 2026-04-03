@@ -1,7 +1,7 @@
 @theme {
     --color-primary: #46d9d9;
     /* --color-old-dark-primary: #5fc7cc; */
-    --color-dark-primary: var(--color-teal-700);
+    --color-dark-primary: #0f766e;
     --color-secondary: #e86e8a;
     --color-accent: #d9e021;
     --color-accent-hc: #c4cc24;
