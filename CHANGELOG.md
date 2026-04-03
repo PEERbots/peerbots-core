@@ -1,5 +1,11 @@
 # @peerbots/core
 
+## 0.2.4
+
+### Patch Changes
+
+- bd466ee: fix dark primary color
+
 ## 0.2.3
 
 ### Patch Changes
