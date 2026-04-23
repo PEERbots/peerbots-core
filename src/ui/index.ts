@@ -14,7 +14,6 @@ export * from "./Dropdown";
 export * from "./Collapsible";
 export * from "./Switch";
 export * from "./Label";
-export * from "./BasePanel";
 export * from "./TabRadio";
 export * from "./NumberField";
 export * from "./Field";
