@@ -1,5 +1,11 @@
 # @peerbots/core
 
+## 0.2.5
+
+### Patch Changes
+
+- [`6df88bf`](https://github.com/PEERbots/peerbots-core/commit/6df88bf7a04905024cb6d9cbc1b6505ce3872385) Thanks [@sbeleidy](https://github.com/sbeleidy)! - Fix basepanel border
+
 ## 0.2.4
 
 ### Patch Changes
