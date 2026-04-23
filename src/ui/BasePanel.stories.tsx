@@ -10,7 +10,7 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div className="pb:w-[450px] pb:border pb:border-gray-200 pb:rounded-lg pb:shadow-sm pb:bg-white pb:overflow-hidden pb:p-4">
+      <div className="pb:w-[450px] pb:rounded-lg pb:shadow-sm pb:bg-white pb:overflow-hidden pb:p-4">
         <Story />
       </div>
     ),

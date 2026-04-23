@@ -11,6 +11,7 @@
     --color-danger: #e86e8a;
     --color-light-bg: #d8e7eb;
     --sidebar-bg: #f9ffff;
+    --color-sidebar-bg: #f9ffff;
 
     --background-image-gradient-radial: radial-gradient(var(--tw-gradient-stops));
     --background-image-gradient-conic: conic-gradient(from 180deg at 50% 50%,
