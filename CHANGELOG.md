@@ -1,5 +1,11 @@
 # @peerbots/core
 
+## 0.2.6
+
+### Patch Changes
+
+- [`e8744e4`](https://github.com/PEERbots/peerbots-core/commit/e8744e47d7a64bdf61b6dfcc23311b940e390b3d) Thanks [@sbeleidy](https://github.com/sbeleidy)! - Remove BasePanel since it's more of a peerbots-controller component
+
 ## 0.2.5
 
 ### Patch Changes
