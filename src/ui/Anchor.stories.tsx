@@ -21,5 +21,19 @@ export const Default: Story = {
   args: {
     href: "https://peerbots.org",
     children: "Visit Peerbots",
+    variant: "default",
   },
+};
+
+export const Variants: Story = {
+  render: () => (
+    <div className="pb:flex pb:flex-col pb:gap-4 pb:p-6">
+      <Anchor href="#" variant="default">Default Link</Anchor>
+      <Anchor href="#" variant="teal">Teal Brand Link</Anchor>
+      <Anchor href="#" variant="pink">Pink Brand Link</Anchor>
+      <Anchor href="#" variant="underline">Underline Teal Link</Anchor>
+      <Anchor href="#" variant="underline-pink">Underline Pink Link</Anchor>
+      <Anchor href="#" variant="muted">Muted Link</Anchor>
+    </div>
+  ),
 };

@@ -48,6 +48,9 @@ export const Variations: Story = {
           <Button variant="danger">Danger</Button>
           <Button variant="ghost">Ghost</Button>
           <Button variant="ghostly-danger">Ghostly Danger</Button>
+          <Button variant="marketing-teal">Marketing Teal</Button>
+          <Button variant="marketing-pink">Marketing Pink</Button>
+          <Button variant="outline">Outline</Button>
         </div>
       </div>
 

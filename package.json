@@ -56,6 +56,14 @@
     "tailwindcss": "^4.2.0",
     "victory": "^37.3.6"
   },
+  "peerDependenciesMeta": {
+    "react-router-dom": {
+      "optional": true
+    },
+    "victory": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@changesets/changelog-github": "^0.6.0",
     "@changesets/cli": "^2.30.0",
