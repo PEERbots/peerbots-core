@@ -13,6 +13,14 @@
     --sidebar-bg: #f9ffff;
     --color-sidebar-bg: #f9ffff;
 
+    --color-peerbots-pink: #e96c8a;
+    --color-peerbots-teal: #5fc7cc;
+    --color-peerbots-darkteal: #3f8588;
+    --color-peerbots-darkblue: #2e3a59;
+    --color-peerbots-olive: #82871f;
+    --color-peerbots-dark: #1a1a1a;
+    --color-peerbots-light: #f8f9fa;
+
     --background-image-gradient-radial: radial-gradient(var(--tw-gradient-stops));
     --background-image-gradient-conic: conic-gradient(from 180deg at 50% 50%,
             var(--tw-gradient-stops));

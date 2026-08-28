@@ -7,12 +7,23 @@ function cn(...inputs: ClassValue[]) {
 }
 
 const headingSizes = {
-  1: "pb:text-4xl pb:font-bold",
-  2: "pb:text-3xl pb:font-bold",
-  3: "pb:text-2xl pb:font-bold",
-  4: "pb:text-xl pb:font-bold",
-  5: "pb:text-lg pb:font-bold",
-  6: "pb:text-base pb:font-bold",
+  1: "pb:text-4xl sm:pb:text-5xl pb:font-bold pb:leading-tight",
+  2: "pb:text-3xl sm:pb:text-4xl pb:font-bold",
+  3: "pb:text-2xl sm:pb:text-3xl pb:font-bold",
+  4: "pb:text-xl sm:pb:text-2xl pb:font-bold",
+  5: "pb:text-lg sm:pb:text-xl pb:font-bold",
+  6: "pb:text-base sm:pb:text-lg pb:font-bold",
+};
+
+const headingVariants = {
+  default: "",
+  "marketing-pink": "pb:text-peerbots-pink",
+  "marketing-teal": "pb:text-peerbots-teal",
+  "marketing-darkteal": "pb:text-peerbots-darkteal",
+  "marketing-olive": "pb:text-peerbots-olive",
+  "marketing-darkblue": "pb:text-peerbots-darkblue",
+  "marketing-dark": "pb:text-peerbots-dark",
+  white: "pb:text-white",
 };
 
 const textVariants = {
@@ -20,28 +31,48 @@ const textVariants = {
   muted: "pb:text-sm pb:text-slate-600",
   error: "pb:text-sm pb:text-red-600 pb:font-medium",
   small: "pb:text-xs pb:text-slate-600",
+  white: "pb:text-base pb:text-white",
+  teal: "pb:text-base pb:text-peerbots-teal",
+  pink: "pb:text-base pb:text-peerbots-pink",
 };
 
-interface HeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {
+export interface HeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {
   level?: 1 | 2 | 3 | 4 | 5 | 6;
+  variant?:
+    | "default"
+    | "marketing-pink"
+    | "marketing-teal"
+    | "marketing-darkteal"
+    | "marketing-olive"
+    | "marketing-darkblue"
+    | "marketing-dark"
+    | "white";
   children?: React.ReactNode;
 }
 
 export const Heading = ({
   level = 1,
+  variant = "default",
   className,
   children,
   ...props
 }: HeadingProps) => {
   return React.createElement(
     `h${level}`,
-    { className: cn(headingSizes[level], className), ...props },
+    {
+      className: cn(
+        headingSizes[level],
+        headingVariants[variant],
+        className,
+      ),
+      ...props,
+    },
     children,
   );
 };
 
-interface TextProps extends React.HTMLAttributes<HTMLElement> {
-  variant?: "default" | "muted" | "error" | "small";
+export interface TextProps extends React.HTMLAttributes<HTMLElement> {
+  variant?: "default" | "muted" | "error" | "small" | "white" | "teal" | "pink";
   as?: React.ElementType;
   children?: React.ReactNode;
 }
