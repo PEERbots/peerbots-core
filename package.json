@@ -52,17 +52,8 @@
     "@base-ui/react": "^1.2.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-router-dom": "^7",
     "tailwindcss": "^4.2.0",
     "victory": "^37.3.6"
-  },
-  "peerDependenciesMeta": {
-    "react-router-dom": {
-      "optional": true
-    },
-    "victory": {
-      "optional": true
-    }
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.6.0",
@@ -87,6 +78,7 @@
     "storybook": "^10.3.3",
     "tsup": "^8.5.1",
     "typescript": "^6.0.2",
+    "victory": "^37.3.6",
     "vitest": "^4.1.2"
   },
   "description": "The core shared components, styles and helpers for Peerbots web applications.",
