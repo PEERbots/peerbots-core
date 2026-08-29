@@ -30,4 +30,8 @@ export * from "./Card";
 export * from "./Accordion";
 export * from "./CodeBlock";
 export * from "./SocialLinks";
+export * from "./PeerbotsColorSelector";
+export * from "./EmptyState";
+export * from "./SearchInput";
+export * from "./LineGraph";
 
