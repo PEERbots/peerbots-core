@@ -1,46 +1,262 @@
-import { Meta, Canvas, Story } from "@storybook/addon-docs/blocks";
-import * as TypographyStories from "../ui/Typography.stories";
-import * as ColorStories from "../ui/Colors.stories";
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as TypographyStories from "../ui/foundations/Typography.stories";
+import * as ColorStories from "../ui/foundations/Colors.stories";
+import * as CardStories from "../ui/layout/Card.stories";
+import * as ButtonStories from "../ui/forms/Button.stories";
+import * as AccordionStories from "../ui/layout/Accordion.stories";
+import * as CollapsibleStories from "../ui/layout/Collapsible.stories";
 
 <Meta title="Design System" />
 
-## Colors
+# Peerbots Design System
 
-These colors are defined in `src/styles/theme.css`. and are used throughout the application via Tailwind classes.
+The Peerbots design system ensures a consistent, accessible, and friendly experience across web applications, robot controllers, visualization tools, and community sites.
+
+---
+
+## 1. Design Governance & Orthogonal Props
+
+To guarantee that different developers build cohesive interfaces without fragmented styling, all core components adhere to **Orthogonal Dimensions**:
+
+<div className="pb:grid pb:grid-cols-1 md:pb:grid-cols-2 pb:gap-4 pb:my-6">
+  <div className="pb:p-4 pb:rounded-xl pb:border pb:border-gray-200 pb:bg-white pb:shadow-xs">
+    <div className="pb:text-xs pb:font-bold pb:text-peerbots-teal pb:uppercase pb:tracking-wider pb:mb-1">
+      1. Fill Style (<code>variant</code>)
+    </div>
+    <div className="pb:text-sm pb:font-medium pb:text-gray-900 pb:mb-2">
+      <code>solid</code> • <code>soft</code> • <code>outline</code> • <code>ghost</code> • <code>link</code>
+    </div>
+    <div className="pb:text-xs pb:text-gray-600">
+      Controls structural background and border treatment across buttons, badges, and alerts.
+    </div>
+  </div>
+
+  <div className="pb:p-4 pb:rounded-xl pb:border pb:border-gray-200 pb:bg-white pb:shadow-xs">
+    <div className="pb:text-xs pb:font-bold pb:text-peerbots-pink pb:uppercase pb:tracking-wider pb:mb-1">
+      2. Palette & Intent (<code>color</code>)
+    </div>
+    <div className="pb:text-sm pb:font-medium pb:text-gray-900 pb:mb-2">
+      <code>primary</code> • <code>neutral</code> • <code>teal</code> • <code>pink</code> • <code>darkblue</code> • <code>danger</code>
+    </div>
+    <div className="pb:text-xs pb:text-gray-600">
+      Semantic intent (primary, neutral, danger) or brand identity color (teal, pink, darkblue).
+    </div>
+  </div>
+
+  <div className="pb:p-4 pb:rounded-xl pb:border pb:border-gray-200 pb:bg-white pb:shadow-xs">
+    <div className="pb:text-xs pb:font-bold pb:text-gray-700 pb:uppercase pb:tracking-wider pb:mb-1">
+      3. Scale (<code>size</code>)
+    </div>
+    <div className="pb:text-sm pb:font-medium pb:text-gray-900 pb:mb-2">
+      <code>xs</code> • <code>sm</code> • <code>md</code> • <code>lg</code> • <code>xl</code>
+    </div>
+    <div className="pb:text-xs pb:text-gray-600">
+      Controls touch target size, typography scale, and inner padding. Default is <code>md</code>.
+    </div>
+  </div>
+
+  <div className="pb:p-4 pb:rounded-xl pb:border pb:border-gray-200 pb:bg-white pb:shadow-xs">
+    <div className="pb:text-xs pb:font-bold pb:text-gray-700 pb:uppercase pb:tracking-wider pb:mb-1">
+      4. Geometry (<code>radius</code>)
+    </div>
+    <div className="pb:text-sm pb:font-medium pb:text-gray-900 pb:mb-2">
+      <code>none</code> • <code>sm</code> • <code>md</code> • <code>lg</code> • <code>2xl</code> • <code>pill</code>
+    </div>
+    <div className="pb:text-xs pb:text-gray-600">
+      Controls border curvature independently of size. Use <code>pill</code> for hero CTAs.
+    </div>
+  </div>
+</div>
+
+---
+
+## 2. Standard Component Recipes
+
+Follow these official recipes for common UX patterns across all Peerbots apps:
+
+<div className="pb:flex pb:flex-col pb:gap-3 pb:my-6">
+  <div className="pb:flex pb:flex-col sm:pb:flex-row sm:pb:items-center sm:pb:justify-between pb:gap-2 pb:p-4 pb:rounded-xl pb:border pb:border-gray-100 pb:bg-gray-50/70">
+    <div>
+      <div className="pb:text-sm pb:font-bold pb:text-gray-900">Form Submit Action</div>
+      <div className="pb:text-xs pb:text-gray-500">High-emphasis electric cyan button</div>
+    </div>
+    <code className="pb:text-xs pb:bg-white pb:px-2.5 pb:py-1.5 pb:rounded-lg pb:border pb:border-gray-200 pb:font-mono">
+      &lt;Button color="primary"&gt;Save Changes&lt;/Button&gt;
+    </code>
+  </div>
+
+  <div className="pb:flex pb:flex-col sm:pb:flex-row sm:pb:items-center sm:pb:justify-between pb:gap-2 pb:p-4 pb:rounded-xl pb:border pb:border-gray-100 pb:bg-gray-50/70">
+    <div>
+      <div className="pb:text-sm pb:font-bold pb:text-gray-900">Form Cancel / Back</div>
+      <div className="pb:text-xs pb:text-gray-500">Calm, neutral gray secondary button</div>
+    </div>
+    <code className="pb:text-xs pb:bg-white pb:px-2.5 pb:py-1.5 pb:rounded-lg pb:border pb:border-gray-200 pb:font-mono">
+      &lt;Button color="neutral"&gt;Cancel&lt;/Button&gt;
+    </code>
+  </div>
+
+  <div className="pb:flex pb:flex-col sm:pb:flex-row sm:pb:items-center sm:pb:justify-between pb:gap-2 pb:p-4 pb:rounded-xl pb:border pb:border-gray-100 pb:bg-gray-50/70">
+    <div>
+      <div className="pb:text-sm pb:font-bold pb:text-gray-900">Destructive Confirmation</div>
+      <div className="pb:text-xs pb:text-gray-500">Solid red destructive action</div>
+    </div>
+    <code className="pb:text-xs pb:bg-white pb:px-2.5 pb:py-1.5 pb:rounded-lg pb:border pb:border-gray-200 pb:font-mono">
+      &lt;Button color="danger"&gt;Delete Robot&lt;/Button&gt;
+    </code>
+  </div>
+
+  <div className="pb:flex pb:flex-col sm:pb:flex-row sm:pb:items-center sm:pb:justify-between pb:gap-2 pb:p-4 pb:rounded-xl pb:border pb:border-gray-100 pb:bg-gray-50/70">
+    <div>
+      <div className="pb:text-sm pb:font-bold pb:text-gray-900">Destructive Dismiss</div>
+      <div className="pb:text-xs pb:text-gray-500">Subtle red ghost button</div>
+    </div>
+    <code className="pb:text-xs pb:bg-white pb:px-2.5 pb:py-1.5 pb:rounded-lg pb:border pb:border-gray-200 pb:font-mono">
+      &lt;Button color="danger" variant="ghost"&gt;Remove&lt;/Button&gt;
+    </code>
+  </div>
+
+  <div className="pb:flex pb:flex-col sm:pb:flex-row sm:pb:items-center sm:pb:justify-between pb:gap-2 pb:p-4 pb:rounded-xl pb:border pb:border-gray-100 pb:bg-gray-50/70">
+    <div>
+      <div className="pb:text-sm pb:font-bold pb:text-gray-900">Brand Hero CTA</div>
+      <div className="pb:text-xs pb:text-gray-500">Pill brand CTA with icon</div>
+    </div>
+    <code className="pb:text-xs pb:bg-white pb:px-2.5 pb:py-1.5 pb:rounded-lg pb:border pb:border-gray-200 pb:font-mono">
+      &lt;Button color="teal" radius="pill" size="lg"&gt;Get Started&lt;/Button&gt;
+    </code>
+  </div>
+
+  <div className="pb:flex pb:flex-col sm:pb:flex-row sm:pb:items-center sm:pb:justify-between pb:gap-2 pb:p-4 pb:rounded-xl pb:border pb:border-gray-100 pb:bg-gray-50/70">
+    <div>
+      <div className="pb:text-sm pb:font-bold pb:text-gray-900">Floating 3D HUD Overlay</div>
+      <div className="pb:text-xs pb:text-gray-500">Translucent backdrop blur overlay</div>
+    </div>
+    <code className="pb:text-xs pb:bg-white pb:px-2.5 pb:py-1.5 pb:rounded-lg pb:border pb:border-gray-200 pb:font-mono">
+      &lt;Card variant="glass" padding="sm"&gt;...&lt;/Card&gt;
+    </code>
+  </div>
+
+  <div className="pb:flex pb:flex-col sm:pb:flex-row sm:pb:items-center sm:pb:justify-between pb:gap-2 pb:p-4 pb:rounded-xl pb:border pb:border-gray-100 pb:bg-gray-50/70">
+    <div>
+      <div className="pb:text-sm pb:font-bold pb:text-gray-900">Standard Settings Panel</div>
+      <div className="pb:text-xs pb:text-gray-500">Opaque elevated white container</div>
+    </div>
+    <code className="pb:text-xs pb:bg-white pb:px-2.5 pb:py-1.5 pb:rounded-lg pb:border pb:border-gray-200 pb:font-mono">
+      &lt;Card variant="surface" padding="md"&gt;...&lt;/Card&gt;
+    </code>
+  </div>
+</div>
+
+<Canvas of={ButtonStories.Recipes} />
+
+---
+
+## 3. Brand Palette & Color Architecture
+
+Defined in `src/styles/theme.css`, our color tokens fall into two primary roles:
+
+### Canonical Brand Palette
+- **Peerbots Teal (`#5fc7cc`)**: Primary brand identity, marketing accents, and active focus rings.
+- **Peerbots Pink (`#e96c8a`)**: Secondary brand identity, highlights, badges, and attention-drawing elements.
+- **Dark Teal (`#3f8588`)**: High-contrast interactive states and text on teal tints.
+- **Dark Blue (`#2e3a59`)**: Deep navy for titles, dark cards, and primary typography.
+- **Olive (`#82871f`)**: Earthy tertiary accent.
+
+### Application & Controller Tokens
+- **Electric Primary (`#46d9d9`)**: High-energy button fills and active state indicators in the controller.
+- **Dark Primary (`#0f766e`)**: Hover state for electric primary buttons.
+- **Secondary (`#e86e8a`)**: Canonical pink secondary token.
 
 <Canvas of={ColorStories.Variations} />
 
-## Typography
+---
 
-**Font Family**: `Avenir`, `Nunito`, sans-serif.
+## 4. Typography Scale
+
+- **Primary Font Family**: `Avenir`, `Nunito`, `sans-serif`
+- **Monospace Font Family**: `ui-monospace`, `SFMono-Regular`, `Menlo`, `monospace` (used in `CodeBlock` and data readouts)
 
 <Canvas of={TypographyStories.Variations} />
 
+---
 
-# Peerbots Design System
+## 5. Surface & Glassmorphism Guidelines
 
-The Peerbots design system ensures a consistent, friendly, and accessible experience across the platforms.
+### When to Use Glass (<code>variant="glass"</code>)
+- **Floating 3D HUD Toolbars**: Camera controls, zoom buttons, and parameter readouts floating above WebGL / 3D canvases.
+- **Media Overlays**: Controls or title cards positioned directly over images, videos, or dynamic gradient backgrounds.
+- **Floating Header Navigation**: Top navigation bars over scrolling page content.
 
-## Design Philosophy
+### When NOT to Use Glass
+- **Standard Forms & Text**: Never use glass on flat white or gray backgrounds. The blur is invisible, contrast is reduced, and text legibility suffers. Always use <code>variant="surface"</code> (solid white).
+- **Data Tables & Dense Lists**: Use solid opaque cards with crisp borders.
 
-- **Friendly & Approachable**: Use rounded corners, soft shadows, and vibrant colors.
-- **Accessible**: High contrast for critical buttons and readable font sizes.
-- **Responsive**: Adapts gracefully to various screen sizes, from phones to tablets.
+<Canvas of={CardStories.GlassInContext} />
 
-### Utilities
+---
 
-Use these common utility classes for consistency:
+## 6. Disclosures: Accordion vs. Collapsible
 
-- `btn-primary`: For the main action on a page/modal.
-- `btn-secondary`: For alternative actions.
-- `btn-danger`: For irreversible or dangerous actions.
-- `input-base`: For text inputs and textareas.
-- `range-primary`: For slider inputs.
+Both components provide smooth, hardware-accelerated expanding and collapsing animations, but serve different architectural purposes:
 
-## Evolving the System
+<div className="pb:grid pb:grid-cols-1 md:pb:grid-cols-2 pb:gap-4 pb:my-6">
+  <div className="pb:p-5 pb:rounded-2xl pb:border pb:border-peerbots-teal/30 pb:bg-white pb:shadow-xs">
+    <div className="pb:flex pb:items-center pb:justify-between pb:mb-2">
+      <span className="pb:text-base pb:font-bold pb:text-peerbots-darkteal">Accordion</span>
+      <span className="pb:text-[10px] pb:font-bold pb:bg-peerbots-teal/15 pb:text-peerbots-darkteal pb:px-2 pb:py-0.5 pb:rounded-full pb:uppercase">Multi-Item Lists</span>
+    </div>
+    <p className="pb:text-xs pb:text-gray-600 pb:mb-3">
+      Use when displaying a <strong>structured list or group of items</strong> (e.g. FAQs, documentation categories, multi-step help centers).
+    </p>
+    <div className="pb:text-xs pb:text-gray-800 pb:space-y-1 pb:border-t pb:border-gray-100 pb:pt-2">
+      <div>• <strong>Data-driven</strong>: Easily passed an <code>items</code> array of question/answer objects.</div>
+      <div>• <strong>Mutual Exclusivity</strong>: Controls whether only one item can open at a time (<code>allowMultiple=false</code>).</div>
+    </div>
+  </div>
 
-This design system is a living document.
+  <div className="pb:p-5 pb:rounded-2xl pb:border pb:border-peerbots-pink/30 pb:bg-white pb:shadow-xs">
+    <div className="pb:flex pb:items-center pb:justify-between pb:mb-2">
+      <span className="pb:text-base pb:font-bold pb:text-peerbots-pink">Collapsible</span>
+      <span className="pb:text-[10px] pb:font-bold pb:bg-peerbots-pink/15 pb:text-peerbots-pink pb:px-2 pb:py-0.5 pb:rounded-full pb:uppercase">Single Disclosure</span>
+    </div>
+    <p className="pb:text-xs pb:text-gray-600 pb:mb-3">
+      Use when you have a <strong>single standalone expandable section</strong> embedded within a form, settings page, or dialog.
+    </p>
+    <div className="pb:text-xs pb:text-gray-800 pb:space-y-1 pb:border-t pb:border-gray-100 pb:pt-2">
+      <div>• <strong>Arbitrary Children</strong>: Wrap custom form fields, debug logs, or configuration inputs (<code>&lt;Collapsible title="..."&gt;...&lt;/Collapsible&gt;</code>).</div>
+      <div>• <strong>Composable</strong>: Embedded inside <code>SettingsPanel</code> or cards.</div>
+    </div>
+  </div>
+</div>
 
-- **New Needs**: When new features require UI elements not covered here, agents and developers should propose a new pattern.
-- **Documentation**: Any new repeatable pattern, component, or utility introduced (especially if driven by user needs) **must** be added to this document to remain the source of truth.
-- **Refinement**: Periodic audits should be conducted to ensure hardcoded styles are migrated to the design system.
+<Canvas of={AccordionStories.Default} />
+
+---
+
+## 7. Do's and Don'ts
+
+<div className="pb:grid pb:grid-cols-1 md:pb:grid-cols-2 pb:gap-4 pb:my-6">
+  <div className="pb:p-4 pb:rounded-xl pb:border pb:border-emerald-200 pb:bg-emerald-50/60">
+    <div className="pb:text-xs pb:font-bold pb:text-emerald-800 pb:uppercase pb:tracking-wider pb:mb-2">
+      ✅ Do
+    </div>
+    <ul className="pb:text-xs pb:space-y-2 pb:text-emerald-950 pb:list-none pb:p-0 pb:m-0">
+      <li>• Pair one primary button (<code>color="primary"</code>) with one neutral button (<code>color="neutral"</code>) in dialogs.</li>
+      <li>• Use <code>radius="pill"</code> for marketing CTAs and hero actions.</li>
+      <li>• Use <code>variant="glass"</code> strictly over 3D canvases, video, or hero gradients.</li>
+      <li>• Use <code>size="sm"</code> for dense table actions and toolbars.</li>
+      <li>• Use <code>Accordion</code> for multi-question FAQs and <code>Collapsible</code> for single advanced form sections.</li>
+    </ul>
+  </div>
+
+  <div className="pb:p-4 pb:rounded-xl pb:border pb:border-red-200 pb:bg-red-50/60">
+    <div className="pb:text-xs pb:font-bold pb:text-red-800 pb:uppercase pb:tracking-wider pb:mb-2">
+      ❌ Don't
+    </div>
+    <ul className="pb:text-xs pb:space-y-2 pb:text-red-950 pb:list-none pb:p-0 pb:m-0">
+      <li>• Don't put multiple <code>solid primary</code> buttons side-by-side.</li>
+      <li>• Don't use <code>variant="glass"</code> on plain white or gray pages.</li>
+      <li>• Don't use raw unconstrained hex colors in component styles.</li>
+      <li>• Don't mix multiple conflicting border radii within the same card.</li>
+    </ul>
+  </div>
+</div>
