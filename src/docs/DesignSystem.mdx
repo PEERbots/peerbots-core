@@ -16,12 +16,55 @@ The Peerbots design system ensures a consistent, accessible, and friendly experi
 
 To guarantee that different developers build cohesive interfaces without fragmented styling, all core components adhere to **Orthogonal Dimensions**:
 
-| Dimension | Prop Name | Values | Purpose |
-| :--- | :--- | :--- | :--- |
-| **Fill Style** | `variant` | `"solid" \| "soft" \| "outline" \| "ghost" \| "link"` | Visual structure and background treatment |
-| **Palette & Intent** | `color` | `"primary" \| "neutral" \| "teal" \| "pink" \| "danger" \| "success"` | Semantic meaning or brand color |
-| **Scale** | `size` | `"xs" \| "sm" \| "md" \| "lg" \| "xl"` | Padding, height, and typography scale |
-| **Geometry** | `radius` | `"none" \| "sm" \| "md" \| "lg" \| "2xl" \| "pill"` | Border radius |
+<div className="pb:grid pb:grid-cols-1 md:pb:grid-cols-2 pb:gap-4 pb:my-6">
+  <div className="pb:p-4 pb:rounded-xl pb:border pb:border-gray-200 pb:bg-white pb:shadow-xs">
+    <div className="pb:text-xs pb:font-bold pb:text-peerbots-teal pb:uppercase pb:tracking-wider pb:mb-1">
+      1. Fill Style (<code>variant</code>)
+    </div>
+    <div className="pb:text-sm pb:font-medium pb:text-gray-900 pb:mb-2">
+      <code>solid</code> • <code>soft</code> • <code>outline</code> • <code>ghost</code> • <code>link</code>
+    </div>
+    <div className="pb:text-xs pb:text-gray-600">
+      Controls structural background and border treatment across buttons, badges, and alerts.
+    </div>
+  </div>
+
+  <div className="pb:p-4 pb:rounded-xl pb:border pb:border-gray-200 pb:bg-white pb:shadow-xs">
+    <div className="pb:text-xs pb:font-bold pb:text-peerbots-pink pb:uppercase pb:tracking-wider pb:mb-1">
+      2. Palette & Intent (<code>color</code>)
+    </div>
+    <div className="pb:text-sm pb:font-medium pb:text-gray-900 pb:mb-2">
+      <code>primary</code> • <code>neutral</code> • <code>teal</code> • <code>pink</code> • <code>darkblue</code> • <code>danger</code>
+    </div>
+    <div className="pb:text-xs pb:text-gray-600">
+      Semantic intent (primary, neutral, danger) or brand identity color (teal, pink, darkblue).
+    </div>
+  </div>
+
+  <div className="pb:p-4 pb:rounded-xl pb:border pb:border-gray-200 pb:bg-white pb:shadow-xs">
+    <div className="pb:text-xs pb:font-bold pb:text-gray-700 pb:uppercase pb:tracking-wider pb:mb-1">
+      3. Scale (<code>size</code>)
+    </div>
+    <div className="pb:text-sm pb:font-medium pb:text-gray-900 pb:mb-2">
+      <code>xs</code> • <code>sm</code> • <code>md</code> • <code>lg</code> • <code>xl</code>
+    </div>
+    <div className="pb:text-xs pb:text-gray-600">
+      Controls touch target size, typography scale, and inner padding. Default is <code>md</code>.
+    </div>
+  </div>
+
+  <div className="pb:p-4 pb:rounded-xl pb:border pb:border-gray-200 pb:bg-white pb:shadow-xs">
+    <div className="pb:text-xs pb:font-bold pb:text-gray-700 pb:uppercase pb:tracking-wider pb:mb-1">
+      4. Geometry (<code>radius</code>)
+    </div>
+    <div className="pb:text-sm pb:font-medium pb:text-gray-900 pb:mb-2">
+      <code>none</code> • <code>sm</code> • <code>md</code> • <code>lg</code> • <code>2xl</code> • <code>pill</code>
+    </div>
+    <div className="pb:text-xs pb:text-gray-600">
+      Controls border curvature independently of size. Use <code>pill</code> for hero CTAs.
+    </div>
+  </div>
+</div>
 
 ---
 
@@ -29,15 +72,77 @@ To guarantee that different developers build cohesive interfaces without fragmen
 
 Follow these official recipes for common UX patterns across all Peerbots apps:
 
-| UX Pattern | Standard Recipe Code | Visual Output |
-| :--- | :--- | :--- |
-| **Form Submit** | `<Button color="primary">Save Changes</Button>` | High-emphasis electric cyan button |
-| **Form Cancel / Back** | `<Button color="neutral">Cancel</Button>` | Calm, neutral gray button |
-| **Destructive Action** | `<Button color="danger">Delete Robot</Button>` | Solid danger red button |
-| **Destructive Dismiss** | `<Button color="danger" variant="ghost">Remove</Button>` | Subtle red ghost action |
-| **Brand Hero CTA** | `<Button color="teal" radius="pill" size="lg">Get Started</Button>` | Pill brand CTA |
-| **Floating 3D HUD Overlay**| `<Card variant="glass" padding="sm">...</Card>` | Translucent backdrop blur for 3D stages |
-| **Standard App Panel** | `<Card variant="surface" padding="md">...</Card>` | Opaque elevated white container |
+<div className="pb:flex pb:flex-col pb:gap-3 pb:my-6">
+  <div className="pb:flex pb:flex-col sm:pb:flex-row sm:pb:items-center sm:pb:justify-between pb:gap-2 pb:p-4 pb:rounded-xl pb:border pb:border-gray-100 pb:bg-gray-50/70">
+    <div>
+      <div className="pb:text-sm pb:font-bold pb:text-gray-900">Form Submit Action</div>
+      <div className="pb:text-xs pb:text-gray-500">High-emphasis electric cyan button</div>
+    </div>
+    <code className="pb:text-xs pb:bg-white pb:px-2.5 pb:py-1.5 pb:rounded-lg pb:border pb:border-gray-200 pb:font-mono">
+      &lt;Button color="primary"&gt;Save Changes&lt;/Button&gt;
+    </code>
+  </div>
+
+  <div className="pb:flex pb:flex-col sm:pb:flex-row sm:pb:items-center sm:pb:justify-between pb:gap-2 pb:p-4 pb:rounded-xl pb:border pb:border-gray-100 pb:bg-gray-50/70">
+    <div>
+      <div className="pb:text-sm pb:font-bold pb:text-gray-900">Form Cancel / Back</div>
+      <div className="pb:text-xs pb:text-gray-500">Calm, neutral gray secondary button</div>
+    </div>
+    <code className="pb:text-xs pb:bg-white pb:px-2.5 pb:py-1.5 pb:rounded-lg pb:border pb:border-gray-200 pb:font-mono">
+      &lt;Button color="neutral"&gt;Cancel&lt;/Button&gt;
+    </code>
+  </div>
+
+  <div className="pb:flex pb:flex-col sm:pb:flex-row sm:pb:items-center sm:pb:justify-between pb:gap-2 pb:p-4 pb:rounded-xl pb:border pb:border-gray-100 pb:bg-gray-50/70">
+    <div>
+      <div className="pb:text-sm pb:font-bold pb:text-gray-900">Destructive Confirmation</div>
+      <div className="pb:text-xs pb:text-gray-500">Solid red destructive action</div>
+    </div>
+    <code className="pb:text-xs pb:bg-white pb:px-2.5 pb:py-1.5 pb:rounded-lg pb:border pb:border-gray-200 pb:font-mono">
+      &lt;Button color="danger"&gt;Delete Robot&lt;/Button&gt;
+    </code>
+  </div>
+
+  <div className="pb:flex pb:flex-col sm:pb:flex-row sm:pb:items-center sm:pb:justify-between pb:gap-2 pb:p-4 pb:rounded-xl pb:border pb:border-gray-100 pb:bg-gray-50/70">
+    <div>
+      <div className="pb:text-sm pb:font-bold pb:text-gray-900">Destructive Dismiss</div>
+      <div className="pb:text-xs pb:text-gray-500">Subtle red ghost button</div>
+    </div>
+    <code className="pb:text-xs pb:bg-white pb:px-2.5 pb:py-1.5 pb:rounded-lg pb:border pb:border-gray-200 pb:font-mono">
+      &lt;Button color="danger" variant="ghost"&gt;Remove&lt;/Button&gt;
+    </code>
+  </div>
+
+  <div className="pb:flex pb:flex-col sm:pb:flex-row sm:pb:items-center sm:pb:justify-between pb:gap-2 pb:p-4 pb:rounded-xl pb:border pb:border-gray-100 pb:bg-gray-50/70">
+    <div>
+      <div className="pb:text-sm pb:font-bold pb:text-gray-900">Brand Hero CTA</div>
+      <div className="pb:text-xs pb:text-gray-500">Pill brand CTA with icon</div>
+    </div>
+    <code className="pb:text-xs pb:bg-white pb:px-2.5 pb:py-1.5 pb:rounded-lg pb:border pb:border-gray-200 pb:font-mono">
+      &lt;Button color="teal" radius="pill" size="lg"&gt;Get Started&lt;/Button&gt;
+    </code>
+  </div>
+
+  <div className="pb:flex pb:flex-col sm:pb:flex-row sm:pb:items-center sm:pb:justify-between pb:gap-2 pb:p-4 pb:rounded-xl pb:border pb:border-gray-100 pb:bg-gray-50/70">
+    <div>
+      <div className="pb:text-sm pb:font-bold pb:text-gray-900">Floating 3D HUD Overlay</div>
+      <div className="pb:text-xs pb:text-gray-500">Translucent backdrop blur overlay</div>
+    </div>
+    <code className="pb:text-xs pb:bg-white pb:px-2.5 pb:py-1.5 pb:rounded-lg pb:border pb:border-gray-200 pb:font-mono">
+      &lt;Card variant="glass" padding="sm"&gt;...&lt;/Card&gt;
+    </code>
+  </div>
+
+  <div className="pb:flex pb:flex-col sm:pb:flex-row sm:pb:items-center sm:pb:justify-between pb:gap-2 pb:p-4 pb:rounded-xl pb:border pb:border-gray-100 pb:bg-gray-50/70">
+    <div>
+      <div className="pb:text-sm pb:font-bold pb:text-gray-900">Standard Settings Panel</div>
+      <div className="pb:text-xs pb:text-gray-500">Opaque elevated white container</div>
+    </div>
+    <code className="pb:text-xs pb:bg-white pb:px-2.5 pb:py-1.5 pb:rounded-lg pb:border pb:border-gray-200 pb:font-mono">
+      &lt;Card variant="surface" padding="md"&gt;...&lt;/Card&gt;
+    </code>
+  </div>
+</div>
 
 <Canvas of={ButtonStories.Recipes} />
 
@@ -74,13 +179,13 @@ Defined in `src/styles/theme.css`, our color tokens fall into two primary roles:
 
 ## 5. Surface & Glassmorphism Guidelines
 
-### When to Use Glass (`variant="glass"`)
+### When to Use Glass (<code>variant="glass"</code>)
 - **Floating 3D HUD Toolbars**: Camera controls, zoom buttons, and parameter readouts floating above WebGL / 3D canvases.
 - **Media Overlays**: Controls or title cards positioned directly over images, videos, or dynamic gradient backgrounds.
 - **Floating Header Navigation**: Top navigation bars over scrolling page content.
 
 ### When NOT to Use Glass
-- **Standard Forms & Text**: Never use glass on flat white or gray backgrounds. The blur is invisible, contrast is reduced, and text legibility suffers. Always use `variant="surface"` (solid white).
+- **Standard Forms & Text**: Never use glass on flat white or gray backgrounds. The blur is invisible, contrast is reduced, and text legibility suffers. Always use <code>variant="surface"</code> (solid white).
 - **Data Tables & Dense Lists**: Use solid opaque cards with crisp borders.
 
 <Canvas of={CardStories.GlassInContext} />
@@ -89,8 +194,28 @@ Defined in `src/styles/theme.css`, our color tokens fall into two primary roles:
 
 ## 6. Do's and Don'ts
 
-- ✅ **DO** pair one primary button (`color="primary"`) with one neutral button (`color="neutral"`) in dialogs and forms.
-- ❌ **DON'T** put multiple `solid primary` buttons side-by-side.
-- ✅ **DO** use `radius="pill"` for marketing CTAs and hero actions (`<Button color="teal" radius="pill">`).
-- ❌ **DON'T** use `variant="glass"` on plain light backgrounds.
-- ✅ **DO** use `size="sm"` for dense table actions and toolbars.
+<div className="pb:grid pb:grid-cols-1 md:pb:grid-cols-2 pb:gap-4 pb:my-6">
+  <div className="pb:p-4 pb:rounded-xl pb:border pb:border-emerald-200 pb:bg-emerald-50/60">
+    <div className="pb:text-xs pb:font-bold pb:text-emerald-800 pb:uppercase pb:tracking-wider pb:mb-2">
+      ✅ Do
+    </div>
+    <ul className="pb:text-xs pb:space-y-2 pb:text-emerald-950 pb:list-none pb:p-0 pb:m-0">
+      <li>• Pair one primary button (<code>color="primary"</code>) with one neutral button (<code>color="neutral"</code>) in dialogs.</li>
+      <li>• Use <code>radius="pill"</code> for marketing CTAs and hero actions.</li>
+      <li>• Use <code>variant="glass"</code> strictly over 3D canvases, video, or hero gradients.</li>
+      <li>• Use <code>size="sm"</code> for dense table actions and toolbars.</li>
+    </ul>
+  </div>
+
+  <div className="pb:p-4 pb:rounded-xl pb:border pb:border-red-200 pb:bg-red-50/60">
+    <div className="pb:text-xs pb:font-bold pb:text-red-800 pb:uppercase pb:tracking-wider pb:mb-2">
+      ❌ Don't
+    </div>
+    <ul className="pb:text-xs pb:space-y-2 pb:text-red-950 pb:list-none pb:p-0 pb:m-0">
+      <li>• Don't put multiple <code>solid primary</code> buttons side-by-side.</li>
+      <li>• Don't use <code>variant="glass"</code> on plain white or gray pages.</li>
+      <li>• Don't use raw unconstrained hex colors in component styles.</li>
+      <li>• Don't mix multiple conflicting border radii within the same card.</li>
+    </ul>
+  </div>
+</div>
