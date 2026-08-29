@@ -8,3 +8,5 @@ export type {
   DistributionHistogramProps,
   DistributionHistogramData,
 } from "./DistributionHistogram";
+export { LineGraph } from "./LineGraph";
+export type { LineGraphProps, LineGraphPoint } from "./LineGraph";
