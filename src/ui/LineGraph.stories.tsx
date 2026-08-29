@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { LineGraph } from "./LineGraph";
 
 const meta: Meta<typeof LineGraph> = {
-  title: "Components/LineGraph",
+  title: "UI/LineGraph",
   component: LineGraph,
 };
 
