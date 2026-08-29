@@ -34,4 +34,9 @@ export * from "./PeerbotsColorSelector";
 export * from "./EmptyState";
 export * from "./SearchInput";
 export * from "./LineGraph";
+export * from "./CopyButton";
+export * from "./useClipboard";
+export * from "./FileUpload";
+export * from "./Dropzone";
+export * from "./Avatar";
 
