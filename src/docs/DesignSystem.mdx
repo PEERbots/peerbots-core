@@ -1,46 +1,86 @@
-import { Meta, Canvas, Story } from "@storybook/addon-docs/blocks";
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
 import * as TypographyStories from "../ui/Typography.stories";
 import * as ColorStories from "../ui/Colors.stories";
+import * as CardStories from "../ui/Card.stories";
 
 <Meta title="Design System" />
 
-## Colors
+# Peerbots Design System
 
-These colors are defined in `src/styles/theme.css`. and are used throughout the application via Tailwind classes.
+The Peerbots design system ensures a consistent, accessible, and friendly experience across web applications, robot controllers, visualization tools, and community sites.
+
+---
+
+## 1. Design Philosophy
+
+- **Friendly & Approachable**: Soft rounded corners, generous touch targets, and clear brand colors.
+- **Accessible & High-Contrast**: Form inputs, buttons, and alerts meet WCAG contrast guidelines for therapists, educators, and learners.
+- **Context-Aware Surfaces**: Opaque surfaces for high-density forms and data; tactile glassmorphism surfaces for 3D/media HUD overlays.
+
+---
+
+## 2. Brand Palette & Color Architecture
+
+Defined in `src/styles/theme.css`, our color tokens fall into two primary roles:
+
+### Canonical Brand Palette
+- **Peerbots Teal (`#5fc7cc`)**: Primary brand identity, marketing accents, and active focus rings.
+- **Peerbots Pink (`#e96c8a`)**: Secondary brand identity, highlights, badges, and attention-drawing elements.
+- **Dark Teal (`#3f8588`)**: High-contrast interactive states and text on teal tints.
+- **Dark Blue (`#2e3a59`)**: Deep navy for titles, dark cards, and primary typography.
+- **Olive (`#82871f`)**: Earthy tertiary accent.
+
+### Application & Controller Tokens
+- **Electric Primary (`#46d9d9`)**: High-energy button fills and active state indicators in the controller.
+- **Dark Primary (`#0f766e`)**: Hover state for electric primary buttons.
+- **Secondary (`#e86e8a`)**: Canonical pink secondary token.
 
 <Canvas of={ColorStories.Variations} />
 
-## Typography
+---
 
-**Font Family**: `Avenir`, `Nunito`, sans-serif.
+## 3. Typography
+
+- **Primary Font Family**: `Avenir`, `Nunito`, `sans-serif`
+- **Monospace Font Family**: `ui-monospace`, `SFMono-Regular`, `Menlo`, `monospace` (used in `CodeBlock` and data readouts)
 
 <Canvas of={TypographyStories.Variations} />
 
+---
 
-# Peerbots Design System
+## 4. Glassmorphism & Surface Guidelines
 
-The Peerbots design system ensures a consistent, friendly, and accessible experience across the platforms.
+The `Card` component supports `variant="glass"` (`bg-white/90 backdrop-blur-xl border border-white/40 shadow-xl`).
 
-## Design Philosophy
+### When to Use Glassmorphism
+- **Floating 3D HUD Toolbars**: Camera controls, zoom buttons, and parameter readouts floating above WebGL / 3D canvases.
+- **Media Overlays**: Controls or title cards positioned directly over images, videos, or dynamic gradient backgrounds.
+- **Floating Header Navigation**: Top navigation bars over scrolling page content.
 
-- **Friendly & Approachable**: Use rounded corners, soft shadows, and vibrant colors.
-- **Accessible**: High contrast for critical buttons and readable font sizes.
-- **Responsive**: Adapts gracefully to various screen sizes, from phones to tablets.
+### When NOT to Use Glassmorphism
+- **Standard Forms & Text**: Never use glass on flat white or gray backgrounds. The blur is invisible, contrast is reduced, and text legibility suffers. Use `variant="elevated"` or `variant="default"` for standard UI cards.
+- **Data Tables & Dense Lists**: Use solid opaque cards with crisp borders.
 
-### Utilities
+<Canvas of={CardStories.GlassInContext} />
 
-Use these common utility classes for consistency:
+---
 
-- `btn-primary`: For the main action on a page/modal.
-- `btn-secondary`: For alternative actions.
-- `btn-danger`: For irreversible or dangerous actions.
-- `input-base`: For text inputs and textareas.
-- `range-primary`: For slider inputs.
+## 5. Core Component Usage
 
-## Evolving the System
+| Need | Recommended Component | Props / Usage |
+| :--- | :--- | :--- |
+| **Main Action** | `<Button variant="primary">` | Main call to action on a page or modal |
+| **Brand Actions** | `<Button variant="marketing-teal">` or `marketing-pink` | Marketing CTAs and brand-styled buttons |
+| **Destructive Action** | `<Button variant="danger">` | Irreversible actions (Delete, Remove) |
+| **Text Inputs** | `<Input>` or `<SearchInput>` | Single-line text input with optional icons/clear |
+| **Surfaces & Cards** | `<Card variant="default\|elevated\|glass">` | Structural containers and content boxes |
+| **Disclosures & FAQs** | `<Accordion>` or `<Collapsible>` | Collapsible sections and multi-item FAQs |
+| **Loading State** | `<Spinner size="md" color="teal">` | Animated circular loader |
 
-This design system is a living document.
+---
 
-- **New Needs**: When new features require UI elements not covered here, agents and developers should propose a new pattern.
-- **Documentation**: Any new repeatable pattern, component, or utility introduced (especially if driven by user needs) **must** be added to this document to remain the source of truth.
-- **Refinement**: Periodic audits should be conducted to ensure hardcoded styles are migrated to the design system.
+## 6. Evolving the System
+
+This design system is a living source of truth.
+- **Component Contributions**: Any new repeatable pattern must be added as a primitive in `@peerbots/core` with corresponding Storybook stories.
+- **Token Consistency**: Always use CSS variables (`var(--pb-color-*)`) or Tailwind `pb:` classes rather than arbitrary hex values.

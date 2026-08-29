@@ -9,58 +9,71 @@ export default meta;
 
 export const Variations: StoryObj = {
   render: () => (
-    <div className="pb:flex pb:flex-col pb:gap-8 pb:p-4 pb:bg-white">
+    <div className="pb:flex pb:flex-col pb:gap-8 pb:p-6 pb:bg-white pb:max-w-5xl">
       <div>
-        <h3 className="pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1 pb:mb-4">
-          Theme Colors
+        <h3 className="pb:text-sm pb:font-bold pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-2 pb:mb-4">
+          Peerbots Canonical Brand Palette
         </h3>
-        <div className="pb:grid pb:grid-cols-2 pb:md:grid-cols-3 pb:lg:grid-cols-5 pb:gap-4">
-          <ColorItem name="Primary" variable="var(--pb-color-primary)" />
-          <ColorItem name="Secondary" variable="var(--pb-color-secondary)" />
-          <ColorItem name="Accent" variable="var(--pb-color-accent)" />
-          <ColorItem name="Danger" variable="var(--pb-color-danger)" />
-          <ColorItem name="Light BG" variable="var(--pb-color-light-bg)" />
+        <p className="pb:text-xs pb:text-gray-500 pb:mb-4">
+          Primary brand colors used across the marketing website, competition runner, and core apps.
+        </p>
+        <div className="pb:grid pb:grid-cols-2 pb:sm:grid-cols-3 pb:md:grid-cols-4 pb:gap-4">
+          <ColorItem name="Peerbots Teal" hex="#5fc7cc" variable="var(--pb-color-peerbots-teal)" role="Primary brand accent" />
+          <ColorItem name="Peerbots Pink" hex="#e96c8a" variable="var(--pb-color-peerbots-pink)" role="Secondary brand accent & highlights" />
+          <ColorItem name="Dark Teal" hex="#3f8588" variable="var(--pb-color-peerbots-darkteal)" role="High-contrast interactive teal" />
+          <ColorItem name="Dark Blue" hex="#2e3a59" variable="var(--pb-color-peerbots-darkblue)" role="Deep brand background / headings" />
+          <ColorItem name="Olive" hex="#82871f" variable="var(--pb-color-peerbots-olive)" role="Tertiary earth accent" />
+          <ColorItem name="Dark Neutral" hex="#1a1a1a" variable="var(--pb-color-peerbots-dark)" role="Headings and dark surfaces" />
+          <ColorItem name="Light Neutral" hex="#f8f9fa" variable="var(--pb-color-peerbots-light)" role="Page & card subtle fills" />
         </div>
       </div>
 
       <div>
-        <h3 className="pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1 pb:mb-4">
-          Extended Accent Colors
+        <h3 className="pb:text-sm pb:font-bold pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-2 pb:mb-4">
+          Application & Controller Tokens
         </h3>
-        <div className="pb:grid pb:grid-cols-2 pb:md:grid-cols-3 pb:lg:grid-cols-4 pb:gap-4">
-          <ColorItem name="Accent HC" variable="var(--pb-color-accent-hc)" />
-          <ColorItem name="Accent Two" variable="var(--pb-color-accent-two)" />
-          <ColorItem
-            name="Accent Two HC"
-            variable="var(--pb-color-accent-two-hc)"
-          />
-          <ColorItem name="Accent Three" variable="var(--pb-color-accent-three)" />
-        </div>
-      </div>
-
-      <div>
-        <h3 className="pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-1 pb:mb-4">
-          UI Elements
-        </h3>
-        <div className="pb:grid pb:grid-cols-2 pb:md:grid-cols-3 pb:lg:grid-cols-4 pb:gap-4">
-          <ColorItem name="Sidebar BG" variable="var(--pb-sidebar-bg)" />
-          <ColorItem name="Dark Primary" variable="var(--pb-color-dark-primary)" />
+        <p className="pb:text-xs pb:text-gray-500 pb:mb-4">
+          High-energy functional tokens used for controller buttons, sliders, and form active states.
+        </p>
+        <div className="pb:grid pb:grid-cols-2 pb:sm:grid-cols-3 pb:md:grid-cols-4 pb:gap-4">
+          <ColorItem name="Primary (Electric)" hex="#46d9d9" variable="var(--pb-color-primary)" role="Controller buttons & active toggles" />
+          <ColorItem name="Dark Primary" hex="#0f766e" variable="var(--pb-color-dark-primary)" role="Hover state for electric primary" />
+          <ColorItem name="Secondary (Pink)" hex="#e86e8a" variable="var(--pb-color-secondary)" role="Secondary actions & badges" />
+          <ColorItem name="Accent Lime" hex="#d9e021" variable="var(--pb-color-accent)" role="High-energy accent" />
+          <ColorItem name="Accent Two (Blue)" hex="#4273ff" variable="var(--pb-color-accent-two)" role="Interactive blue accent" />
+          <ColorItem name="Danger" hex="#e86e8a" variable="var(--pb-color-danger)" role="Destructive alerts and buttons" />
+          <ColorItem name="Sidebar BG" hex="#f9ffff" variable="var(--pb-sidebar-bg)" role="App shell sidebar background" />
+          <ColorItem name="Light BG" hex="#d8e7eb" variable="var(--pb-color-light-bg)" role="Soft container backdrop" />
         </div>
       </div>
     </div>
   ),
 };
 
-function ColorItem({ name, variable }: { name: string; variable: string }) {
+function ColorItem({
+  name,
+  hex,
+  variable,
+  role,
+}: {
+  name: string;
+  hex: string;
+  variable: string;
+  role: string;
+}) {
   return (
-    <div className="pb:flex pb:flex-col pb:gap-2">
+    <div className="pb:flex pb:flex-col pb:gap-2 pb:p-3 pb:rounded-xl pb:border pb:border-gray-100 pb:bg-gray-50/50">
       <div
-        className="pb:h-20 pb:w-full pb:rounded-md pb:shadow-inner pb:border pb:border-gray-100"
+        className="pb:h-16 pb:w-full pb:rounded-lg pb:shadow-xs pb:border pb:border-black/5"
         style={{ backgroundColor: variable }}
       />
       <div className="pb:flex pb:flex-col">
-        <span className="pb:text-sm pb:font-bold pb:text-gray-900">{name}</span>
-        <code className="pb:text-xs pb:text-gray-500">{variable}</code>
+        <div className="pb:flex pb:items-center pb:justify-between">
+          <span className="pb:text-xs pb:font-bold pb:text-gray-900">{name}</span>
+          <span className="pb:text-[10px] pb:font-mono pb:text-gray-400">{hex}</span>
+        </div>
+        <span className="pb:text-[11px] pb:text-gray-500 pb:mt-0.5">{role}</span>
+        <code className="pb:text-[10px] pb:text-gray-400 pb:font-mono pb:mt-1 truncate">{variable}</code>
       </div>
     </div>
   );
