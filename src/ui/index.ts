@@ -41,3 +41,5 @@ export * from "./FileUpload";
 export * from "./Dropzone";
 export * from "./Avatar";
 export * from "./Spinner";
+export * from "./ChipGroup";
+export * from "./Stepper";
