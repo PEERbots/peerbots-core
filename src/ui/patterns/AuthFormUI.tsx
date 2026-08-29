@@ -145,7 +145,7 @@ export function AuthFormUI({
                     <div className="pb:w-full pb:border-t pb:border-gray-300"></div>
                   </div>
                   <div className="pb:relative pb:flex pb:justify-center pb:text-sm">
-                    <span className="pb:px-2 pb:bg-white pb:text-gray-500">or</span>
+                    <span className="pb:px-2 pb:bg-white pb:text-gray-700">or</span>
                   </div>
                 </div>
                 <Text size="sm">
@@ -179,7 +179,7 @@ export function AuthFormUI({
                     <div className="pb:w-full pb:border-t pb:border-gray-300"></div>
                   </div>
                   <div className="pb:relative pb:flex pb:justify-center pb:text-sm">
-                    <span className="pb:px-2 pb:bg-white pb:text-gray-500">or</span>
+                    <span className="pb:px-2 pb:bg-white pb:text-gray-700">or</span>
                   </div>
                 </div>
                 <Text size="sm">

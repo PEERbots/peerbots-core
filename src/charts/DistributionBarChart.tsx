@@ -43,17 +43,23 @@ export function DistributionBarChart({
   if (data.length === 0) return null;
 
   return (
-    <div className="pb:mb-6" role="img" aria-label={alt}>
+    <div className="pb:mb-6" role="region" aria-label={alt}>
       {label && (
-        <label className="pb:text-xs pb:uppercase pb:font-bold pb:text-gray-400 pb:block pb:mb-2 pb:px-1">
+        <span className="pb:text-xs pb:uppercase pb:font-bold pb:text-gray-700 pb:block pb:mb-2 pb:px-1">
           {label}
-        </label>
+        </span>
       )}
       <VictoryChart
         width={chartWidth}
         height={chartHeight}
         padding={{ left: 100, right: 50, top: 40, bottom: 60 }}
-        containerComponent={<VictoryVoronoiContainer />}
+        containerComponent={
+          <VictoryVoronoiContainer
+            title={alt}
+            desc={alt}
+            aria-label={alt}
+          />
+        }
       >
         <VictoryAxis
           horizontal

@@ -58,18 +58,18 @@ const variantColorClasses: Record<string, Record<AlertColor, string>> = {
     neutral: "pb:bg-gray-50 pb:border-gray-200 pb:text-gray-900",
   },
   outline: {
-    danger: "pb:bg-white pb:border-2 pb:border-red-300 pb:text-red-900",
-    warning: "pb:bg-white pb:border-2 pb:border-amber-300 pb:text-amber-900",
-    success: "pb:bg-white pb:border-2 pb:border-emerald-300 pb:text-emerald-900",
-    info: "pb:bg-white pb:border-2 pb:border-teal-300 pb:text-teal-900",
-    neutral: "pb:bg-white pb:border-2 pb:border-gray-300 pb:text-gray-900",
+    danger: "pb:bg-red-50/40 pb:border-2 pb:border-red-400 pb:text-red-950",
+    warning: "pb:bg-amber-50/40 pb:border-2 pb:border-amber-400 pb:text-amber-950",
+    success: "pb:bg-emerald-50/40 pb:border-2 pb:border-emerald-500 pb:text-emerald-950",
+    info: "pb:bg-teal-50/40 pb:border-2 pb:border-teal-500 pb:text-teal-950",
+    neutral: "pb:bg-gray-50/40 pb:border-2 pb:border-gray-300 pb:text-gray-950",
   },
   solid: {
-    danger: "pb:bg-red-600 pb:border-transparent pb:text-white",
-    warning: "pb:bg-amber-500 pb:border-transparent pb:text-gray-900",
-    success: "pb:bg-emerald-600 pb:border-transparent pb:text-white",
-    info: "pb:bg-teal-600 pb:border-transparent pb:text-white",
-    neutral: "pb:bg-gray-800 pb:border-transparent pb:text-white",
+    danger: "pb:bg-red-700 pb:border-transparent pb:text-white",
+    warning: "pb:bg-amber-300 pb:border-transparent pb:text-gray-950 pb:font-medium",
+    success: "pb:bg-emerald-700 pb:border-transparent pb:text-white",
+    info: "pb:bg-teal-700 pb:border-transparent pb:text-white",
+    neutral: "pb:bg-gray-900 pb:border-transparent pb:text-white",
   },
 };
 

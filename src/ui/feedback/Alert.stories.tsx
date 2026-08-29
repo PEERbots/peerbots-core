@@ -29,7 +29,7 @@ type Story = StoryObj<typeof Alert>;
 export const Default: Story = {
   args: {
     color: "info",
-    variant: "soft",
+    variant: "outline",
     title: "System Update",
     message: "A new robot face configuration has been synchronized to your controller.",
     className: "pb:w-[480px]",
@@ -39,11 +39,12 @@ export const Default: Story = {
 export const ColorsAndVariants: Story = {
   render: () => (
     <div className="pb:flex pb:flex-col pb:gap-4 pb:w-[520px]">
-      <Alert color="info" title="Info Banner" message="New feature release available." />
-      <Alert color="success" title="Session Connected" message="Controller paired with robot face." />
-      <Alert color="warning" title="Battery Low" message="Robot head battery is below 15%." />
+      <Alert color="info" variant="outline" title="Info Banner (Outline)" message="New feature release available." />
+      <Alert color="success" variant="soft" title="Session Connected" message="Controller paired with robot face." />
+      <Alert color="warning" variant="soft" title="Battery Low" message="Robot head battery is below 15%." />
       <Alert
         color="danger"
+        variant="soft"
         title="Connection Failed"
         message="Unable to reach the WebSocket server."
         action={{ name: "Retry", callback: () => console.log("Retrying...") }}

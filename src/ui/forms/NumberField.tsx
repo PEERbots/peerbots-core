@@ -3,7 +3,7 @@ import { NumberField as BaseNumberField } from "@base-ui/react";
 import { cn } from "../utils";
 import { Icon } from "../foundations/Icon";
 
-export interface NumberFieldProps {
+export interface NumberFieldProps extends React.AriaAttributes {
   value?: number | null;
   defaultValue?: number;
   min?: number;
@@ -33,17 +33,16 @@ export const NumberField = React.forwardRef<HTMLDivElement, NumberFieldProps>(
       id: propsId,
       placeholder,
       showButtons = false,
+      "aria-label": ariaLabel,
       ...props
     },
     ref,
   ) => {
-    const generatedId = React.useId();
-    const numberId = propsId || generatedId;
-
     return (
       <div className="pb:w-full">
         <BaseNumberField.Root
           ref={ref}
+          id={propsId}
           value={value}
           defaultValue={defaultValue}
           min={min}
@@ -60,7 +59,7 @@ export const NumberField = React.forwardRef<HTMLDivElement, NumberFieldProps>(
           className={cn("pb:flex pb:flex-col pb:gap-1", className)}
           {...props}
         >
-          <div
+          <BaseNumberField.Group
             className={cn(
               "pb:group pb:relative pb:flex pb:items-center pb:rounded-md pb:border-0 pb:bg-primary/10 pb:ring-1 pb:ring-inset pb:ring-gray-300 pb:focus-within:ring-2 pb:focus-within:ring-primary pb:shadow-sm",
               disabled && "pb:opacity-50 pb:cursor-not-allowed",
@@ -82,8 +81,8 @@ export const NumberField = React.forwardRef<HTMLDivElement, NumberFieldProps>(
             )}
 
             <BaseNumberField.Input
-              id={numberId}
               placeholder={placeholder}
+              aria-label={ariaLabel || (typeof placeholder === "string" ? placeholder : "Number input")}
               className={cn(
                 "pb:block pb:w-full pb:bg-transparent pb:border-0 pb:px-3 pb:py-1.5 pb:text-gray-900 pb:placeholder:text-gray-400 pb:focus:ring-0 pb:sm:text-sm pb:sm:leading-6 pb:text-center pb:appearance-none pb:relative pb:z-0",
                 !showButtons && "pb:rounded-md",
@@ -106,7 +105,7 @@ export const NumberField = React.forwardRef<HTMLDivElement, NumberFieldProps>(
             )}
 
             <BaseNumberField.ScrubArea className="pb:absolute pb:inset-0 pb:z-10 pb:cursor-ew-resize pb:opacity-0 pb:hover:opacity-10 pb:transition-opacity pb:bg-primary/5 pb:rounded-md pb:pointer-events-none group-pb:hover:pointer-events-auto" />
-          </div>
+          </BaseNumberField.Group>
         </BaseNumberField.Root>
       </div>
     );

@@ -40,7 +40,7 @@ export const Variations: Story = {
             </div>
           </Collapsible>
           <Collapsible
-            title={<span className="pb:font-bold pb:text-peerbots-teal">Styled Title Section</span>}
+            title={<span className="pb:font-bold pb:text-peerbots-darkteal">Styled Title Section</span>}
           >
             <div className="pb:p-4 pb:space-y-3">
               <p>Custom styled title disclosure.</p>

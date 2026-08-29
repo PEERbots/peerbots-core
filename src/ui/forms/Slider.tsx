@@ -2,7 +2,7 @@ import React from "react";
 import { Slider as BaseSlider } from "@base-ui/react";
 import { cn } from "../utils";
 
-export interface SliderProps {
+export interface SliderProps extends React.AriaAttributes {
   min?: number;
   max?: number;
   step?: number;
@@ -28,6 +28,7 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
       onChange,
       name,
       icon,
+      "aria-label": ariaLabel,
       ...props
     },
     ref,
@@ -81,7 +82,10 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
               <BaseSlider.Track className="pb:relative pb:bg-gray-200 pb:rounded-full pb:w-full pb:h-1.5 pb:overflow-hidden pb:transition-colors group-pb:hover:bg-gray-300">
                 <BaseSlider.Indicator className="pb:absolute pb:bg-primary pb:rounded-full pb:h-full" />
               </BaseSlider.Track>
-              <BaseSlider.Thumb className="pb:z-10 pb:block pb:w-4.5 pb:h-4.5 pb:bg-white pb:shadow-md pb:rounded-full pb:border-2 pb:border-primary focus:pb:outline-none focus:pb:ring-4 focus:pb:ring-primary/20 pb:cursor-grab active:pb:cursor-grabbing pb:hover:scale-110 active:pb:scale-95 pb:transition-transform" />
+              <BaseSlider.Thumb
+                aria-label={ariaLabel || (name ? name : "Slider")}
+                className="pb:z-10 pb:block pb:w-4.5 pb:h-4.5 pb:bg-white pb:shadow-md pb:rounded-full pb:border-2 pb:border-primary focus:pb:outline-none focus:pb:ring-4 focus:pb:ring-primary/20 pb:cursor-grab active:pb:cursor-grabbing pb:hover:scale-110 active:pb:scale-95 pb:transition-transform"
+              />
             </BaseSlider.Control>
           </BaseSlider.Root>
         </div>

@@ -52,15 +52,23 @@ export function DistributionHistogram({
   const padding = { left: 60, right: 30, top: 20, bottom: 70 };
 
   return (
-    <div className="pb:mb-6" role="img" aria-label={alt}>
-      <label className="pb:text-xs pb:uppercase pb:font-bold pb:text-gray-400 pb:block pb:mb-2 pb:px-1">
-        {label}
-      </label>
+    <div className="pb:mb-6" role="region" aria-label={alt}>
+      {label && (
+        <span className="pb:text-xs pb:uppercase pb:font-bold pb:text-gray-700 pb:block pb:mb-2 pb:px-1">
+          {label}
+        </span>
+      )}
       <VictoryChart
         width={chartWidth}
         height={chartHeight}
         padding={padding}
-        containerComponent={<VictoryVoronoiContainer />}
+        containerComponent={
+          <VictoryVoronoiContainer
+            title={alt}
+            desc={alt}
+            aria-label={alt}
+          />
+        }
       >
         <VictoryAxis
           label="Length"

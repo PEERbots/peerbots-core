@@ -41,9 +41,51 @@ export const Default: Story = {
     defaultValue: 50,
   },
   render: (args) => (
-    <div className="pb:w-80 pb:p-4">
+    <div className="pb:p-6 pb:bg-white pb:rounded-2xl pb:border pb:border-gray-200 pb:shadow-xs pb:w-[420px] pb:space-y-2">
+      <div className="pb:flex pb:justify-between pb:items-center pb:mb-1">
+        <Text size="sm" weight="bold">Output Volume</Text>
+        <Text size="xs" color="muted">0 – 100%</Text>
+      </div>
       <InteractiveSliderWithNumberField
+        aria-label="Output volume"
         {...(args as React.ComponentProps<typeof SliderWithNumberField>)}
+      />
+    </div>
+  ),
+};
+
+export const WithStepperButtons: Story = {
+  render: () => (
+    <div className="pb:p-6 pb:bg-white pb:rounded-2xl pb:border pb:border-gray-200 pb:shadow-xs pb:w-[460px] pb:space-y-2">
+      <div className="pb:flex pb:justify-between pb:items-center pb:mb-1">
+        <Text size="sm" weight="bold">Head Tilt Angle</Text>
+        <Text size="xs" color="muted">-45° to +45°</Text>
+      </div>
+      <InteractiveSliderWithNumberField
+        aria-label="Head tilt angle"
+        min={-45}
+        max={45}
+        defaultValue={0}
+        step={1}
+        showButtons={true}
+      />
+    </div>
+  ),
+};
+
+export const DecimalPrecision: Story = {
+  render: () => (
+    <div className="pb:p-6 pb:bg-white pb:rounded-2xl pb:border pb:border-gray-200 pb:shadow-xs pb:w-[420px] pb:space-y-2">
+      <div className="pb:flex pb:justify-between pb:items-center pb:mb-1">
+        <Text size="sm" weight="bold">Speaking Pitch Multiplier</Text>
+        <Text size="xs" color="muted">0.5x – 2.0x (step 0.05)</Text>
+      </div>
+      <InteractiveSliderWithNumberField
+        aria-label="Speaking pitch multiplier"
+        min={0.5}
+        max={2.0}
+        step={0.05}
+        defaultValue={1.0}
       />
     </div>
   ),
@@ -51,47 +93,40 @@ export const Default: Story = {
 
 export const Variations: Story = {
   render: () => (
-    <div className="pb:flex pb:flex-col pb:gap-12 pb:p-4">
+    <div className="pb:flex pb:flex-col pb:gap-8 pb:p-4 pb:max-w-lg">
       <div className="pb:space-y-4">
-        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:uppercase">
-          Responsive Layouts
-        </Heading>
-        <div className="pb:space-y-8 pb:max-w-lg">
-          <div className="pb:space-y-2">
-            <Text variant="small" className="pb:font-bold pb:underline">
-              Flexible (Full width of container)
-            </Text>
-            <InteractiveSliderWithNumberField defaultValue={50} />
-          </div>
-
-          <div className="pb:space-y-2 pb:w-64 pb:border-l pb:border-r pb:border-dotted pb:px-2 pb:bg-gray-50 pb:py-4">
-            <Text variant="small" className="pb:font-bold pb:underline">
-              Narrow Container (w-64)
-            </Text>
-            <InteractiveSliderWithNumberField defaultValue={50} />
-          </div>
-
-          <div className="pb:space-y-2 pb:w-48 pb:border-l pb:border-r pb:border-dotted pb:px-2 pb:bg-gray-50 pb:py-4">
-            <Text variant="small" className="pb:font-bold pb:underline">
-              Very Narrow (w-48) - Wraps
-            </Text>
-            <InteractiveSliderWithNumberField defaultValue={50} />
-          </div>
-        </div>
-      </div>
-
-      <div className="pb:space-y-4">
-        <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black pb:uppercase">
-          Configuration
-        </Heading>
-        <div className="pb:space-y-4 pb:max-w-sm">
-          <div className="pb:space-y-1">
-            <Text variant="small">Custom Step (0.5)</Text>
+        <span className="pb:text-xs pb:font-bold pb:text-gray-700 pb:uppercase pb:tracking-wider pb:block">
+          Robot Motor & Audio Settings
+        </span>
+        <div className="pb:space-y-6 pb:p-6 pb:bg-gray-50 pb:rounded-2xl pb:border pb:border-gray-200">
+          <div className="pb:space-y-1.5">
+            <Text size="xs" weight="bold">Motor Sensitivity</Text>
             <InteractiveSliderWithNumberField
-              step={0.5}
-              defaultValue={2.5}
-              min={0}
+              aria-label="Motor sensitivity"
+              min={1}
               max={10}
+              defaultValue={7}
+            />
+          </div>
+
+          <div className="pb:space-y-1.5">
+            <Text size="xs" weight="bold">Eye Blink Frequency (Hz)</Text>
+            <InteractiveSliderWithNumberField
+              aria-label="Eye blink frequency"
+              min={0.1}
+              max={5.0}
+              step={0.1}
+              defaultValue={1.2}
+              showButtons={true}
+            />
+          </div>
+
+          <div className="pb:space-y-1.5">
+            <Text size="xs" weight="bold" color="muted">Disabled Axis (Locked)</Text>
+            <InteractiveSliderWithNumberField
+              aria-label="Locked axis"
+              disabled
+              defaultValue={0}
             />
           </div>
         </div>

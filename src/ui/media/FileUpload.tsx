@@ -116,7 +116,7 @@ export const FileUpload = React.forwardRef<HTMLDivElement, FileUploadProps>(
         ref={ref}
         className={cn(
           "pb:inline-flex pb:items-center pb:gap-3 pb:w-full pb:max-w-md",
-          disabled && "pb:opacity-60 pb:cursor-not-allowed",
+          disabled && "pb:cursor-not-allowed",
           className,
         )}
       >
@@ -152,7 +152,7 @@ export const FileUpload = React.forwardRef<HTMLDivElement, FileUploadProps>(
                 : `${activeFiles.length} files selected`}
             </span>
           ) : (
-            <span className="pb:text-gray-400 pb:truncate">{placeholder}</span>
+            <span className="pb:text-gray-600 pb:truncate">{placeholder}</span>
           )}
 
           {clearable && activeFiles.length > 0 && !disabled && (

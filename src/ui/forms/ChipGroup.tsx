@@ -225,7 +225,7 @@ export function ChipGroup<T = string>({
                   currentSize.badge,
                   isSelected
                     ? "pb:bg-black/15 pb:text-current"
-                    : "pb:bg-gray-100 pb:text-gray-500",
+                    : "pb:bg-gray-200 pb:text-gray-800",
                 )}
               >
                 {option.badge}

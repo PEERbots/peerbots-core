@@ -30,13 +30,14 @@ export const Variations: Story = {
             <Text variant="small" className="pb:font-bold">
               With Predefined Value
             </Text>
-            <TextArea defaultValue="This is some predefined text in the textarea." />
+            <TextArea aria-label="Predefined message" defaultValue="This is some predefined text in the textarea." />
           </div>
           <div className="pb:space-y-1">
             <Text variant="small" className="pb:font-bold">
               Large (10 rows)
             </Text>
             <TextArea
+              aria-label="Extended description"
               rows={10}
               placeholder="A larger textarea for more content..."
             />
@@ -53,6 +54,7 @@ export const Variations: Story = {
             Disabled
           </Text>
           <TextArea
+            aria-label="Disabled message"
             disabled
             placeholder="Cannot type here"
             defaultValue="Read only content"

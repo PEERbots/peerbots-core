@@ -37,7 +37,7 @@ export const GlassInContext: Story = {
     <div className="pb:flex pb:flex-col pb:gap-8 pb:max-w-4xl pb:p-6">
       {/* 3D Canvas Viewport HUD Context */}
       <div>
-        <h4 className="pb:text-xs pb:font-bold pb:text-gray-500 pb:uppercase pb:tracking-wider pb:mb-2">
+        <h4 className="pb:text-xs pb:font-bold pb:text-gray-700 pb:uppercase pb:tracking-wider pb:mb-2">
           Recommended Use: Floating Viewport HUD / Canvas Overlays
         </h4>
         <div className="pb:relative pb:w-full pb:h-80 pb:rounded-3xl pb:overflow-hidden pb:bg-gradient-to-tr pb:from-slate-900 pb:via-slate-800 pb:to-teal-950 pb:border pb:border-slate-700 pb:p-6 pb:flex pb:items-center pb:justify-center">
@@ -46,7 +46,7 @@ export const GlassInContext: Story = {
             <div className="pb:w-28 pb:h-28 pb:rounded-2xl pb:bg-peerbots-teal/20 pb:border-2 pb:border-peerbots-teal/40 pb:flex pb:items-center pb:justify-center pb:shadow-lg pb:shadow-peerbots-teal/10 pb:animate-pulse">
               <Icon name="face" className="pb:w-16 pb:h-16 pb:text-peerbots-teal" />
             </div>
-            <span className="pb:text-xs pb:font-mono pb:text-teal-300/60 pb:mt-3">
+            <span className="pb:text-xs pb:font-mono pb:text-teal-200 pb:mt-3">
               WebGL 3D Robot Face Stage
             </span>
           </div>
@@ -54,15 +54,15 @@ export const GlassInContext: Story = {
           {/* Floating HUD Camera Toolbar (Glass) */}
           <div className="pb:absolute pb:left-6 pb:top-1/2 pb:-translate-y-1/2">
             <Card variant="glass" padding="none" className="pb:p-1.5 pb:flex pb:flex-col pb:gap-2 pb:shadow-2xl">
-              <button className="pb:w-9 pb:h-9 pb:flex pb:items-center pb:justify-center pb:rounded-xl pb:hover:bg-black/5 pb:text-gray-700 pb:font-bold pb:text-lg">
+              <button aria-label="Zoom in" className="pb:w-9 pb:h-9 pb:flex pb:items-center pb:justify-center pb:rounded-xl pb:hover:bg-black/5 pb:text-gray-900 pb:font-bold pb:text-lg">
                 +
               </button>
               <div className="pb:w-full pb:h-px pb:bg-black/10" />
-              <button className="pb:w-9 pb:h-9 pb:flex pb:items-center pb:justify-center pb:rounded-xl pb:hover:bg-black/5 pb:text-gray-700 pb:font-bold pb:text-lg">
+              <button aria-label="Zoom out" className="pb:w-9 pb:h-9 pb:flex pb:items-center pb:justify-center pb:rounded-xl pb:hover:bg-black/5 pb:text-gray-900 pb:font-bold pb:text-lg">
                 -
               </button>
               <div className="pb:w-full pb:h-px pb:bg-black/10" />
-              <button className="pb:w-9 pb:h-9 pb:flex pb:items-center pb:justify-center pb:rounded-xl pb:hover:bg-black/5 pb:text-gray-700">
+              <button aria-label="Reset camera" className="pb:w-9 pb:h-9 pb:flex pb:items-center pb:justify-center pb:rounded-xl pb:hover:bg-black/5 pb:text-gray-900">
                 <Icon name="arrowPath" className="pb:w-4 pb:h-4" />
               </button>
             </Card>
@@ -73,11 +73,11 @@ export const GlassInContext: Story = {
             <Card variant="glass" padding="sm" className="pb:shadow-2xl pb:space-y-2">
               <div className="pb:flex pb:items-center pb:justify-between">
                 <span className="pb:text-xs pb:font-bold pb:text-gray-900">Head Rotation</span>
-                <span className="pb:text-[10px] pb:font-mono pb:text-peerbots-darkteal pb:bg-peerbots-teal/20 pb:px-1.5 pb:py-0.5 pb:rounded">
+                <span className="pb:text-[10px] pb:font-mono pb:text-teal-950 pb:bg-peerbots-teal/30 pb:px-1.5 pb:py-0.5 pb:rounded pb:font-bold">
                   Yaw: 14°
                 </span>
               </div>
-              <Text variant="small" className="pb:text-[11px] pb:text-gray-600 pb:block">
+              <Text variant="small" className="pb:text-[11px] pb:text-gray-700 pb:block">
                 Glass surfaces maintain ambient visual depth without occluding the rendered model.
               </Text>
             </Card>
@@ -87,12 +87,12 @@ export const GlassInContext: Story = {
 
       {/* When NOT to use: Comparison */}
       <div>
-        <h4 className="pb:text-xs pb:font-bold pb:text-gray-500 pb:uppercase pb:tracking-wider pb:mb-2">
+        <h4 className="pb:text-xs pb:font-bold pb:text-gray-700 pb:uppercase pb:tracking-wider pb:mb-2">
           Standard Content vs Glass Comparison
         </h4>
         <div className="pb:grid pb:grid-cols-2 pb:gap-6 pb:p-6 pb:bg-gray-100 pb:rounded-2xl">
           <Card variant="elevated" padding="md">
-            <span className="pb:text-[10px] pb:font-bold pb:uppercase pb:tracking-wider pb:text-gray-400">
+            <span className="pb:text-[10px] pb:font-bold pb:uppercase pb:tracking-wider pb:text-gray-700">
               Standard Opaque Surface (Recommended for forms & text)
             </span>
             <Heading level={4} className="pb:mt-1">Account & Settings</Heading>

@@ -62,7 +62,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
             <span className="pb:w-3 pb:h-3 pb:rounded-full pb:bg-yellow-500/80 pb:inline-block" />
             <span className="pb:w-3 pb:h-3 pb:rounded-full pb:bg-green-500/80 pb:inline-block" />
             {fileName && (
-              <span className="pb:ml-2 pb:text-xs pb:text-gray-400 pb:font-sans pb:font-medium">
+              <span className="pb:ml-2 pb:text-xs pb:text-gray-300 pb:font-sans pb:font-medium">
                 {fileName}
               </span>
             )}
@@ -70,7 +70,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
 
           <div className="pb:flex pb:items-center pb:gap-3">
             {language && (
-              <span className="pb:text-xs pb:uppercase pb:font-bold pb:text-gray-400 pb:bg-gray-800/80 pb:px-2.5 pb:py-0.5 pb:rounded-md">
+              <span className="pb:text-xs pb:uppercase pb:font-bold pb:text-gray-200 pb:bg-gray-800/80 pb:px-2.5 pb:py-0.5 pb:rounded-md">
                 {language}
               </span>
             )}
@@ -78,7 +78,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
               <button
                 type="button"
                 onClick={handleCopy}
-                className="pb:flex pb:items-center pb:gap-1.5 pb:px-3 pb:py-1 pb:text-xs pb:font-semibold pb:text-gray-300 pb:hover:text-white pb:bg-gray-800 pb:hover:bg-gray-700 pb:rounded-lg pb:transition-colors pb:cursor-pointer"
+                className="pb:flex pb:items-center pb:gap-1.5 pb:px-3 pb:py-1 pb:text-xs pb:font-semibold pb:text-gray-200 pb:hover:text-white pb:bg-gray-800 pb:hover:bg-gray-700 pb:rounded-lg pb:transition-colors pb:cursor-pointer"
                 aria-label="Copy code to clipboard"
               >
                 {copied ? (
@@ -101,7 +101,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
         (showCopyButton || language) && (
           <div className="pb:absolute pb:top-3 pb:right-3 pb:flex pb:items-center pb:gap-2 pb:z-10">
             {language && (
-              <span className="pb:text-[11px] pb:uppercase pb:font-bold pb:text-gray-400 pb:bg-gray-800/60 pb:px-2 pb:py-0.5 pb:rounded-md pb:select-none">
+              <span className="pb:text-[11px] pb:uppercase pb:font-bold pb:text-gray-200 pb:bg-gray-800/80 pb:px-2 pb:py-0.5 pb:rounded-md pb:select-none">
                 {language}
               </span>
             )}
@@ -131,7 +131,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
             {showLineNumbers ? (
               codeLines.map((line, idx) => (
                 <div key={idx} className="pb:table-row">
-                  <span className="pb:table-cell pb:pr-4 pb:text-right pb:select-none pb:text-gray-500 pb:text-xs">
+                  <span className="pb:table-cell pb:pr-4 pb:text-right pb:select-none pb:text-gray-400 pb:text-xs">
                     {idx + 1}
                   </span>
                   <span className="pb:table-cell">{line}</span>

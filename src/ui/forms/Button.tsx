@@ -62,13 +62,13 @@ const variantColorMap: Record<FillVariant, Record<string, string>> = {
     neutral:
       "pb:bg-gray-100 pb:text-gray-900 pb:hover:bg-gray-200 pb:border pb:border-gray-300 pb:font-medium",
     teal: "pb:bg-peerbots-teal pb:text-gray-900 pb:hover:bg-peerbots-darkteal pb:hover:text-white pb:shadow-md pb:font-bold",
-    pink: "pb:bg-peerbots-pink pb:text-white pb:hover:bg-rose-700 pb:shadow-md pb:font-bold",
+    pink: "pb:bg-peerbots-pink pb:text-gray-950 pb:hover:bg-rose-700 pb:hover:text-white pb:shadow-md pb:font-bold",
     darkblue:
       "pb:bg-peerbots-darkblue pb:text-white pb:hover:opacity-90 pb:shadow-md pb:font-bold",
     danger:
       "pb:bg-red-600 pb:text-white pb:hover:bg-red-700 pb:shadow-xs pb:font-bold",
     success:
-      "pb:bg-emerald-600 pb:text-white pb:hover:bg-emerald-700 pb:shadow-xs pb:font-bold",
+      "pb:bg-emerald-700 pb:text-white pb:hover:bg-emerald-800 pb:shadow-xs pb:font-bold",
     warning:
       "pb:bg-amber-500 pb:text-gray-900 pb:hover:bg-amber-600 pb:shadow-xs pb:font-bold",
   },

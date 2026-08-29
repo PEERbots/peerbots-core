@@ -14,7 +14,7 @@ export const Variations: StoryObj = {
         <h3 className="pb:text-sm pb:font-bold pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-2 pb:mb-4">
           Peerbots Canonical Brand Palette
         </h3>
-        <p className="pb:text-xs pb:text-gray-500 pb:mb-4">
+        <p className="pb:text-xs pb:text-gray-700 pb:mb-4">
           Primary brand colors used across the marketing website, competition runner, and core apps.
         </p>
         <div className="pb:grid pb:grid-cols-2 pb:sm:grid-cols-3 pb:md:grid-cols-4 pb:gap-4">
@@ -32,7 +32,7 @@ export const Variations: StoryObj = {
         <h3 className="pb:text-sm pb:font-bold pb:text-black pb:uppercase pb:tracking-wider pb:border-b pb:pb-2 pb:mb-4">
           Application & Controller Tokens
         </h3>
-        <p className="pb:text-xs pb:text-gray-500 pb:mb-4">
+        <p className="pb:text-xs pb:text-gray-700 pb:mb-4">
           High-energy functional tokens used for controller buttons, sliders, and form active states.
         </p>
         <div className="pb:grid pb:grid-cols-2 pb:sm:grid-cols-3 pb:md:grid-cols-4 pb:gap-4">
@@ -70,10 +70,10 @@ function ColorItem({
       <div className="pb:flex pb:flex-col">
         <div className="pb:flex pb:items-center pb:justify-between">
           <span className="pb:text-xs pb:font-bold pb:text-gray-900">{name}</span>
-          <span className="pb:text-[10px] pb:font-mono pb:text-gray-400">{hex}</span>
+          <span className="pb:text-[10px] pb:font-mono pb:text-gray-600">{hex}</span>
         </div>
-        <span className="pb:text-[11px] pb:text-gray-500 pb:mt-0.5">{role}</span>
-        <code className="pb:text-[10px] pb:text-gray-400 pb:font-mono pb:mt-1 truncate">{variable}</code>
+        <span className="pb:text-[11px] pb:text-gray-700 pb:mt-0.5">{role}</span>
+        <code className="pb:text-[10px] pb:text-gray-600 pb:font-mono pb:mt-1 truncate">{variable}</code>
       </div>
     </div>
   );

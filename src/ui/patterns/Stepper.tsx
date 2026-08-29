@@ -91,11 +91,13 @@ export function Stepper({
           const isCurrent = status === "current";
           const isComplete = status === "complete";
           const isClickable = Boolean(onStepClick) && status !== "disabled";
+          const stepLabel = typeof step.title === "string" ? `Step ${idx + 1}: ${step.title}` : `Step ${idx + 1}`;
 
           return (
             <li key={step.id}>
               <button
                 type="button"
+                aria-label={stepLabel}
                 disabled={!isClickable}
                 onClick={() => onStepClick?.(step.id)}
                 className={cn(
@@ -150,6 +152,7 @@ export function Stepper({
           const isComplete = status === "complete";
           const isLast = idx === steps.length - 1;
           const isClickable = Boolean(onStepClick) && status !== "disabled";
+          const stepLabel = typeof step.title === "string" ? `Step ${idx + 1}: ${step.title}` : `Step ${idx + 1}`;
 
           return (
             <li key={step.id} className="pb:relative pb:flex pb:items-start pb:gap-4 pb:pb-6">
@@ -164,6 +167,7 @@ export function Stepper({
 
               <button
                 type="button"
+                aria-label={stepLabel}
                 disabled={!isClickable}
                 onClick={() => onStepClick?.(step.id)}
                 className={cn(
@@ -215,7 +219,7 @@ export function Stepper({
   return (
     <ol
       className={cn(
-        "pb:flex pb:w-full pb:items-center pb:justify-between pb:gap-2 pb:list-none pb:p-0 pb:m-0",
+        "pb:flex pb:w-full pb:items-center pb:justify-between pb:gap-0 pb:list-none pb:p-0 pb:m-0",
         className,
       )}
     >
@@ -225,12 +229,20 @@ export function Stepper({
         const isComplete = status === "complete";
         const isLast = idx === steps.length - 1;
         const isClickable = Boolean(onStepClick) && status !== "disabled";
+        const stepLabel = typeof step.title === "string" ? `Step ${idx + 1}: ${step.title}` : `Step ${idx + 1}`;
 
         return (
-          <React.Fragment key={step.id}>
-            <li className="pb:flex pb:flex-col pb:items-center pb:text-center pb:relative">
+          <li
+            key={step.id}
+            className={cn(
+              "pb:flex pb:items-center",
+              isLast ? "pb:flex-none" : "pb:flex-1",
+            )}
+          >
+            <div className="pb:flex pb:flex-col pb:items-center pb:text-center pb:relative">
               <button
                 type="button"
+                aria-label={stepLabel}
                 disabled={!isClickable}
                 onClick={() => onStepClick?.(step.id)}
                 className={cn(
@@ -265,7 +277,7 @@ export function Stepper({
                   </div>
                 )}
               </div>
-            </li>
+            </div>
 
             {!isLast && (
               <div
@@ -275,7 +287,7 @@ export function Stepper({
                 )}
               />
             )}
-          </React.Fragment>
+          </li>
         );
       })}
     </ol>

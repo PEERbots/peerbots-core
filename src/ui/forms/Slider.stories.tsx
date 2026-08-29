@@ -62,11 +62,12 @@ const RangeChangeableSlider = ({
         <div className="pb:flex pb:flex-col pb:gap-1">
           <Text
             variant="small"
-            className="pb:uppercase pb:text-slate-400 pb:font-bold pb:text-[10px]"
+            className="pb:uppercase pb:text-slate-700 pb:font-bold pb:text-[10px]"
           >
             Min
           </Text>
           <Input
+            aria-label="Minimum value"
             type="number"
             value={min}
             onChange={(e) => setMin(Number(e.target.value))}
@@ -76,11 +77,12 @@ const RangeChangeableSlider = ({
         <div className="pb:flex pb:flex-col pb:gap-1">
           <Text
             variant="small"
-            className="pb:uppercase pb:text-slate-400 pb:font-bold pb:text-[10px]"
+            className="pb:uppercase pb:text-slate-700 pb:font-bold pb:text-[10px]"
           >
             Max
           </Text>
           <Input
+            aria-label="Maximum value"
             type="number"
             value={max}
             onChange={(e) => setMax(Number(e.target.value))}

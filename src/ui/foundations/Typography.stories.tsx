@@ -13,7 +13,7 @@ export const Variations: StoryObj = {
   render: () => (
     <div className="pb:flex pb:flex-col pb:gap-8 pb:p-6 pb:bg-white pb:max-w-4xl">
       <div>
-        <span className="pb:text-xs pb:font-bold pb:text-gray-400 pb:uppercase pb:tracking-wider pb:block pb:mb-3">
+        <span className="pb:text-xs pb:font-bold pb:text-gray-700 pb:uppercase pb:tracking-wider pb:block pb:mb-3">
           Heading Scale & Semantic Tags
         </span>
         <div className="pb:space-y-3">
@@ -27,7 +27,7 @@ export const Variations: StoryObj = {
       </div>
 
       <div>
-        <span className="pb:text-xs pb:font-bold pb:text-gray-400 pb:uppercase pb:tracking-wider pb:block pb:mb-3">
+        <span className="pb:text-xs pb:font-bold pb:text-gray-700 pb:uppercase pb:tracking-wider pb:block pb:mb-3">
           Heading Brand Colors & Gradient
         </span>
         <div className="pb:space-y-3">
@@ -39,7 +39,7 @@ export const Variations: StoryObj = {
       </div>
 
       <div>
-        <span className="pb:text-xs pb:font-bold pb:text-gray-400 pb:uppercase pb:tracking-wider pb:block pb:mb-3">
+        <span className="pb:text-xs pb:font-bold pb:text-gray-700 pb:uppercase pb:tracking-wider pb:block pb:mb-3">
           Text Scale & Composable Colors
         </span>
         <div className="pb:space-y-3">

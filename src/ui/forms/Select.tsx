@@ -8,7 +8,7 @@ export interface SelectOption {
   value: string | number;
 }
 
-export interface SelectProps {
+export interface SelectProps extends React.AriaAttributes {
   options: (string | SelectOption)[];
   value?: string | number;
   defaultValue?: string | number;
@@ -32,6 +32,7 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
       disabled,
       placeholder = "Select...",
       onFocus,
+      "aria-label": ariaLabel,
       ...props
     },
     ref,
@@ -61,6 +62,7 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
           <BaseSelect.Trigger
             ref={ref}
             id={selectId}
+            aria-label={ariaLabel || (typeof placeholder === "string" ? placeholder : "Select an option")}
             className={cn(
               "pb:flex pb:w-full pb:items-center pb:justify-between pb:rounded-md pb:border-0 pb:py-1.5 pb:pl-3 pb:pr-3 pb:text-gray-900 pb:ring-1 pb:ring-inset pb:ring-gray-300 pb:focus:ring-2 pb:focus:ring-primary pb:sm:text-sm pb:sm:leading-6 pb:bg-primary/10 pb:min-h-[36px]",
               disabled && "pb:opacity-50 pb:cursor-not-allowed",

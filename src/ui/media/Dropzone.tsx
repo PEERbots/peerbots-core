@@ -205,7 +205,7 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
           isDragging
             ? "pb:border-primary pb:bg-primary/10"
             : "pb:border-gray-300 pb:hover:border-primary/80 pb:bg-gray-50/70 pb:hover:bg-gray-50",
-          disabled && "pb:opacity-50 pb:cursor-not-allowed pb:hover:border-gray-300",
+          disabled && "pb:bg-gray-100/90 pb:border-gray-300 pb:cursor-not-allowed pb:hover:border-gray-300",
           className,
         )}
         onDragEnter={handleDragEnter}
@@ -315,7 +315,7 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
             <div className="pb:space-y-1">
               <p className="pb:text-sm pb:font-bold pb:text-gray-900">{title}</p>
               {subtitle && (
-                <p className="pb:text-xs pb:text-gray-500">{subtitle}</p>
+                <p className="pb:text-xs pb:text-gray-600">{subtitle}</p>
               )}
             </div>
           </div>

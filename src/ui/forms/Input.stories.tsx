@@ -32,19 +32,19 @@ export const Variations: Story = {
             <Text variant="small" className="pb:font-bold">
               With Placeholder
             </Text>
-            <Input placeholder="Type here..." />
+            <Input aria-label="With placeholder" placeholder="Type here..." />
           </div>
           <div className="pb:space-y-1">
             <Text variant="small" className="pb:font-bold">
               With Value
             </Text>
-            <Input defaultValue="Initial value" />
+            <Input aria-label="With value" defaultValue="Initial value" />
           </div>
           <div className="pb:space-y-1">
             <Text variant="small" className="pb:font-bold">
               Password Type
             </Text>
-            <Input type="password" placeholder="Password..." />
+            <Input aria-label="Password" type="password" placeholder="Password..." />
           </div>
         </div>
       </div>
@@ -58,7 +58,7 @@ export const Variations: Story = {
             <Text variant="small" className="pb:font-bold">
               Disabled
             </Text>
-            <Input disabled defaultValue="Can't edit me" />
+            <Input aria-label="Disabled input" disabled defaultValue="Can't edit me" />
           </div>
         </div>
       </div>
