@@ -4,7 +4,7 @@ import { Heading } from "./Typography";
 import React from "react";
 
 const meta: Meta<typeof Checkbox> = {
-  title: "UI/Checkbox",
+  title: "Forms/Checkbox",
   component: Checkbox,
   tags: ["autodocs"],
 };

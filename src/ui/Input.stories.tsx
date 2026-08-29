@@ -3,7 +3,7 @@ import { Input } from "./Input";
 import { Heading, Text } from "./Typography";
 
 const meta: Meta<typeof Input> = {
-  title: "UI/Input",
+  title: "Forms/Input",
   component: Input,
   tags: ["autodocs"],
   argTypes: {

@@ -4,7 +4,7 @@ import { Button } from "./Button";
 import { Heading } from "./Typography";
 
 const meta: Meta<typeof Tooltip> = {
-  title: "UI/Tooltip",
+  title: "Feedback/Tooltip",
   component: Tooltip,
   tags: ["autodocs"],
   argTypes: {

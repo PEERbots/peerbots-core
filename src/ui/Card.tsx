@@ -8,6 +8,7 @@ export interface CardProps extends React.HTMLAttributes<HTMLElement> {
   padding?: "none" | "sm" | "md" | "lg" | "xl";
   variant?:
     | "default"
+    | "glass"
     | "elevated"
     | "flat"
     | "outline"
@@ -42,6 +43,8 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
 
     const variants: Record<string, string> = {
       default: "pb:bg-white pb:border pb:border-gray-100 pb:shadow-xs",
+      glass:
+        "pb:bg-white/90 pb:backdrop-blur-xl pb:border pb:border-white/40 pb:shadow-xl",
       elevated: "pb:bg-white pb:border pb:border-gray-100 pb:shadow-md",
       flat: "pb:bg-gray-50/80 pb:border pb:border-gray-100/60",
       outline: "pb:bg-transparent pb:border-2 pb:border-gray-200",

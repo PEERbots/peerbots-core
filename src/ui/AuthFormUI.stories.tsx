@@ -3,7 +3,7 @@ import { AuthFormUI } from "./AuthFormUI";
 import { useState } from "react";
 
 const meta: Meta<typeof AuthFormUI> = {
-  title: "UI/AuthFormUI",
+  title: "Patterns/AuthFormUI",
   component: AuthFormUI,
   parameters: {
     layout: "centered",

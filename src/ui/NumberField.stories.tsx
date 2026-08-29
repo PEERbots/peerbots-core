@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Heading, Text } from "./Typography";
 
 const meta: Meta<typeof NumberField> = {
-  title: "UI/NumberField",
+  title: "Forms/NumberField",
   component: NumberField,
   tags: ["autodocs"],
   argTypes: {

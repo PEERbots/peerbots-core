@@ -5,33 +5,66 @@ import { Text } from "./Typography";
 
 export interface AccordionItem {
   id?: string;
-  question?: string;
-  title?: string;
-  answer?: string;
-  content?: string;
-  description?: string;
+  question?: React.ReactNode;
+  title?: React.ReactNode;
+  answer?: React.ReactNode;
+  content?: React.ReactNode;
+  description?: React.ReactNode;
   bodyHtml?: string;
   isOpenDefault?: boolean;
 }
 
 export interface AccordionProps {
+  /** List of accordion items for multi-item mode */
   items?: AccordionItem[];
+  /** Allow multiple items to be opened simultaneously */
   allowMultiple?: boolean;
-  className?: string;
+  /** Visual style variant */
   variant?: "default" | "bordered" | "flat";
+  /** Single-item mode: title for the disclosure */
+  title?: React.ReactNode;
+  /** Single-item mode: content/children for the disclosure */
+  children?: React.ReactNode;
+  /** Single-item mode: default open state */
+  defaultOpen?: boolean;
+  /** Controlled open state for single-item mode */
+  isOpen?: boolean;
+  /** Controlled toggle callback for single-item mode */
+  onToggle?: (open: boolean) => void;
+  className?: string;
+  headerClassName?: string;
+  contentClassName?: string;
 }
 
 export const Accordion: React.FC<AccordionProps> = ({
-  items = [],
+  items,
   allowMultiple = false,
-  className,
   variant = "default",
+  title,
+  children,
+  defaultOpen = false,
+  isOpen: controlledIsOpen,
+  onToggle,
+  className,
+  headerClassName,
+  contentClassName,
 }) => {
   const baseId = useId();
+
+  // Normalize single-item props vs items array
+  const resolvedItems: AccordionItem[] = items || (title || children ? [
+    {
+      id: "single",
+      title,
+      content: children,
+      isOpenDefault: defaultOpen,
+    },
+  ] : []);
+
   const [openIndices, setOpenIndices] = useState<number[]>(() => {
     const initial: number[] = [];
-    items.forEach((item, index) => {
-      if (item.isOpenDefault) {
+    resolvedItems.forEach((item, index) => {
+      if (item.isOpenDefault || (index === 0 && defaultOpen)) {
         initial.push(index);
       }
     });
@@ -39,6 +72,13 @@ export const Accordion: React.FC<AccordionProps> = ({
   });
 
   const toggleItem = (index: number) => {
+    const isCurrentlyOpen = openIndices.includes(index);
+    const willBeOpen = !isCurrentlyOpen;
+
+    if (onToggle && resolvedItems.length === 1) {
+      onToggle(willBeOpen);
+    }
+
     if (allowMultiple) {
       setOpenIndices((prev) =>
         prev.includes(index)
@@ -51,13 +91,18 @@ export const Accordion: React.FC<AccordionProps> = ({
   };
 
   return (
-    <div className={cn("pb:w-full pb:space-y-3", className)}>
-      {items.map((item, index) => {
-        const isOpen = openIndices.includes(index);
-        const headingText =
+    <div className={cn("pb:w-full pb:space-y-3 pb:box-border", className)}>
+      {resolvedItems.map((item, index) => {
+        const isOpen =
+          controlledIsOpen !== undefined && resolvedItems.length === 1
+            ? controlledIsOpen
+            : openIndices.includes(index);
+
+        const headingContent =
           item.question || item.title || `Section ${index + 1}`;
-        const answerText =
-          item.answer || item.content || item.description || "";
+        const bodyContent =
+          item.content || item.answer || item.description;
+
         const headerId = `${baseId}-header-${index}`;
         const panelId = `${baseId}-panel-${index}`;
 
@@ -65,7 +110,7 @@ export const Accordion: React.FC<AccordionProps> = ({
           <div
             key={item.id || index}
             className={cn(
-              "pb:rounded-2xl pb:border pb:transition-all pb:duration-200 pb:overflow-hidden",
+              "pb:w-full pb:rounded-2xl pb:border pb:transition-all pb:duration-200 pb:overflow-hidden pb:box-border",
               isOpen
                 ? "pb:bg-white pb:border-peerbots-teal/40 pb:shadow-sm"
                 : "pb:bg-white/80 pb:hover:bg-white pb:border-gray-200/80",
@@ -73,18 +118,25 @@ export const Accordion: React.FC<AccordionProps> = ({
               variant === "flat" && "pb:border-none pb:bg-gray-100",
             )}
           >
-            <h3>
+            <div className="pb:w-full pb:m-0 pb:p-0">
               <button
                 type="button"
                 id={headerId}
                 aria-expanded={isOpen}
                 aria-controls={panelId}
                 onClick={() => toggleItem(index)}
-                className="pb:w-full pb:px-6 pb:py-4 sm:pb:py-5 pb:text-left pb:flex pb:items-center pb:justify-between pb:gap-4 pb:font-bold pb:text-gray-900 pb:hover:text-peerbots-darkteal pb:transition-colors pb:focus:outline-none pb:focus-visible:ring-2 pb:focus-visible:ring-peerbots-teal pb:rounded-2xl pb:cursor-pointer"
+                className={cn(
+                  "pb:w-full pb:box-border pb:px-5 pb:py-4 sm:pb:px-6 sm:pb:py-4.5 pb:text-left pb:flex pb:items-center pb:justify-between pb:gap-4 pb:font-bold pb:text-gray-900 pb:hover:text-peerbots-darkteal pb:transition-colors pb:focus:outline-none pb:focus-visible:ring-2 pb:focus-visible:ring-peerbots-teal pb:cursor-pointer",
+                  headerClassName,
+                )}
               >
-                <span className="pb:text-base sm:pb:text-lg pb:font-bold pb:leading-snug">
-                  {headingText}
-                </span>
+                <div className="pb:text-base sm:pb:text-lg pb:font-bold pb:leading-snug pb:flex-1 pb:min-w-0">
+                  {typeof headingContent === "string" ? (
+                    <span>{headingContent}</span>
+                  ) : (
+                    headingContent
+                  )}
+                </div>
                 <span
                   className={cn(
                     "pb:w-7 pb:h-7 pb:rounded-full pb:flex pb:items-center pb:justify-center pb:flex-shrink-0 pb:transition-transform pb:duration-200",
@@ -100,24 +152,29 @@ export const Accordion: React.FC<AccordionProps> = ({
                   />
                 </span>
               </button>
-            </h3>
+            </div>
 
             {isOpen && (
               <div
                 id={panelId}
                 role="region"
                 aria-labelledby={headerId}
-                className="pb:px-6 pb:pb-5 pb:pt-1 pb:text-gray-700 pb:leading-relaxed pb:border-t pb:border-gray-100"
+                className={cn(
+                  "pb:w-full pb:box-border pb:px-5 pb:pb-5 pb:pt-1 sm:pb:px-6 pb:text-gray-700 pb:leading-relaxed pb:border-t pb:border-gray-100",
+                  contentClassName,
+                )}
               >
                 {item.bodyHtml ? (
                   <div
                     className="pb:text-base pb:leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: item.bodyHtml }}
                   />
-                ) : (
+                ) : typeof bodyContent === "string" ? (
                   <Text variant="default" className="pb:text-base pb:text-gray-700 pb:leading-relaxed">
-                    {answerText}
+                    {bodyContent}
                   </Text>
+                ) : (
+                  bodyContent
                 )}
               </div>
             )}

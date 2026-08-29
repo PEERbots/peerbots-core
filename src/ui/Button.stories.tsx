@@ -4,7 +4,7 @@ import { Icon } from "./Icon";
 import { Heading } from "./Typography";
 
 const meta: Meta<typeof Button> = {
-  title: "UI/Button",
+  title: "Forms/Button",
   component: Button,
   parameters: {
     layout: "centered",

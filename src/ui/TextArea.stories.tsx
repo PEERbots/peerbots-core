@@ -3,7 +3,7 @@ import { TextArea } from "./TextArea";
 import { Heading, Text } from "./Typography";
 
 const meta: Meta<typeof TextArea> = {
-  title: "UI/TextArea",
+  title: "Forms/TextArea",
   component: TextArea,
   tags: ["autodocs"],
   argTypes: {},

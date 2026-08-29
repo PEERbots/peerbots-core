@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Heading } from "./Typography";
 import { cn } from "./utils";
+import { Card } from "./Card";
 import { Collapsible } from "./Collapsible";
 
 export interface SettingsPanelProps {
@@ -22,7 +23,7 @@ export interface SettingsPanelProps {
 
 /**
  * A standardized panel for settings sections.
- * Provides a consistent look with white background, shadow, and rounded corners.
+ * Built on top of Card and Collapsible for design system consistency.
  */
 export function SettingsPanel({
   title,
@@ -34,48 +35,51 @@ export function SettingsPanel({
   headingLevel = 3,
 }: SettingsPanelProps) {
   const content = (
-    <div className={cn("pb:flex pb:flex-col", contentClassName)}>{children}</div>
+    <div className={cn("pb:flex pb:flex-col pb:gap-3", contentClassName)}>
+      {children}
+    </div>
   );
 
-  return (
-    <div
-      className={cn(
-        "pb:m-2 pb:p-4 pb:bg-white pb:shadow-xl pb:rounded-lg pb:flex pb:flex-1 pb:flex-col",
-        className,
-      )}
-    >
-      {collapsible ? (
+  if (collapsible) {
+    return (
+      <div className={cn("pb:w-full pb:mb-3", className)}>
         <Collapsible
           title={
             typeof title === "string" ? (
-              <Heading level={headingLevel} className="pb:text-gray-600">
+              <Heading level={headingLevel} className="pb:text-gray-800 pb:font-bold">
                 {title}
               </Heading>
             ) : (
               title
             )
           }
-          variant="ghost"
           defaultOpen={defaultOpen}
         >
           {content}
         </Collapsible>
-      ) : (
-        <>
-          {title && (
-            <div className="pb:flex pb:items-center pb:justify-between pb:mb-2 empty:hidden">
-              {typeof title === "string" ? (
-                <Heading level={headingLevel} className="pb:text-gray-600">
-                  {title}
-                </Heading>
-              ) : (
-                title
-              )}
-            </div>
+      </div>
+    );
+  }
+
+  return (
+    <Card
+      variant="elevated"
+      padding="sm"
+      hoverable={false}
+      className={cn("pb:w-full pb:mb-3 pb:flex pb:flex-col", className)}
+    >
+      {title && (
+        <div className="pb:flex pb:items-center pb:justify-between pb:mb-3 pb:pb-2 pb:border-b pb:border-gray-100 empty:hidden">
+          {typeof title === "string" ? (
+            <Heading level={headingLevel} className="pb:text-gray-800 pb:font-bold">
+              {title}
+            </Heading>
+          ) : (
+            title
           )}
-          {content}
-        </>
+        </div>
       )}
-    </div>
+      {content}
+    </Card>
   );
 }

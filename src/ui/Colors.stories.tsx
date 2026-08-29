@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
 const meta: Meta = {
-  title: "UI/Colors",
+  title: "Foundations/Colors",
   tags: ["autodocs"],
 };
 

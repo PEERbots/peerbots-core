@@ -3,7 +3,7 @@ import { Select } from "./Select";
 import { Heading, Text } from "./Typography";
 
 const meta: Meta<typeof Select> = {
-  title: "UI/Select",
+  title: "Forms/Select",
   component: Select,
   tags: ["autodocs"],
   argTypes: {

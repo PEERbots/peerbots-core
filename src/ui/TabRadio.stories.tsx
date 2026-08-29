@@ -6,7 +6,7 @@ import { Heading, Text } from "./Typography";
 import React from "react";
 
 const meta = {
-  title: "UI/TabRadio",
+  title: "Forms/TabRadio",
   component: TabRadio,
   parameters: {
     layout: "centered",

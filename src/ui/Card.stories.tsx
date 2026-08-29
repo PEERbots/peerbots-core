@@ -5,7 +5,7 @@ import { Button } from "./Button";
 import React from "react";
 
 const meta: Meta<typeof Card> = {
-  title: "UI/Card",
+  title: "Layout/Card",
   component: Card,
   parameters: {
     layout: "centered",
@@ -31,6 +31,20 @@ export const Default: Story = {
   },
 };
 
+export const Glass: Story = {
+  render: () => (
+    <div className="pb:p-12 pb:bg-gradient-to-br pb:from-peerbots-teal/30 pb:via-peerbots-pink/20 pb:to-purple-200 pb:rounded-3xl">
+      <Card variant="glass" className="pb:max-w-md">
+        <Heading level={3}>Glassmorphism Card</Heading>
+        <Text variant="muted" className="pb:mt-2 pb:mb-4">
+          Translucent background with backdrop blur and white border for modern HUD surfaces.
+        </Text>
+        <Button variant="primary" size="sm">Explore</Button>
+      </Card>
+    </div>
+  ),
+};
+
 export const Variants: Story = {
   render: () => (
     <div className="pb:grid pb:grid-cols-2 pb:gap-6 pb:max-w-3xl pb:p-6 pb:bg-gray-100">
@@ -41,6 +55,10 @@ export const Variants: Story = {
       <Card variant="elevated">
         <Heading level={4}>Elevated</Heading>
         <Text variant="muted">Higher elevation shadow</Text>
+      </Card>
+      <Card variant="glass">
+        <Heading level={4}>Glass</Heading>
+        <Text variant="muted">Backdrop blur surface</Text>
       </Card>
       <Card variant="flat">
         <Heading level={4}>Flat</Heading>

@@ -3,7 +3,7 @@ import { TabSelection } from "./TabSelection";
 import React, { useState } from "react";
 
 const meta: Meta<typeof TabSelection> = {
-  title: "UI/TabSelection",
+  title: "Patterns/TabSelection",
   component: TabSelection,
   parameters: {
     layout: "centered",

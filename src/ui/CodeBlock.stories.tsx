@@ -3,7 +3,7 @@ import { CodeBlock } from "./CodeBlock";
 import React from "react";
 
 const meta: Meta<typeof CodeBlock> = {
-  title: "UI/CodeBlock",
+  title: "Foundations/CodeBlock",
   component: CodeBlock,
   parameters: {
     layout: "centered",

@@ -3,7 +3,7 @@ import { Icon, IconName } from "./Icon";
 import { Text } from "./Typography";
 
 const meta: Meta<typeof Icon> = {
-  title: "UI/Icon",
+  title: "Foundations/Icon",
   component: Icon,
   tags: ["autodocs"],
   argTypes: {

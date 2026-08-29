@@ -3,7 +3,7 @@ import { Separator } from "./Separator";
 import { Heading, Text } from "./Typography";
 
 const meta: Meta<typeof Separator> = {
-  title: "UI/Separator",
+  title: "Layout/Separator",
   component: Separator,
   tags: ["autodocs"],
   argTypes: {

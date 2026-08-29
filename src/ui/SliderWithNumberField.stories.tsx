@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Heading, Text } from "./Typography";
 
 const meta: Meta<typeof SliderWithNumberField> = {
-  title: "UI/SliderWithNumberField",
+  title: "Forms/SliderWithNumberField",
   component: SliderWithNumberField,
   argTypes: {
     onChange: { action: "changed" },

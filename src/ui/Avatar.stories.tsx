@@ -3,7 +3,7 @@ import { Avatar } from "./Avatar";
 import { Heading } from "./Typography";
 
 const meta: Meta<typeof Avatar> = {
-  title: "UI/Avatar",
+  title: "Media & Files/Avatar",
   component: Avatar,
   parameters: {
     layout: "centered",

@@ -4,7 +4,7 @@ import { Dropzone } from "./Dropzone";
 import { Heading } from "./Typography";
 
 const meta: Meta<typeof Dropzone> = {
-  title: "UI/Dropzone",
+  title: "Media & Files/Dropzone",
   component: Dropzone,
   parameters: {
     layout: "centered",

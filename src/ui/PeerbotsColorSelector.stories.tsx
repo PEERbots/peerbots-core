@@ -3,7 +3,7 @@ import { useState } from "react";
 import { PeerbotsColorSelector, PeerbotsColor } from "./PeerbotsColorSelector";
 
 const meta: Meta<typeof PeerbotsColorSelector> = {
-  title: "UI/PeerbotsColorSelector",
+  title: "Forms/PeerbotsColorSelector",
   component: PeerbotsColorSelector,
 };
 

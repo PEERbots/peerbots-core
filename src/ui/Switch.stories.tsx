@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Heading, Text } from "./Typography";
 
 const meta: Meta<typeof Switch> = {
-  title: "UI/Switch",
+  title: "Forms/Switch",
   component: Switch,
   tags: ["autodocs"],
   argTypes: {

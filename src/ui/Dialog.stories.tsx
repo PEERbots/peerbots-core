@@ -3,7 +3,7 @@ import { Dialog, DialogTitle, DialogDescription, DialogClose } from "./Dialog";
 import { Button } from "./Button";
 
 const meta: Meta<typeof Dialog> = {
-  title: "UI/Dialog",
+  title: "Feedback/Dialog",
   component: Dialog,
   parameters: {
     layout: "centered",

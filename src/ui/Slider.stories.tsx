@@ -5,7 +5,7 @@ import { Input } from "./Input";
 import { Heading, Text } from "./Typography";
 
 const meta: Meta<typeof Slider> = {
-  title: "UI/Slider",
+  title: "Forms/Slider",
   component: Slider,
   argTypes: {
     onChange: { action: "changed" },

@@ -3,7 +3,7 @@ import { Alert } from "./Alert";
 import React from "react";
 
 const meta: Meta<typeof Alert> = {
-  title: "UI/Alert",
+  title: "Feedback/Alert",
   component: Alert,
   parameters: {
     layout: "centered",

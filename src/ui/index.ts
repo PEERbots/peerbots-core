@@ -39,4 +39,4 @@ export * from "./useClipboard";
 export * from "./FileUpload";
 export * from "./Dropzone";
 export * from "./Avatar";
-
+export * from "./Spinner";

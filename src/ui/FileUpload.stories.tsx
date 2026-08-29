@@ -3,7 +3,7 @@ import { FileUpload } from "./FileUpload";
 import { Heading } from "./Typography";
 
 const meta: Meta<typeof FileUpload> = {
-  title: "UI/FileUpload",
+  title: "Media & Files/FileUpload",
   component: FileUpload,
   parameters: {
     layout: "centered",

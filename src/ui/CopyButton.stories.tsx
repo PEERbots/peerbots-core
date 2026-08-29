@@ -3,7 +3,7 @@ import { CopyButton } from "./CopyButton";
 import { Heading } from "./Typography";
 
 const meta: Meta<typeof CopyButton> = {
-  title: "UI/CopyButton",
+  title: "Patterns/CopyButton",
   component: CopyButton,
   parameters: {
     layout: "centered",

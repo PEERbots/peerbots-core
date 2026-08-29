@@ -6,7 +6,7 @@ import { Heading, Text } from "./Typography";
 import { Label } from "./Label";
 
 const meta: Meta<typeof SettingsPanel> = {
-  title: "UI/SettingsPanel",
+  title: "Layout/SettingsPanel",
   component: SettingsPanel,
   tags: ["autodocs"],
   argTypes: {},

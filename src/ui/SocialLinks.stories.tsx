@@ -3,7 +3,7 @@ import { SocialLinks, DEFAULT_PEERBOTS_SOCIAL_LINKS } from "./SocialLinks";
 import React from "react";
 
 const meta: Meta<typeof SocialLinks> = {
-  title: "UI/SocialLinks",
+  title: "Foundations/SocialLinks",
   component: SocialLinks,
   parameters: {
     layout: "centered",

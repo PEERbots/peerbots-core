@@ -11,7 +11,7 @@ import { SliderWithNumberField } from "./SliderWithNumberField";
 import { Checkbox } from "./Checkbox";
 
 const meta: Meta<typeof Field> = {
-  title: "UI/Field",
+  title: "Forms/Field",
   component: Field,
   tags: ["autodocs"],
   argTypes: {
