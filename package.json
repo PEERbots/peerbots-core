@@ -35,7 +35,7 @@
   "author": "Peerbots",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/peerbots/peerbots-core.git"
+    "url": "git+https://github.com/PEERbots/peerbots-core.git"
   },
   "scripts": {
     "build": "tsup",
