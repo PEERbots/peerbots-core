@@ -46,8 +46,8 @@ const activeColorStyles: Record<string, Record<string, string>> = {
   solid: {
     primary:
       "pb:bg-primary pb:text-gray-900 pb:border-primary pb:shadow-sm pb:font-bold",
-    teal: "pb:bg-peerbots-teal pb:text-white pb:border-peerbots-teal pb:shadow-sm pb:font-bold",
-    pink: "pb:bg-peerbots-pink pb:text-white pb:border-peerbots-pink pb:shadow-sm pb:font-bold",
+    teal: "pb:bg-peerbots-teal pb:text-gray-900 pb:border-peerbots-teal pb:shadow-sm pb:font-bold",
+    pink: "pb:bg-rose-700 pb:text-white pb:border-rose-700 pb:shadow-sm pb:font-bold",
     darkblue:
       "pb:bg-peerbots-darkblue pb:text-white pb:border-peerbots-darkblue pb:shadow-sm pb:font-bold",
     neutral:
@@ -57,8 +57,8 @@ const activeColorStyles: Record<string, Record<string, string>> = {
   soft: {
     primary:
       "pb:bg-primary/20 pb:text-teal-950 pb:border-primary/40 pb:font-bold",
-    teal: "pb:bg-peerbots-teal/20 pb:text-peerbots-darkteal pb:border-peerbots-teal/40 pb:font-bold",
-    pink: "pb:bg-peerbots-pink/20 pb:text-peerbots-pink pb:border-peerbots-pink/40 pb:font-bold",
+    teal: "pb:bg-peerbots-teal/20 pb:text-teal-950 pb:border-peerbots-teal/40 pb:font-bold",
+    pink: "pb:bg-peerbots-pink/20 pb:text-rose-950 pb:border-peerbots-pink/40 pb:font-bold",
     darkblue:
       "pb:bg-peerbots-darkblue/20 pb:text-peerbots-darkblue pb:border-peerbots-darkblue/40 pb:font-bold",
     neutral:
@@ -67,9 +67,9 @@ const activeColorStyles: Record<string, Record<string, string>> = {
   },
   outline: {
     primary:
-      "pb:bg-primary/10 pb:text-teal-900 pb:border-primary pb:font-bold pb:border-2",
-    teal: "pb:bg-peerbots-teal/10 pb:text-peerbots-darkteal pb:border-peerbots-teal pb:font-bold pb:border-2",
-    pink: "pb:bg-peerbots-pink/10 pb:text-peerbots-pink pb:border-peerbots-pink pb:font-bold pb:border-2",
+      "pb:bg-primary/10 pb:text-teal-950 pb:border-teal-700 pb:font-bold pb:border-2",
+    teal: "pb:bg-peerbots-teal/10 pb:text-peerbots-darkteal pb:border-peerbots-darkteal pb:font-bold pb:border-2",
+    pink: "pb:bg-peerbots-pink/10 pb:text-rose-800 pb:border-rose-700 pb:font-bold pb:border-2",
     darkblue:
       "pb:bg-peerbots-darkblue/10 pb:text-peerbots-darkblue pb:border-peerbots-darkblue pb:font-bold pb:border-2",
     neutral:
@@ -79,7 +79,7 @@ const activeColorStyles: Record<string, Record<string, string>> = {
 };
 
 const inactiveStyles =
-  "pb:bg-white pb:text-gray-600 pb:border-gray-200 pb:hover:border-gray-300 pb:hover:bg-gray-50/80 pb:hover:text-gray-900";
+  "pb:bg-white pb:text-gray-700 pb:border-gray-300 pb:hover:border-gray-400 pb:hover:bg-gray-50 pb:hover:text-gray-950";
 
 const radiusClasses: Record<ComponentRadius, string> = {
   none: "pb:rounded-none",

@@ -42,11 +42,11 @@ const levelColorMap: Record<AlertLevel, AlertColor> = {
 };
 
 const iconMap: Record<AlertColor, { name: any; colorClass: string }> = {
-  danger: { name: "exclamationCircle", colorClass: "pb:text-red-500" },
-  warning: { name: "exclamationTriangle", colorClass: "pb:text-amber-500" },
-  success: { name: "checkCircle", colorClass: "pb:text-emerald-500" },
-  info: { name: "megaphone", colorClass: "pb:text-teal-600" },
-  neutral: { name: "questionMarkCircle", colorClass: "pb:text-gray-500" },
+  danger: { name: "exclamationCircle", colorClass: "pb:text-red-700" },
+  warning: { name: "exclamationTriangle", colorClass: "pb:text-amber-800" },
+  success: { name: "checkCircle", colorClass: "pb:text-emerald-800" },
+  info: { name: "megaphone", colorClass: "pb:text-teal-800" },
+  neutral: { name: "questionMarkCircle", colorClass: "pb:text-gray-700" },
 };
 
 const variantColorClasses: Record<string, Record<AlertColor, string>> = {

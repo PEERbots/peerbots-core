@@ -31,19 +31,19 @@ export interface StepperProps {
 
 const colorBadgeStyles: Record<string, { current: string; complete: string; line: string }> = {
   teal: {
-    current: "pb:bg-peerbots-teal pb:text-white pb:ring-4 pb:ring-peerbots-teal/20",
+    current: "pb:bg-peerbots-teal pb:text-gray-900 pb:ring-4 pb:ring-peerbots-teal/30",
     complete: "pb:bg-peerbots-darkteal pb:text-white",
-    line: "pb:bg-peerbots-teal",
+    line: "pb:bg-peerbots-darkteal",
   },
   pink: {
-    current: "pb:bg-peerbots-pink pb:text-white pb:ring-4 pb:ring-peerbots-pink/20",
-    complete: "pb:bg-peerbots-pink pb:text-white",
-    line: "pb:bg-peerbots-pink",
+    current: "pb:bg-rose-700 pb:text-white pb:ring-4 pb:ring-rose-200",
+    complete: "pb:bg-rose-800 pb:text-white",
+    line: "pb:bg-rose-700",
   },
   primary: {
     current: "pb:bg-primary pb:text-gray-900 pb:ring-4 pb:ring-primary/30",
     complete: "pb:bg-dark-primary pb:text-white",
-    line: "pb:bg-primary",
+    line: "pb:bg-dark-primary",
   },
   darkblue: {
     current: "pb:bg-peerbots-darkblue pb:text-white pb:ring-4 pb:ring-peerbots-darkblue/20",
@@ -52,8 +52,8 @@ const colorBadgeStyles: Record<string, { current: string; complete: string; line
   },
   neutral: {
     current: "pb:bg-gray-900 pb:text-white pb:ring-4 pb:ring-gray-300",
-    complete: "pb:bg-gray-700 pb:text-white",
-    line: "pb:bg-gray-400",
+    complete: "pb:bg-gray-800 pb:text-white",
+    line: "pb:bg-gray-600",
   },
 };
 
@@ -104,18 +104,18 @@ export function Stepper({
                   isCurrent
                     ? cn(colorStyle.current, "pb:shadow-sm")
                     : isComplete
-                      ? "pb:bg-gray-100 pb:text-gray-800 pb:border-gray-300 pb:hover:border-peerbots-teal"
-                      : "pb:bg-white pb:text-gray-400 pb:border-gray-200 pb:opacity-70",
+                      ? "pb:bg-gray-100 pb:text-gray-900 pb:border-gray-300 pb:hover:border-peerbots-darkteal"
+                      : "pb:bg-white pb:text-gray-600 pb:border-gray-300 pb:hover:text-gray-900",
                 )}
               >
                 <span
                   className={cn(
                     "pb:flex pb:items-center pb:justify-center pb:w-4 pb:h-4 pb:rounded-full pb:text-[10px] pb:font-bold",
                     isCurrent
-                      ? "pb:bg-white/30 pb:text-current"
+                      ? "pb:bg-black/15 pb:text-current"
                       : isComplete
                         ? "pb:bg-peerbots-darkteal pb:text-white"
-                        : "pb:bg-gray-200 pb:text-gray-500",
+                        : "pb:bg-gray-200 pb:text-gray-700",
                   )}
                 >
                   {isComplete ? (
@@ -173,7 +173,7 @@ export function Stepper({
                     ? colorStyle.current
                     : isComplete
                       ? colorStyle.complete
-                      : "pb:bg-gray-100 pb:text-gray-400 pb:border pb:border-gray-200",
+                      : "pb:bg-gray-100 pb:text-gray-700 pb:border pb:border-gray-300",
                 )}
               >
                 {step.icon || (isComplete ? <Icon name="check" className="pb:w-4 pb:h-4" /> : idx + 1)}
@@ -190,16 +190,16 @@ export function Stepper({
                   className={cn(
                     "pb:text-sm pb:font-bold",
                     isCurrent
-                      ? "pb:text-gray-900"
+                      ? "pb:text-gray-950"
                       : isComplete
-                        ? "pb:text-gray-800"
-                        : "pb:text-gray-400",
+                        ? "pb:text-gray-900"
+                        : "pb:text-gray-600",
                   )}
                 >
                   {step.title}
                 </div>
                 {step.description && (
-                  <div className="pb:text-xs pb:text-gray-500 pb:mt-0.5 pb:leading-relaxed">
+                  <div className="pb:text-xs pb:text-gray-600 pb:mt-0.5 pb:leading-relaxed">
                     {step.description}
                   </div>
                 )}
@@ -240,7 +240,7 @@ export function Stepper({
                     ? colorStyle.current
                     : isComplete
                       ? colorStyle.complete
-                      : "pb:bg-gray-100 pb:text-gray-400 pb:border pb:border-gray-200",
+                      : "pb:bg-gray-100 pb:text-gray-700 pb:border pb:border-gray-300",
                 )}
               >
                 {step.icon || (isComplete ? <Icon name="check" className="pb:w-4 pb:h-4" /> : idx + 1)}
@@ -251,16 +251,16 @@ export function Stepper({
                   className={cn(
                     "pb:text-xs pb:font-bold pb:leading-tight",
                     isCurrent
-                      ? "pb:text-gray-900"
+                      ? "pb:text-gray-950"
                       : isComplete
-                        ? "pb:text-gray-800"
-                        : "pb:text-gray-400",
+                        ? "pb:text-gray-900"
+                        : "pb:text-gray-600",
                   )}
                 >
                   {step.title}
                 </div>
                 {step.description && (
-                  <div className="pb:text-[10px] pb:text-gray-400 pb:mt-0.5 pb:hidden sm:pb:block truncate">
+                  <div className="pb:text-[10px] pb:text-gray-600 pb:mt-0.5 pb:hidden sm:pb:block truncate">
                     {step.description}
                   </div>
                 )}

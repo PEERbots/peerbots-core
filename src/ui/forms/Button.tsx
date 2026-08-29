@@ -60,9 +60,9 @@ const variantColorMap: Record<FillVariant, Record<string, string>> = {
     primary:
       "pb:bg-primary pb:text-gray-900 pb:hover:bg-dark-primary pb:hover:text-white pb:shadow-xs pb:font-bold",
     neutral:
-      "pb:bg-gray-100 pb:text-gray-800 pb:hover:bg-gray-200 pb:border pb:border-gray-200 pb:font-medium",
-    teal: "pb:bg-peerbots-teal pb:text-white pb:hover:opacity-90 pb:shadow-md pb:font-bold",
-    pink: "pb:bg-peerbots-pink pb:text-white pb:hover:opacity-90 pb:shadow-md pb:font-bold",
+      "pb:bg-gray-100 pb:text-gray-900 pb:hover:bg-gray-200 pb:border pb:border-gray-300 pb:font-medium",
+    teal: "pb:bg-peerbots-teal pb:text-gray-900 pb:hover:bg-peerbots-darkteal pb:hover:text-white pb:shadow-md pb:font-bold",
+    pink: "pb:bg-peerbots-pink pb:text-white pb:hover:bg-rose-700 pb:shadow-md pb:font-bold",
     darkblue:
       "pb:bg-peerbots-darkblue pb:text-white pb:hover:opacity-90 pb:shadow-md pb:font-bold",
     danger:
@@ -74,27 +74,27 @@ const variantColorMap: Record<FillVariant, Record<string, string>> = {
   },
   soft: {
     primary:
-      "pb:bg-primary/20 pb:text-teal-900 pb:hover:bg-primary/30 pb:font-bold",
+      "pb:bg-primary/20 pb:text-teal-950 pb:hover:bg-primary/30 pb:font-bold",
     neutral:
-      "pb:bg-gray-100 pb:text-gray-700 pb:hover:bg-gray-200 pb:font-medium",
-    teal: "pb:bg-peerbots-teal/15 pb:text-peerbots-darkteal pb:hover:bg-peerbots-teal/25 pb:font-bold",
-    pink: "pb:bg-peerbots-pink/15 pb:text-peerbots-pink pb:hover:bg-peerbots-pink/25 pb:font-bold",
+      "pb:bg-gray-100 pb:text-gray-800 pb:hover:bg-gray-200 pb:font-medium",
+    teal: "pb:bg-peerbots-teal/20 pb:text-teal-950 pb:hover:bg-peerbots-teal/30 pb:font-bold",
+    pink: "pb:bg-peerbots-pink/20 pb:text-rose-950 pb:hover:bg-peerbots-pink/30 pb:font-bold",
     darkblue:
       "pb:bg-peerbots-darkblue/15 pb:text-peerbots-darkblue pb:hover:bg-peerbots-darkblue/25 pb:font-bold",
     danger:
-      "pb:bg-red-50 pb:text-red-700 pb:hover:bg-red-100 pb:font-bold",
+      "pb:bg-red-50 pb:text-red-800 pb:hover:bg-red-100 pb:font-bold",
     success:
-      "pb:bg-emerald-50 pb:text-emerald-700 pb:hover:bg-emerald-100 pb:font-bold",
+      "pb:bg-emerald-50 pb:text-emerald-800 pb:hover:bg-emerald-100 pb:font-bold",
     warning:
-      "pb:bg-amber-50 pb:text-amber-800 pb:hover:bg-amber-100 pb:font-bold",
+      "pb:bg-amber-50 pb:text-amber-900 pb:hover:bg-amber-100 pb:font-bold",
   },
   outline: {
     primary:
-      "pb:bg-transparent pb:border-2 pb:border-primary pb:text-teal-800 pb:hover:bg-primary/10 pb:font-bold",
+      "pb:bg-transparent pb:border-2 pb:border-teal-700 pb:text-teal-900 pb:hover:bg-primary/10 pb:font-bold",
     neutral:
-      "pb:bg-transparent pb:border-2 pb:border-gray-200 pb:text-gray-700 pb:hover:border-gray-300 pb:hover:bg-gray-50 pb:font-medium",
-    teal: "pb:bg-transparent pb:border-2 pb:border-peerbots-teal pb:text-peerbots-darkteal pb:hover:bg-peerbots-teal/10 pb:font-bold",
-    pink: "pb:bg-transparent pb:border-2 pb:border-peerbots-pink pb:text-peerbots-pink pb:hover:bg-peerbots-pink/10 pb:font-bold",
+      "pb:bg-transparent pb:border-2 pb:border-gray-300 pb:text-gray-800 pb:hover:border-gray-400 pb:hover:bg-gray-50 pb:font-medium",
+    teal: "pb:bg-transparent pb:border-2 pb:border-peerbots-darkteal pb:text-peerbots-darkteal pb:hover:bg-peerbots-teal/10 pb:font-bold",
+    pink: "pb:bg-transparent pb:border-2 pb:border-rose-700 pb:text-rose-800 pb:hover:bg-peerbots-pink/10 pb:font-bold",
     darkblue:
       "pb:bg-transparent pb:border-2 pb:border-peerbots-darkblue pb:text-peerbots-darkblue pb:hover:bg-peerbots-darkblue/10 pb:font-bold",
     danger:
@@ -102,15 +102,15 @@ const variantColorMap: Record<FillVariant, Record<string, string>> = {
     success:
       "pb:bg-transparent pb:border-2 pb:border-emerald-600 pb:text-emerald-700 pb:hover:bg-emerald-50 pb:font-bold",
     warning:
-      "pb:bg-transparent pb:border-2 pb:border-amber-500 pb:text-amber-800 pb:hover:bg-amber-50 pb:font-bold",
+      "pb:bg-transparent pb:border-2 pb:border-amber-600 pb:text-amber-900 pb:hover:bg-amber-50 pb:font-bold",
   },
   ghost: {
     primary:
-      "pb:bg-transparent pb:text-teal-800 pb:hover:bg-primary/10 pb:font-bold",
+      "pb:bg-transparent pb:text-teal-900 pb:hover:bg-primary/10 pb:font-bold",
     neutral:
-      "pb:bg-transparent pb:text-gray-700 pb:hover:bg-gray-100 pb:hover:text-gray-900 pb:font-medium",
+      "pb:bg-transparent pb:text-gray-800 pb:hover:bg-gray-100 pb:hover:text-gray-900 pb:font-medium",
     teal: "pb:bg-transparent pb:text-peerbots-darkteal pb:hover:bg-peerbots-teal/10 pb:font-bold",
-    pink: "pb:bg-transparent pb:text-peerbots-pink pb:hover:bg-peerbots-pink/10 pb:font-bold",
+    pink: "pb:bg-transparent pb:text-rose-800 pb:hover:bg-peerbots-pink/10 pb:font-bold",
     darkblue:
       "pb:bg-transparent pb:text-peerbots-darkblue pb:hover:bg-peerbots-darkblue/10 pb:font-bold",
     danger:
@@ -118,15 +118,15 @@ const variantColorMap: Record<FillVariant, Record<string, string>> = {
     success:
       "pb:bg-transparent pb:text-emerald-700 pb:hover:bg-emerald-50 pb:font-bold",
     warning:
-      "pb:bg-transparent pb:text-amber-800 pb:hover:bg-amber-50 pb:font-bold",
+      "pb:bg-transparent pb:text-amber-900 pb:hover:bg-amber-50 pb:font-bold",
   },
   link: {
     primary:
-      "pb:bg-transparent pb:p-0 pb:text-teal-700 pb:hover:underline pb:font-medium",
+      "pb:bg-transparent pb:p-0 pb:text-teal-800 pb:hover:underline pb:font-medium",
     neutral:
-      "pb:bg-transparent pb:p-0 pb:text-gray-600 pb:hover:text-gray-900 pb:hover:underline pb:font-medium",
-    teal: "pb:bg-transparent pb:p-0 pb:text-peerbots-teal pb:hover:underline pb:font-medium",
-    pink: "pb:bg-transparent pb:p-0 pb:text-peerbots-pink pb:hover:underline pb:font-medium",
+      "pb:bg-transparent pb:p-0 pb:text-gray-700 pb:hover:text-gray-900 pb:hover:underline pb:font-medium",
+    teal: "pb:bg-transparent pb:p-0 pb:text-peerbots-darkteal pb:hover:underline pb:font-medium",
+    pink: "pb:bg-transparent pb:p-0 pb:text-rose-800 pb:hover:underline pb:font-medium",
     darkblue:
       "pb:bg-transparent pb:p-0 pb:text-peerbots-darkblue pb:hover:underline pb:font-medium",
     danger:

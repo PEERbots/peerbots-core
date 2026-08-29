@@ -13,11 +13,12 @@ const headingSizes: Record<number, string> = {
 
 const headingColorClasses: Record<string, string> = {
   default: "",
-  teal: "pb:text-peerbots-teal",
-  pink: "pb:text-peerbots-pink",
+  teal: "pb:text-peerbots-darkteal",
+  pink: "pb:text-rose-800",
+  primary: "pb:text-dark-primary",
   darkteal: "pb:text-peerbots-darkteal",
   darkblue: "pb:text-peerbots-darkblue",
-  olive: "pb:text-peerbots-olive",
+  olive: "pb:text-[#636814]",
   dark: "pb:text-peerbots-dark",
   white: "pb:text-white",
   gradient:
@@ -26,15 +27,16 @@ const headingColorClasses: Record<string, string> = {
 
 const textColorClasses: Record<string, string> = {
   default: "pb:text-slate-950",
-  neutral: "pb:text-gray-700",
-  muted: "pb:text-slate-600",
-  error: "pb:text-red-600 pb:font-medium",
-  success: "pb:text-emerald-600 pb:font-medium",
-  teal: "pb:text-peerbots-teal",
-  pink: "pb:text-peerbots-pink",
+  neutral: "pb:text-gray-800",
+  muted: "pb:text-gray-600",
+  error: "pb:text-red-700 pb:font-medium",
+  success: "pb:text-emerald-800 pb:font-medium",
+  teal: "pb:text-peerbots-darkteal",
+  pink: "pb:text-rose-800",
+  primary: "pb:text-dark-primary",
   darkteal: "pb:text-peerbots-darkteal",
   darkblue: "pb:text-peerbots-darkblue",
-  olive: "pb:text-peerbots-olive",
+  olive: "pb:text-[#636814]",
   dark: "pb:text-peerbots-dark",
   white: "pb:text-white",
 };

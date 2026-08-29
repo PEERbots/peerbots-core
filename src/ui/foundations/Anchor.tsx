@@ -30,14 +30,15 @@ export interface AnchorProps
 export type LinkProps = AnchorProps;
 
 const colorClasses: Record<string, string> = {
-  default: "pb:text-gray-800 pb:hover:text-peerbots-teal",
-  neutral: "pb:text-gray-600 pb:hover:text-gray-900",
-  muted: "pb:text-gray-500 pb:hover:text-gray-800",
-  teal: "pb:text-peerbots-teal pb:hover:text-peerbots-darkteal pb:font-semibold",
-  pink: "pb:text-peerbots-pink pb:hover:opacity-85 pb:font-semibold",
-  darkteal: "pb:text-peerbots-darkteal pb:hover:text-peerbots-teal pb:font-semibold",
-  darkblue: "pb:text-peerbots-darkblue pb:hover:text-peerbots-teal pb:font-semibold",
-  danger: "pb:text-red-600 pb:hover:text-red-800 pb:font-medium",
+  default: "pb:text-gray-900 pb:hover:text-peerbots-darkteal",
+  neutral: "pb:text-gray-700 pb:hover:text-gray-950",
+  muted: "pb:text-gray-600 pb:hover:text-gray-900",
+  teal: "pb:text-peerbots-darkteal pb:hover:text-teal-950 pb:font-semibold",
+  pink: "pb:text-rose-800 pb:hover:text-rose-950 pb:font-semibold",
+  primary: "pb:text-dark-primary pb:hover:text-teal-950 pb:font-semibold",
+  darkteal: "pb:text-peerbots-darkteal pb:hover:text-teal-950 pb:font-semibold",
+  darkblue: "pb:text-peerbots-darkblue pb:hover:text-teal-900 pb:font-semibold",
+  danger: "pb:text-red-700 pb:hover:text-red-900 pb:font-semibold",
 };
 
 const underlineClasses = {

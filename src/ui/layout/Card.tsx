@@ -34,19 +34,19 @@ export interface CardProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 const variantStyles: Record<string, string> = {
-  surface: "pb:bg-white pb:border pb:border-gray-100 pb:shadow-md",
-  elevated: "pb:bg-white pb:border pb:border-gray-100 pb:shadow-md",
-  default: "pb:bg-white pb:border pb:border-gray-100 pb:shadow-xs",
+  surface: "pb:bg-white pb:border pb:border-gray-200 pb:shadow-md",
+  elevated: "pb:bg-white pb:border pb:border-gray-200 pb:shadow-md",
+  default: "pb:bg-white pb:border pb:border-gray-200 pb:shadow-xs",
   glass:
     "pb:bg-white/90 pb:backdrop-blur-xl pb:border pb:border-white/40 pb:shadow-xl",
-  flat: "pb:bg-gray-50/80 pb:border pb:border-gray-100/60",
-  outline: "pb:bg-transparent pb:border-2 pb:border-gray-200",
+  flat: "pb:bg-gray-50/80 pb:border pb:border-gray-200",
+  outline: "pb:bg-transparent pb:border-2 pb:border-gray-300",
 };
 
 const tintStyles: Record<string, string> = {
   default: "",
-  teal: "pb:bg-peerbots-teal/5 pb:border pb:border-peerbots-teal/20",
-  pink: "pb:bg-peerbots-pink/5 pb:border pb:border-peerbots-pink/20",
+  teal: "pb:bg-peerbots-teal/5 pb:border pb:border-peerbots-darkteal/30",
+  pink: "pb:bg-peerbots-pink/5 pb:border pb:border-rose-300",
 };
 
 const radiusClasses: Record<ComponentRadius, string> = {
