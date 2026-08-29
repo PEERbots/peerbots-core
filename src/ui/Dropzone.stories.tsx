@@ -16,6 +16,7 @@ const meta: Meta<typeof Dropzone> = {
     disabled: { control: "boolean" },
     title: { control: "text" },
     subtitle: { control: "text" },
+    showPreview: { control: "boolean" },
   },
 };
 
@@ -25,28 +26,34 @@ type Story = StoryObj<typeof Dropzone>;
 export const Default: Story = {
   args: {
     title: "Click or drag file to upload",
-    subtitle: "PNG, JPG, WEBP up to 10MB",
-    accept: "image/*",
+    subtitle: "PNG, JPG, WEBP, or MP4 up to 10MB",
+    accept: "image/*,video/*",
     maxSizeMB: 10,
+    showPreview: true,
+  },
+};
+
+export const WithImagePreview: Story = {
+  args: {
+    previewUrl:
+      "https://images.unsplash.com/photo-1508759078412-70b92305a610?auto=format&fit=crop&w=800&q=80",
+    title: "Upload photo",
+    subtitle: "PNG, JPG up to 10MB",
   },
 };
 
 export const InteractiveState: Story = {
   render: () => {
-    const [preview, setPreview] = useState<string | null>(null);
-
     return (
-      <div className="pb:w-96 pb:p-4">
+      <div className="pb:w-96 pb:p-4 pb:space-y-4">
+        <Heading level={4} className="pb:text-sm pb:font-bold pb:text-gray-900">
+          Interactive Photo Upload (Auto-Preview)
+        </Heading>
         <Dropzone
           accept="image/*"
-          previewUrl={preview}
           title="Upload creation photo"
           subtitle="Drag high-res photo or click to browse"
-          onFileSelect={(file) => {
-            const url = URL.createObjectURL(file);
-            setPreview(url);
-          }}
-          onFileRemove={() => setPreview(null)}
+          maxSizeMB={10}
         />
       </div>
     );
@@ -58,7 +65,7 @@ export const Variations: Story = {
     <div className="pb:flex pb:flex-col pb:gap-6 pb:p-4 pb:w-96">
       <div className="pb:space-y-2">
         <Heading level={4} className="pb:text-sm pb:font-medium pb:text-black">
-          Image Dropzone
+          Empty Dropzone
         </Heading>
         <Dropzone
           accept="image/*"
@@ -72,7 +79,7 @@ export const Variations: Story = {
           With Existing Image Preview
         </Heading>
         <Dropzone
-          previewUrl="https://images.unsplash.com/photo-1508759078412-70b92305a610?auto=format&fit=crop&w=600&q=80"
+          previewUrl="https://images.unsplash.com/photo-1508759078412-70b92305a610?auto=format&fit=crop&w=800&q=80"
           onFileRemove={() => {}}
         />
       </div>
