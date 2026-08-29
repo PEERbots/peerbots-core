@@ -3,6 +3,8 @@ import * as TypographyStories from "../ui/Typography.stories";
 import * as ColorStories from "../ui/Colors.stories";
 import * as CardStories from "../ui/Card.stories";
 import * as ButtonStories from "../ui/Button.stories";
+import * as AccordionStories from "../ui/Accordion.stories";
+import * as CollapsibleStories from "../ui/Collapsible.stories";
 
 <Meta title="Design System" />
 
@@ -192,7 +194,45 @@ Defined in `src/styles/theme.css`, our color tokens fall into two primary roles:
 
 ---
 
-## 6. Do's and Don'ts
+## 6. Disclosures: Accordion vs. Collapsible
+
+Both components provide smooth, hardware-accelerated expanding and collapsing animations, but serve different architectural purposes:
+
+<div className="pb:grid pb:grid-cols-1 md:pb:grid-cols-2 pb:gap-4 pb:my-6">
+  <div className="pb:p-5 pb:rounded-2xl pb:border pb:border-peerbots-teal/30 pb:bg-white pb:shadow-xs">
+    <div className="pb:flex pb:items-center pb:justify-between pb:mb-2">
+      <span className="pb:text-base pb:font-bold pb:text-peerbots-darkteal">Accordion</span>
+      <span className="pb:text-[10px] pb:font-bold pb:bg-peerbots-teal/15 pb:text-peerbots-darkteal pb:px-2 pb:py-0.5 pb:rounded-full pb:uppercase">Multi-Item Lists</span>
+    </div>
+    <p className="pb:text-xs pb:text-gray-600 pb:mb-3">
+      Use when displaying a <strong>structured list or group of items</strong> (e.g. FAQs, documentation categories, multi-step help centers).
+    </p>
+    <div className="pb:text-xs pb:text-gray-800 pb:space-y-1 pb:border-t pb:border-gray-100 pb:pt-2">
+      <div>• <strong>Data-driven</strong>: Easily passed an <code>items</code> array of question/answer objects.</div>
+      <div>• <strong>Mutual Exclusivity</strong>: Controls whether only one item can open at a time (<code>allowMultiple=false</code>).</div>
+    </div>
+  </div>
+
+  <div className="pb:p-5 pb:rounded-2xl pb:border pb:border-peerbots-pink/30 pb:bg-white pb:shadow-xs">
+    <div className="pb:flex pb:items-center pb:justify-between pb:mb-2">
+      <span className="pb:text-base pb:font-bold pb:text-peerbots-pink">Collapsible</span>
+      <span className="pb:text-[10px] pb:font-bold pb:bg-peerbots-pink/15 pb:text-peerbots-pink pb:px-2 pb:py-0.5 pb:rounded-full pb:uppercase">Single Disclosure</span>
+    </div>
+    <p className="pb:text-xs pb:text-gray-600 pb:mb-3">
+      Use when you have a <strong>single standalone expandable section</strong> embedded within a form, settings page, or dialog.
+    </p>
+    <div className="pb:text-xs pb:text-gray-800 pb:space-y-1 pb:border-t pb:border-gray-100 pb:pt-2">
+      <div>• <strong>Arbitrary Children</strong>: Wrap custom form fields, debug logs, or configuration inputs (<code>&lt;Collapsible title="..."&gt;...&lt;/Collapsible&gt;</code>).</div>
+      <div>• <strong>Composable</strong>: Embedded inside <code>SettingsPanel</code> or cards.</div>
+    </div>
+  </div>
+</div>
+
+<Canvas of={AccordionStories.Default} />
+
+---
+
+## 7. Do's and Don'ts
 
 <div className="pb:grid pb:grid-cols-1 md:pb:grid-cols-2 pb:gap-4 pb:my-6">
   <div className="pb:p-4 pb:rounded-xl pb:border pb:border-emerald-200 pb:bg-emerald-50/60">
@@ -204,6 +244,7 @@ Defined in `src/styles/theme.css`, our color tokens fall into two primary roles:
       <li>• Use <code>radius="pill"</code> for marketing CTAs and hero actions.</li>
       <li>• Use <code>variant="glass"</code> strictly over 3D canvases, video, or hero gradients.</li>
       <li>• Use <code>size="sm"</code> for dense table actions and toolbars.</li>
+      <li>• Use <code>Accordion</code> for multi-question FAQs and <code>Collapsible</code> for single advanced form sections.</li>
     </ul>
   </div>
 

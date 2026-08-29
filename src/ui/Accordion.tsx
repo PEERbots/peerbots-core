@@ -15,7 +15,7 @@ export interface AccordionItem {
 }
 
 export interface AccordionProps {
-  /** List of accordion items for multi-item mode */
+  /** List of accordion items for multi-item list mode */
   items?: AccordionItem[];
   /** Allow multiple items to be opened simultaneously */
   allowMultiple?: boolean;
@@ -52,14 +52,18 @@ export const Accordion: React.FC<AccordionProps> = ({
   const baseId = useId();
 
   // Normalize single-item props vs items array
-  const resolvedItems: AccordionItem[] = items || (title || children ? [
-    {
-      id: "single",
-      title,
-      content: children,
-      isOpenDefault: defaultOpen,
-    },
-  ] : []);
+  const resolvedItems: AccordionItem[] =
+    items ||
+    (title || children
+      ? [
+          {
+            id: "single",
+            title,
+            content: children,
+            isOpenDefault: defaultOpen,
+          },
+        ]
+      : []);
 
   const [openIndices, setOpenIndices] = useState<number[]>(() => {
     const initial: number[] = [];
@@ -72,21 +76,26 @@ export const Accordion: React.FC<AccordionProps> = ({
   });
 
   const toggleItem = (index: number) => {
-    const isCurrentlyOpen = openIndices.includes(index);
+    const isCurrentlyOpen =
+      controlledIsOpen !== undefined && resolvedItems.length === 1
+        ? controlledIsOpen
+        : openIndices.includes(index);
     const willBeOpen = !isCurrentlyOpen;
 
     if (onToggle && resolvedItems.length === 1) {
       onToggle(willBeOpen);
     }
 
-    if (allowMultiple) {
-      setOpenIndices((prev) =>
-        prev.includes(index)
-          ? prev.filter((i) => i !== index)
-          : [...prev, index],
-      );
-    } else {
-      setOpenIndices((prev) => (prev.includes(index) ? [] : [index]));
+    if (controlledIsOpen === undefined) {
+      if (allowMultiple) {
+        setOpenIndices((prev) =>
+          prev.includes(index)
+            ? prev.filter((i) => i !== index)
+            : [...prev, index],
+        );
+      } else {
+        setOpenIndices((prev) => (prev.includes(index) ? [] : [index]));
+      }
     }
   };
 
@@ -110,9 +119,9 @@ export const Accordion: React.FC<AccordionProps> = ({
           <div
             key={item.id || index}
             className={cn(
-              "pb:w-full pb:rounded-2xl pb:border pb:transition-all pb:duration-200 pb:overflow-hidden pb:box-border",
+              "pb:w-full pb:rounded-2xl pb:border pb:transition-all pb:duration-300 pb:overflow-hidden pb:box-border",
               isOpen
-                ? "pb:bg-white pb:border-peerbots-teal/40 pb:shadow-sm"
+                ? "pb:bg-white pb:border-peerbots-teal/40 pb:shadow-xs"
                 : "pb:bg-white/80 pb:hover:bg-white pb:border-gray-200/80",
               variant === "bordered" && "pb:border-2",
               variant === "flat" && "pb:border-none pb:bg-gray-100",
@@ -139,7 +148,7 @@ export const Accordion: React.FC<AccordionProps> = ({
                 </div>
                 <span
                   className={cn(
-                    "pb:w-7 pb:h-7 pb:rounded-full pb:flex pb:items-center pb:justify-center pb:flex-shrink-0 pb:transition-transform pb:duration-200",
+                    "pb:w-7 pb:h-7 pb:rounded-full pb:flex pb:items-center pb:justify-center pb:flex-shrink-0 pb:transition-transform pb:duration-300 pb:ease-in-out",
                     isOpen
                       ? "pb:bg-peerbots-teal pb:text-white pb:rotate-180"
                       : "pb:bg-gray-100 pb:text-gray-600",
@@ -154,30 +163,40 @@ export const Accordion: React.FC<AccordionProps> = ({
               </button>
             </div>
 
-            {isOpen && (
-              <div
-                id={panelId}
-                role="region"
-                aria-labelledby={headerId}
-                className={cn(
-                  "pb:w-full pb:box-border pb:px-5 pb:pb-5 pb:pt-1 sm:pb:px-6 pb:text-gray-700 pb:leading-relaxed pb:border-t pb:border-gray-100",
-                  contentClassName,
-                )}
-              >
-                {item.bodyHtml ? (
-                  <div
-                    className="pb:text-base pb:leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: item.bodyHtml }}
-                  />
-                ) : typeof bodyContent === "string" ? (
-                  <Text variant="default" className="pb:text-base pb:text-gray-700 pb:leading-relaxed">
-                    {bodyContent}
-                  </Text>
-                ) : (
-                  bodyContent
-                )}
+            {/* Smooth animated expand / collapse container */}
+            <div
+              id={panelId}
+              role="region"
+              aria-labelledby={headerId}
+              className={cn(
+                "pb:grid pb:transition-all pb:duration-300 pb:ease-in-out",
+                isOpen
+                  ? "pb:grid-rows-[1fr] pb:opacity-100"
+                  : "pb:grid-rows-[0fr] pb:opacity-0",
+              )}
+            >
+              <div className="pb:overflow-hidden">
+                <div
+                  className={cn(
+                    "pb:w-full pb:box-border pb:px-5 pb:pb-5 pb:pt-2 sm:pb:px-6 pb:text-gray-700 pb:leading-relaxed pb:border-t pb:border-gray-100",
+                    contentClassName,
+                  )}
+                >
+                  {item.bodyHtml ? (
+                    <div
+                      className="pb:text-base pb:leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: item.bodyHtml }}
+                    />
+                  ) : typeof bodyContent === "string" ? (
+                    <Text className="pb:text-base pb:text-gray-700 pb:leading-relaxed">
+                      {bodyContent}
+                    </Text>
+                  ) : (
+                    bodyContent
+                  )}
+                </div>
               </div>
-            )}
+            </div>
           </div>
         );
       })}
