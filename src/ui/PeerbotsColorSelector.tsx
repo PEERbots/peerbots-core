@@ -2,35 +2,44 @@ import React from "react";
 import { cn } from "./utils";
 
 export type PeerbotsColor =
-  | "Green"
   | "Light Blue"
   | "Blue"
+  | "Green"
+  | "Red"
   | "Purple"
-  | "Orange"
-  | "Yellow"
   | "Pink"
-  | "Grey";
+  | "Yellow"
+  | "Orange"
+  | "Grey"
+  | "Black"
+  | "White";
 
 export const PEERBOTS_COLOR_MAP: Record<PeerbotsColor, string> = {
-  Green: "#61d476",
-  "Light Blue": "#aee7ff",
-  Blue: "#6da4f7",
-  Purple: "#bf94e4",
-  Orange: "#ffb347",
-  Yellow: "#fdfd96",
-  Pink: "#ffb6c1",
-  Grey: "#d3d3d3",
+  "Light Blue": "#ABE3FA",
+  Blue: "#5F94D6",
+  Green: "#65C77D",
+  Red: "#E6817E",
+  Purple: "#9B86F3",
+  Pink: "#EBA4E4",
+  Yellow: "#F8EDB1",
+  Orange: "#E6A575",
+  Grey: "#CECECE",
+  Black: "#4D4D4D",
+  White: "#FDFEFE",
 };
 
 export const PEERBOTS_FONT_COLOR_MAP: Record<PeerbotsColor, string> = {
-  Green: "#000000",
-  "Light Blue": "#000000",
-  Blue: "#000000",
-  Purple: "#000000",
-  Orange: "#000000",
-  Yellow: "#000000",
-  Pink: "#000000",
-  Grey: "#000000",
+  "Light Blue": "#020307",
+  Blue: "#020307",
+  Green: "#020307",
+  Red: "#020307",
+  Purple: "#020307",
+  Pink: "#020307",
+  Yellow: "#020307",
+  Orange: "#020307",
+  Grey: "#020307",
+  Black: "#FDFEFE",
+  White: "#020307",
 };
 
 export interface PeerbotsColorSelectorProps {

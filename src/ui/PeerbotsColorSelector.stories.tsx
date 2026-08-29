@@ -11,7 +11,7 @@ export default meta;
 type Story = StoryObj<typeof PeerbotsColorSelector>;
 
 function InteractiveSelector(props: Partial<React.ComponentProps<typeof PeerbotsColorSelector>>) {
-  const [selected, setSelected] = useState<PeerbotsColor>("Green");
+  const [selected, setSelected] = useState<PeerbotsColor>("Light Blue");
   return (
     <PeerbotsColorSelector
       selectedColor={selected}
@@ -42,7 +42,7 @@ export const Variations: Story = {
       </div>
       <div>
         <span className="pb:text-xs pb:font-bold pb:text-gray-500 pb:block pb:mb-2">Subset of Colors</span>
-        <InteractiveSelector colors={["Green", "Blue", "Orange", "Pink"]} />
+        <InteractiveSelector colors={["Light Blue", "Blue", "Green", "Red", "Purple"]} />
       </div>
     </div>
   ),
