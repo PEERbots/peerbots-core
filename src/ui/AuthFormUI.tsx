@@ -1,12 +1,13 @@
 import { useFormStatus } from "react-dom";
 import { Button, Input, Heading, Text, Icon, Field } from ".";
+import React from "react";
 
 function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
     <Button
       type="submit"
-      variant="primary"
+      color="primary"
       isLoading={pending}
       disabled={pending}
     >
@@ -51,7 +52,7 @@ export function AuthFormUI({
 
       <form className="pb:md:m-10 pb:sm:m-4 pb:space-y-4" action={formAction}>
         {description && (
-          <Text className="pb:text-center pb:mb-6" variant="muted">
+          <Text className="pb:text-center pb:mb-6" color="muted">
             {description}
           </Text>
         )}
@@ -61,7 +62,7 @@ export function AuthFormUI({
             {actionState.message}
           </Text>
         )}
-        <Text className="pb:text-center" variant="error">
+        <Text className="pb:text-center" color="error">
           {actionState.error}
         </Text>
 
@@ -114,13 +115,13 @@ export function AuthFormUI({
 
           <div className="pb:text-center pb:text-sm pb:text-gray-500">
             {mode === "signing up" && (
-              <Text>
+              <Text size="sm">
                 Already have an account?{" "}
                 <Button
-                  variant="ghost"
+                  variant="link"
+                  color="teal"
                   size="sm"
                   onClick={() => onModeChange("signing in")}
-                  className="pb:underline pb:p-0 pb:h-auto pb:hover:bg-transparent"
                 >
                   Sign in
                 </Button>
@@ -128,13 +129,13 @@ export function AuthFormUI({
             )}
             {mode === "signing in" && (
               <div className="pb:flex pb:flex-col pb:gap-2">
-                <Text>
+                <Text size="sm">
                   Forgot your password?{" "}
                   <Button
-                    variant="ghost"
+                    variant="link"
+                    color="teal"
                     size="sm"
                     onClick={() => onModeChange("resetting password")}
-                    className="pb:underline pb:p-0 pb:h-auto pb:hover:bg-transparent"
                   >
                     Reset password.
                   </Button>
@@ -147,13 +148,13 @@ export function AuthFormUI({
                     <span className="pb:px-2 pb:bg-white pb:text-gray-500">or</span>
                   </div>
                 </div>
-                <Text>
+                <Text size="sm">
                   Don&apos;t have an account?{" "}
                   <Button
-                    variant="ghost"
+                    variant="link"
+                    color="teal"
                     size="sm"
                     onClick={() => onModeChange("signing up")}
-                    className="pb:underline pb:p-0 pb:h-auto pb:hover:bg-transparent"
                   >
                     Sign up
                   </Button>
@@ -162,13 +163,13 @@ export function AuthFormUI({
             )}
             {mode === "resetting password" && (
               <div className="pb:flex pb:flex-col pb:gap-2">
-                <Text>
+                <Text size="sm">
                   Don&apos;t have an account?{" "}
                   <Button
-                    variant="ghost"
+                    variant="link"
+                    color="teal"
                     size="sm"
                     onClick={() => onModeChange("signing up")}
-                    className="pb:underline pb:p-0 pb:h-auto pb:hover:bg-transparent"
                   >
                     Sign up
                   </Button>
@@ -181,13 +182,13 @@ export function AuthFormUI({
                     <span className="pb:px-2 pb:bg-white pb:text-gray-500">or</span>
                   </div>
                 </div>
-                <Text>
-                  Remembered your password?
+                <Text size="sm">
+                  Remembered your password?{" "}
                   <Button
-                    variant="ghost"
+                    variant="link"
+                    color="teal"
                     size="sm"
                     onClick={() => onModeChange("signing in")}
-                    className="pb:underline pb:p-0 pb:h-auto pb:hover:bg-transparent"
                   >
                     Sign In
                   </Button>
@@ -200,7 +201,7 @@ export function AuthFormUI({
         {mode !== "resetting password" && onGoogleSignIn && (
           <div className="pb:text-center pb:mt-4">
             <Button
-              variant="secondary"
+              color="neutral"
               onClick={onGoogleSignIn}
               type="button"
               className="pb:w-full pb:flex pb:items-center pb:justify-center pb:gap-2"

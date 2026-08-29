@@ -201,7 +201,7 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
       <div
         ref={ref}
         className={cn(
-          "pb:relative pb:w-full pb:rounded-xl pb:border-2 pb:border-dashed pb:transition-all pb:overflow-hidden",
+          "pb:relative pb:w-full pb:rounded-2xl pb:border-2 pb:border-dashed pb:transition-all pb:overflow-hidden",
           isDragging
             ? "pb:border-primary pb:bg-primary/10"
             : "pb:border-gray-300 pb:hover:border-primary/80 pb:bg-gray-50/70 pb:hover:bg-gray-50",
@@ -239,7 +239,7 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
           <div className="pb:p-4 pb:space-y-3">
             <div
               onClick={handleClick}
-              className="pb:relative pb:w-full pb:h-56 pb:overflow-hidden pb:rounded-lg pb:bg-gray-900 pb:flex pb:items-center pb:justify-center pb:cursor-pointer pb:group"
+              className="pb:relative pb:w-full pb:h-56 pb:overflow-hidden pb:rounded-xl pb:bg-gray-900 pb:flex pb:items-center pb:justify-center pb:cursor-pointer pb:group"
               title="Click to change file"
             >
               {isVideo ? (
@@ -273,7 +273,7 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
             <div className="pb:flex pb:items-center pb:justify-center pb:gap-3">
               <Button
                 type="button"
-                variant="secondary"
+                color="neutral"
                 size="sm"
                 onClick={handleClick}
                 disabled={disabled}
@@ -285,11 +285,11 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
               <Button
                 type="button"
                 variant="ghost"
+                color="danger"
                 size="sm"
                 onClick={handleRemove}
                 disabled={disabled}
                 leftIcon={<Icon name="x" />}
-                className="pb:text-red-600 pb:hover:text-red-700 pb:hover:bg-red-50"
               >
                 Remove
               </Button>

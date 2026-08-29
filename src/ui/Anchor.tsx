@@ -1,20 +1,50 @@
 import * as React from "react";
 import { cn } from "./utils";
+import { ComponentColor } from "./types";
 
 export interface AnchorProps
   extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
-  variant?:
-    | "default"
-    | "pink"
-    | "teal"
-    | "underline"
-    | "underline-pink"
-    | "muted";
+  /**
+   * Palette color or semantic intent.
+   * @default "default"
+   */
+  color?: ComponentColor | "muted" | "default";
+  /**
+   * Underline text decoration control.
+   * @default "hover"
+   */
+  underline?: "hover" | "always" | "none";
+  /**
+   * Interaction style variant.
+   * @default "default"
+   */
+  variant?: "default" | "ghost";
+  /** Polymorphic component wrapper (e.g. react-router Link, Next.js Link) */
   as?: React.ElementType;
-  render?: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => React.ReactElement;
+  /** Custom render prop */
+  render?: (
+    props: React.AnchorHTMLAttributes<HTMLAnchorElement>,
+  ) => React.ReactElement;
 }
 
 export type LinkProps = AnchorProps;
+
+const colorClasses: Record<string, string> = {
+  default: "pb:text-gray-800 pb:hover:text-peerbots-teal",
+  neutral: "pb:text-gray-600 pb:hover:text-gray-900",
+  muted: "pb:text-gray-500 pb:hover:text-gray-800",
+  teal: "pb:text-peerbots-teal pb:hover:text-peerbots-darkteal pb:font-semibold",
+  pink: "pb:text-peerbots-pink pb:hover:opacity-85 pb:font-semibold",
+  darkteal: "pb:text-peerbots-darkteal pb:hover:text-peerbots-teal pb:font-semibold",
+  darkblue: "pb:text-peerbots-darkblue pb:hover:text-peerbots-teal pb:font-semibold",
+  danger: "pb:text-red-600 pb:hover:text-red-800 pb:font-medium",
+};
+
+const underlineClasses = {
+  hover: "pb:hover:underline pb:underline-offset-4 pb:decoration-current",
+  always: "pb:underline pb:underline-offset-4 pb:decoration-current",
+  none: "pb:no-underline",
+};
 
 const Anchor = React.forwardRef<HTMLAnchorElement, AnchorProps>(
   (
@@ -22,6 +52,8 @@ const Anchor = React.forwardRef<HTMLAnchorElement, AnchorProps>(
       className,
       href,
       target,
+      color = "default",
+      underline = "hover",
       variant = "default",
       as: Component = "a",
       render,
@@ -30,20 +62,11 @@ const Anchor = React.forwardRef<HTMLAnchorElement, AnchorProps>(
     },
     ref,
   ) => {
-    const variants = {
-      default: "pb:text-gray-700 pb:hover:text-peerbots-pink",
-      pink: "pb:text-peerbots-pink pb:hover:opacity-80 pb:font-semibold",
-      teal: "pb:text-peerbots-teal pb:hover:opacity-80 pb:font-semibold",
-      underline:
-        "pb:text-gray-900 pb:underline pb:decoration-2 pb:decoration-peerbots-teal pb:underline-offset-4 pb:hover:bg-peerbots-teal/5",
-      "underline-pink":
-        "pb:text-gray-900 pb:underline pb:decoration-2 pb:decoration-peerbots-pink pb:underline-offset-4 pb:hover:bg-peerbots-pink/5",
-      muted: "pb:text-gray-500 pb:hover:text-gray-900",
-    };
-
     const commonClass = cn(
-      "pb:transition-colors pb:duration-200 pb:cursor-pointer pb:font-medium",
-      variants[variant],
+      "pb:transition-colors pb:duration-150 pb:cursor-pointer pb:font-medium pb:inline-flex pb:items-center pb:gap-1",
+      colorClasses[color] || colorClasses.default,
+      underlineClasses[underline],
+      variant === "ghost" && "pb:px-2 pb:py-1 pb:rounded-lg pb:hover:bg-gray-100",
       className,
     );
 
@@ -70,4 +93,3 @@ Anchor.displayName = "Anchor";
 
 export const Link = Anchor;
 export { Anchor };
-

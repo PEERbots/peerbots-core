@@ -1,13 +1,16 @@
 import React from "react";
-import { Button, Icon, IconProps } from ".";
+import { Button } from "./Button";
+import { Icon, IconProps } from "./Icon";
 import { Heading, Text } from "./Typography";
 import { cn } from "./utils";
+import { ComponentColor, FillVariant } from "./types";
 
 export interface EmptyStateAction {
   label: React.ReactNode;
   onClick?: () => void;
   render?: React.ReactElement;
-  variant?: "primary" | "secondary" | "danger" | "ghost";
+  variant?: FillVariant;
+  color?: ComponentColor;
   icon?: IconProps["name"] | React.ReactNode;
 }
 
@@ -46,7 +49,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "pb:flex pb:flex-col pb:items-center pb:justify-center pb:p-8 pb:text-center pb:rounded-xl pb:border pb:border-dashed pb:border-gray-200 pb:bg-white/50",
+        "pb:flex pb:flex-col pb:items-center pb:justify-center pb:p-8 pb:text-center pb:rounded-2xl pb:border pb:border-dashed pb:border-gray-200 pb:bg-white/50",
         className,
       )}
     >
@@ -66,7 +69,8 @@ export function EmptyState({
       {description &&
         (typeof description === "string" ? (
           <Text
-            className="pb:text-gray-600 pb:max-w-md pb:mb-6"
+            color="muted"
+            className="pb:max-w-md pb:mb-6"
           >
             {description}
           </Text>
@@ -78,7 +82,8 @@ export function EmptyState({
         <div className="pb:flex pb:flex-wrap pb:gap-3 pb:justify-center pb:items-center">
           {primaryAction && (
             <Button
-              variant={primaryAction.variant || "primary"}
+              variant={primaryAction.variant || "solid"}
+              color={primaryAction.color || "primary"}
               onClick={primaryAction.onClick}
               render={primaryAction.render}
               leftIcon={
@@ -94,7 +99,8 @@ export function EmptyState({
           )}
           {secondaryAction && (
             <Button
-              variant={secondaryAction.variant || "secondary"}
+              variant={secondaryAction.variant || "solid"}
+              color={secondaryAction.color || "neutral"}
               onClick={secondaryAction.onClick}
               render={secondaryAction.render}
               leftIcon={

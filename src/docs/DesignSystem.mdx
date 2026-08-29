@@ -2,6 +2,7 @@ import { Meta, Canvas } from "@storybook/addon-docs/blocks";
 import * as TypographyStories from "../ui/Typography.stories";
 import * as ColorStories from "../ui/Colors.stories";
 import * as CardStories from "../ui/Card.stories";
+import * as ButtonStories from "../ui/Button.stories";
 
 <Meta title="Design System" />
 
@@ -11,15 +12,38 @@ The Peerbots design system ensures a consistent, accessible, and friendly experi
 
 ---
 
-## 1. Design Philosophy
+## 1. Design Governance & Orthogonal Props
 
-- **Friendly & Approachable**: Soft rounded corners, generous touch targets, and clear brand colors.
-- **Accessible & High-Contrast**: Form inputs, buttons, and alerts meet WCAG contrast guidelines for therapists, educators, and learners.
-- **Context-Aware Surfaces**: Opaque surfaces for high-density forms and data; tactile glassmorphism surfaces for 3D/media HUD overlays.
+To guarantee that different developers build cohesive interfaces without fragmented styling, all core components adhere to **Orthogonal Dimensions**:
+
+| Dimension | Prop Name | Values | Purpose |
+| :--- | :--- | :--- | :--- |
+| **Fill Style** | `variant` | `"solid" \| "soft" \| "outline" \| "ghost" \| "link"` | Visual structure and background treatment |
+| **Palette & Intent** | `color` | `"primary" \| "neutral" \| "teal" \| "pink" \| "danger" \| "success"` | Semantic meaning or brand color |
+| **Scale** | `size` | `"xs" \| "sm" \| "md" \| "lg" \| "xl"` | Padding, height, and typography scale |
+| **Geometry** | `radius` | `"none" \| "sm" \| "md" \| "lg" \| "2xl" \| "pill"` | Border radius |
 
 ---
 
-## 2. Brand Palette & Color Architecture
+## 2. Standard Component Recipes
+
+Follow these official recipes for common UX patterns across all Peerbots apps:
+
+| UX Pattern | Standard Recipe Code | Visual Output |
+| :--- | :--- | :--- |
+| **Form Submit** | `<Button color="primary">Save Changes</Button>` | High-emphasis electric cyan button |
+| **Form Cancel / Back** | `<Button color="neutral">Cancel</Button>` | Calm, neutral gray button |
+| **Destructive Action** | `<Button color="danger">Delete Robot</Button>` | Solid danger red button |
+| **Destructive Dismiss** | `<Button color="danger" variant="ghost">Remove</Button>` | Subtle red ghost action |
+| **Brand Hero CTA** | `<Button color="teal" radius="pill" size="lg">Get Started</Button>` | Pill brand CTA |
+| **Floating 3D HUD Overlay**| `<Card variant="glass" padding="sm">...</Card>` | Translucent backdrop blur for 3D stages |
+| **Standard App Panel** | `<Card variant="surface" padding="md">...</Card>` | Opaque elevated white container |
+
+<Canvas of={ButtonStories.Recipes} />
+
+---
+
+## 3. Brand Palette & Color Architecture
 
 Defined in `src/styles/theme.css`, our color tokens fall into two primary roles:
 
@@ -39,7 +63,7 @@ Defined in `src/styles/theme.css`, our color tokens fall into two primary roles:
 
 ---
 
-## 3. Typography
+## 4. Typography Scale
 
 - **Primary Font Family**: `Avenir`, `Nunito`, `sans-serif`
 - **Monospace Font Family**: `ui-monospace`, `SFMono-Regular`, `Menlo`, `monospace` (used in `CodeBlock` and data readouts)
@@ -48,39 +72,25 @@ Defined in `src/styles/theme.css`, our color tokens fall into two primary roles:
 
 ---
 
-## 4. Glassmorphism & Surface Guidelines
+## 5. Surface & Glassmorphism Guidelines
 
-The `Card` component supports `variant="glass"` (`bg-white/90 backdrop-blur-xl border border-white/40 shadow-xl`).
-
-### When to Use Glassmorphism
+### When to Use Glass (`variant="glass"`)
 - **Floating 3D HUD Toolbars**: Camera controls, zoom buttons, and parameter readouts floating above WebGL / 3D canvases.
 - **Media Overlays**: Controls or title cards positioned directly over images, videos, or dynamic gradient backgrounds.
 - **Floating Header Navigation**: Top navigation bars over scrolling page content.
 
-### When NOT to Use Glassmorphism
-- **Standard Forms & Text**: Never use glass on flat white or gray backgrounds. The blur is invisible, contrast is reduced, and text legibility suffers. Use `variant="elevated"` or `variant="default"` for standard UI cards.
+### When NOT to Use Glass
+- **Standard Forms & Text**: Never use glass on flat white or gray backgrounds. The blur is invisible, contrast is reduced, and text legibility suffers. Always use `variant="surface"` (solid white).
 - **Data Tables & Dense Lists**: Use solid opaque cards with crisp borders.
 
 <Canvas of={CardStories.GlassInContext} />
 
 ---
 
-## 5. Core Component Usage
+## 6. Do's and Don'ts
 
-| Need | Recommended Component | Props / Usage |
-| :--- | :--- | :--- |
-| **Main Action** | `<Button variant="primary">` | Main call to action on a page or modal |
-| **Brand Actions** | `<Button variant="marketing-teal">` or `marketing-pink` | Marketing CTAs and brand-styled buttons |
-| **Destructive Action** | `<Button variant="danger">` | Irreversible actions (Delete, Remove) |
-| **Text Inputs** | `<Input>` or `<SearchInput>` | Single-line text input with optional icons/clear |
-| **Surfaces & Cards** | `<Card variant="default\|elevated\|glass">` | Structural containers and content boxes |
-| **Disclosures & FAQs** | `<Accordion>` or `<Collapsible>` | Collapsible sections and multi-item FAQs |
-| **Loading State** | `<Spinner size="md" color="teal">` | Animated circular loader |
-
----
-
-## 6. Evolving the System
-
-This design system is a living source of truth.
-- **Component Contributions**: Any new repeatable pattern must be added as a primitive in `@peerbots/core` with corresponding Storybook stories.
-- **Token Consistency**: Always use CSS variables (`var(--pb-color-*)`) or Tailwind `pb:` classes rather than arbitrary hex values.
+- ✅ **DO** pair one primary button (`color="primary"`) with one neutral button (`color="neutral"`) in dialogs and forms.
+- ❌ **DON'T** put multiple `solid primary` buttons side-by-side.
+- ✅ **DO** use `radius="pill"` for marketing CTAs and hero actions (`<Button color="teal" radius="pill">`).
+- ❌ **DON'T** use `variant="glass"` on plain light backgrounds.
+- ✅ **DO** use `size="sm"` for dense table actions and toolbars.

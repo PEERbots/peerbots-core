@@ -1,19 +1,31 @@
 import React from "react";
 import { cn } from "./utils";
+import { ComponentSize, ComponentRadius, SurfaceVariant } from "./types";
 
 export interface CardProps extends React.HTMLAttributes<HTMLElement> {
   children: React.ReactNode;
-  className?: string;
+  /**
+   * Surface treatment / fill style.
+   * @default "surface"
+   */
+  variant?: SurfaceVariant | "default" | "elevated";
+  /**
+   * Background color tinting.
+   * @default "default"
+   */
+  color?: "default" | "teal" | "pink";
+  /**
+   * Card padding scale.
+   * @default "md"
+   */
+  padding?: "none" | ComponentSize;
+  /**
+   * Border radius scale.
+   * @default "2xl"
+   */
+  radius?: ComponentRadius;
+  /** Whether the card shows interactive hover elevation */
   hoverable?: boolean;
-  padding?: "none" | "sm" | "md" | "lg" | "xl";
-  variant?:
-    | "default"
-    | "glass"
-    | "elevated"
-    | "flat"
-    | "outline"
-    | "teal-tint"
-    | "pink-tint";
   id?: string;
   as?: React.ElementType;
   href?: string;
@@ -21,14 +33,50 @@ export interface CardProps extends React.HTMLAttributes<HTMLElement> {
   rel?: string;
 }
 
+const variantStyles: Record<string, string> = {
+  surface: "pb:bg-white pb:border pb:border-gray-100 pb:shadow-md",
+  elevated: "pb:bg-white pb:border pb:border-gray-100 pb:shadow-md",
+  default: "pb:bg-white pb:border pb:border-gray-100 pb:shadow-xs",
+  glass:
+    "pb:bg-white/90 pb:backdrop-blur-xl pb:border pb:border-white/40 pb:shadow-xl",
+  flat: "pb:bg-gray-50/80 pb:border pb:border-gray-100/60",
+  outline: "pb:bg-transparent pb:border-2 pb:border-gray-200",
+};
+
+const tintStyles: Record<string, string> = {
+  default: "",
+  teal: "pb:bg-peerbots-teal/5 pb:border pb:border-peerbots-teal/20",
+  pink: "pb:bg-peerbots-pink/5 pb:border pb:border-peerbots-pink/20",
+};
+
+const radiusClasses: Record<ComponentRadius, string> = {
+  none: "pb:rounded-none",
+  sm: "pb:rounded-md",
+  md: "pb:rounded-xl",
+  lg: "pb:rounded-2xl",
+  "2xl": "pb:rounded-2xl",
+  pill: "pb:rounded-full",
+};
+
+const paddingClasses: Record<string, string> = {
+  none: "",
+  xs: "pb:p-2.5",
+  sm: "pb:p-4",
+  md: "pb:p-6 sm:pb:p-8",
+  lg: "pb:p-8 sm:pb:p-10 md:pb:p-12",
+  xl: "pb:p-10 sm:pb:p-12 md:pb:p-16",
+};
+
 export const Card = React.forwardRef<HTMLElement, CardProps>(
   (
     {
       children,
       className,
-      hoverable = true,
+      variant = "surface",
+      color = "default",
       padding = "md",
-      variant = "default",
+      radius = "2xl",
+      hoverable = true,
       id,
       as: Component = "div",
       href,
@@ -38,31 +86,11 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
     },
     ref,
   ) => {
-    const baseStyles =
-      "pb:rounded-2xl pb:overflow-hidden pb:transition-all pb:duration-300";
-
-    const variants: Record<string, string> = {
-      default: "pb:bg-white pb:border pb:border-gray-100 pb:shadow-xs",
-      glass:
-        "pb:bg-white/90 pb:backdrop-blur-xl pb:border pb:border-white/40 pb:shadow-xl",
-      elevated: "pb:bg-white pb:border pb:border-gray-100 pb:shadow-md",
-      flat: "pb:bg-gray-50/80 pb:border pb:border-gray-100/60",
-      outline: "pb:bg-transparent pb:border-2 pb:border-gray-200",
-      "teal-tint": "pb:bg-peerbots-teal/5 pb:border pb:border-peerbots-teal/20",
-      "pink-tint": "pb:bg-peerbots-pink/5 pb:border pb:border-peerbots-pink/20",
-    };
+    const baseStyles = "pb:overflow-hidden pb:transition-all pb:duration-300";
 
     const hoverStyles = hoverable
       ? "pb:hover:shadow-lg pb:hover:-translate-y-0.5 pb:hover:border-peerbots-teal/30 pb:focus-within:ring-2 pb:focus-within:ring-peerbots-teal"
       : "";
-
-    const paddings: Record<string, string> = {
-      none: "",
-      sm: "pb:p-4",
-      md: "pb:p-6 sm:pb:p-8",
-      lg: "pb:p-8 sm:pb:p-10 md:pb:p-12",
-      xl: "pb:p-10 sm:pb:p-12 md:pb:p-16",
-    };
 
     const isLink = Boolean(href) || Component === "a";
     const TargetTag = href ? "a" : Component;
@@ -76,9 +104,12 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
         ref={ref as any}
         className={cn(
           baseStyles,
-          variants[variant] || variants.default,
+          radiusClasses[radius] || radiusClasses["2xl"],
+          color === "default"
+            ? variantStyles[variant] || variantStyles.surface
+            : tintStyles[color],
           hoverStyles,
-          paddings[padding] || paddings.md,
+          paddingClasses[padding] || paddingClasses.md,
           isLink && "pb:cursor-pointer pb:block",
           className,
         )}

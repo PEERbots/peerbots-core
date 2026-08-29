@@ -78,7 +78,7 @@ export function TabSelection({
       })}
       {onAddClick && (
         <Button
-          variant="primary"
+          color="primary"
           size="sm"
           aria-label="Create New Tab"
           onClick={onAddClick}

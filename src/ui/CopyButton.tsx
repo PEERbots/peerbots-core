@@ -37,8 +37,10 @@ export const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
       copyIcon,
       successIcon,
       showIcon = true,
-      variant = "secondary",
+      variant = "outline",
+      color = "neutral",
       size = "md",
+      radius = "md",
       isIconOnly,
       className,
       ...props
@@ -52,7 +54,7 @@ export const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
     });
 
     const currentIcon = copied
-      ? successIcon || <Icon name="check" className="pb:text-green-600" />
+      ? successIcon || <Icon name="check" className="pb:text-peerbots-teal" />
       : copyIcon || <Icon name="clipboard" />;
 
     const currentLabel = copied ? successLabel : label;
@@ -61,13 +63,15 @@ export const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
       <Button
         ref={ref}
         variant={variant}
+        color={color}
         size={size}
+        radius={radius}
         isIconOnly={isIconOnly}
         onClick={() => copy(value)}
         leftIcon={showIcon ? currentIcon : undefined}
         className={cn(
           "pb:transition-all pb:duration-150",
-          copied && "pb:border-green-300 pb:text-green-800",
+          copied && "pb:border-peerbots-teal pb:text-peerbots-darkteal",
           className,
         )}
         aria-live="polite"

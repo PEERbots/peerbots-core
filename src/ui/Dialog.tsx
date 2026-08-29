@@ -34,7 +34,7 @@ export function Dialog({
         <BaseDialog.Backdrop className="pb:fixed pb:inset-0 pb:z-50 pb:bg-black/40 pb:transition-all pb:duration-200 data-[state=open]:pb:animate-in data-[state=closed]:pb:animate-out pb:data-[state=closed]:fade-out-0 pb:data-[state=open]:fade-in-0" />
         <BaseDialog.Popup
           className={cn(
-            "pb:fixed pb:left-[50%] pb:top-[50%] pb:z-50 pb:grid pb:w-auto pb:max-w-[90vw] pb:translate-x-[-50%] pb:translate-y-[-50%] pb:gap-4 pb:border pb:bg-white pb:p-6 pb:shadow-lg pb:duration-200 data-[state=open]:pb:animate-in data-[state=closed]:pb:animate-out data-[state=closed]:pb:fade-out-0 data-[state=open]:pb:fade-in-0 data-[state=closed]:pb:zoom-out-95 data-[state=open]:pb:zoom-in-95 data-[state=closed]:pb:slide-out-to-left-1/2 data-[state=closed]:pb:slide-out-to-top-[48%] data-[state=open]:pb:slide-in-from-left-1/2 data-[state=open]:pb:slide-in-from-top-[48%] sm:rounded-lg",
+            "pb:fixed pb:left-[50%] pb:top-[50%] pb:z-50 pb:grid pb:w-auto pb:max-w-[90vw] pb:translate-x-[-50%] pb:translate-y-[-50%] pb:gap-4 pb:border pb:border-gray-100 pb:bg-white pb:p-6 pb:shadow-2xl pb:duration-200 data-[state=open]:pb:animate-in data-[state=closed]:pb:animate-out data-[state=closed]:pb:fade-out-0 data-[state=open]:pb:fade-in-0 data-[state=closed]:pb:zoom-out-95 data-[state=open]:pb:zoom-in-95 data-[state=closed]:pb:slide-out-to-left-1/2 data-[state=closed]:pb:slide-out-to-top-[48%] data-[state=open]:pb:slide-in-from-left-1/2 data-[state=open]:pb:slide-in-from-top-[48%] pb:rounded-2xl",
             className,
           )}
         >
