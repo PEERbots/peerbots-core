@@ -13,6 +13,7 @@ export interface SliderProps extends React.AriaAttributes {
   className?: string;
   name?: string;
   icon?: React.ReactNode;
+  id?: string;
 }
 
 export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
@@ -28,6 +29,7 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
       onChange,
       name,
       icon,
+      id,
       "aria-label": ariaLabel,
       ...props
     },
@@ -46,20 +48,21 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
         <div className="pb:flex-grow pb:flex pb:items-center pb:h-8 pb:min-w-[120px]">
           <BaseSlider.Root
             ref={ref}
+            id={id}
             min={min}
             max={max}
             step={step}
             value={
               value !== undefined
                 ? Array.isArray(value)
-                  ? value
+                  ? (value as number[])
                   : [value]
                 : undefined
             }
             defaultValue={
               defaultValue !== undefined
                 ? Array.isArray(defaultValue)
-                  ? defaultValue
+                  ? (defaultValue as number[])
                   : [defaultValue]
                 : undefined
             }

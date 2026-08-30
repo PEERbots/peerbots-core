@@ -14,6 +14,7 @@ export interface SliderWithNumberFieldProps extends React.AriaAttributes {
   className?: string;
   inputWidth?: string;
   showButtons?: boolean;
+  id?: string;
 }
 
 export const SliderWithNumberField = React.forwardRef<
@@ -32,11 +33,17 @@ export const SliderWithNumberField = React.forwardRef<
       onChange,
       inputWidth,
       showButtons = false,
+      id,
       "aria-label": ariaLabel,
       ...props
     },
     ref,
   ) => {
+    const reactId = React.useId();
+    const uniqueId = id || reactId;
+    const sliderId = `${uniqueId}-slider`;
+    const numberId = `${uniqueId}-number`;
+
     const handleChange = (val: number | number[], event: Event) => {
       if (onChange) {
         const newValue = Array.isArray(val) ? val[0] : val;
@@ -62,6 +69,7 @@ export const SliderWithNumberField = React.forwardRef<
       >
         <div className="pb:flex-1 pb:min-w-0">
           <Slider
+            id={sliderId}
             min={min}
             max={max}
             step={step}
@@ -75,6 +83,7 @@ export const SliderWithNumberField = React.forwardRef<
         </div>
         <div className={cn(widthClass, "pb:shrink-0")}>
           <NumberField
+            id={numberId}
             value={value}
             defaultValue={defaultValue}
             min={min}
