@@ -1,5 +1,11 @@
 # @peerbots/core
 
+## 1.0.1
+
+### Patch Changes
+
+- [#16](https://github.com/PEERbots/peerbots-core/pull/16) [`646cfd3`](https://github.com/PEERbots/peerbots-core/commit/646cfd32b5c89f2f53aa6a2dd91565bf2569f709) Thanks [@sbeleidy](https://github.com/sbeleidy)! - fix(a11y): assign unique IDs to Slider and NumberField in SliderWithNumberField to prevent duplicate ARIA IDs
+
 ## 1.0.0
 
 ### Major Changes
