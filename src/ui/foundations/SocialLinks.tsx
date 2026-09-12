@@ -30,7 +30,7 @@ export const DEFAULT_PEERBOTS_SOCIAL_LINKS: SocialLinkItem[] = [
   },
   {
     name: "Twitter",
-    url: "https://twitter.com/peerbots",
+    url: "https://x.com/peerbotsinc",
     ariaLabel: "Peerbots on Twitter / X",
     icon: "twitter",
   },
