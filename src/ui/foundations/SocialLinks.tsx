@@ -42,7 +42,7 @@ export const DEFAULT_PEERBOTS_SOCIAL_LINKS: SocialLinkItem[] = [
   },
   {
     name: "BlueSky",
-    url: "https://bsky.app/profile/peerbots.bsky.social",
+    url: "https://bsky.app/profile/peerbots.org",
     ariaLabel: "Peerbots on BlueSky",
     icon: "bluesky",
   },
