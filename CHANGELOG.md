@@ -1,5 +1,13 @@
 # @peerbots/core
 
+## 1.0.2
+
+### Patch Changes
+
+- [`265acb5`](https://github.com/PEERbots/peerbots-core/commit/265acb5f0f7e6c49bb04e114937bc7913aa0737d) Thanks [@sbeleidy](https://github.com/sbeleidy)! - fix(ui): update Bluesky social link to bsky.app/profile/peerbots.org
+
+- [`9cd0943`](https://github.com/PEERbots/peerbots-core/commit/9cd09439378a3001dfb2bb17d49afa73cf1ce91c) Thanks [@sbeleidy](https://github.com/sbeleidy)! - fix(ui): update Twitter social link to x.com/peerbotsinc
+
 ## 1.0.1
 
 ### Patch Changes
