@@ -1,5 +1,17 @@
 # @peerbots/core
 
+## 1.1.0
+
+### Minor Changes
+
+- [#20](https://github.com/PEERbots/peerbots-core/pull/20) [`ee7e675`](https://github.com/PEERbots/peerbots-core/commit/ee7e6759328c2a24f5b9878d9c62f17a864fb063) Thanks [@sbeleidy](https://github.com/sbeleidy)! - feat(i18n): add internationalization, bidirectional (LTR/RTL) layout, and translation injection support
+
+### Patch Changes
+
+- [`265acb5`](https://github.com/PEERbots/peerbots-core/commit/265acb5f0f7e6c49bb04e114937bc7913aa0737d) Thanks [@sbeleidy](https://github.com/sbeleidy)! - fix(ui): update Bluesky social link to bsky.app/profile/peerbots.org
+
+- [`9cd0943`](https://github.com/PEERbots/peerbots-core/commit/9cd09439378a3001dfb2bb17d49afa73cf1ce91c) Thanks [@sbeleidy](https://github.com/sbeleidy)! - fix(ui): update Twitter social link to x.com/peerbotsinc
+
 ## 1.0.1
 
 ### Patch Changes
