@@ -16,7 +16,7 @@ const meta: Meta<typeof Popover> = {
   argTypes: {
     side: {
       control: "select",
-      options: ["top", "bottom", "left", "right"],
+      options: ["top", "bottom", "left", "right", "inline-start", "inline-end"],
     },
     align: {
       control: "select",

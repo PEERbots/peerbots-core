@@ -111,9 +111,17 @@ export interface TextProps extends React.HTMLAttributes<HTMLElement> {
   /** Font weight */
   weight?: "normal" | "medium" | "semibold" | "bold";
   /** Text alignment */
-  align?: "left" | "center" | "right";
+  align?: "start" | "end" | "left" | "center" | "right";
   children?: React.ReactNode;
 }
+
+const textAlignClasses: Record<string, string> = {
+  start: "pb:text-start",
+  end: "pb:text-end",
+  left: "pb:text-left",
+  right: "pb:text-right",
+  center: "pb:text-center",
+};
 
 export const Text = ({
   as: Component = "p",
@@ -153,7 +161,7 @@ export const Text = ({
         textSizeClasses[resolvedSize] || textSizeClasses.md,
         textColorClasses[resolvedColor] || textColorClasses.default,
         weight && weightClasses[weight],
-        align && `pb:text-${align}`,
+        align && (textAlignClasses[align] || `pb:text-${align}`),
         className,
       ),
       ...props,

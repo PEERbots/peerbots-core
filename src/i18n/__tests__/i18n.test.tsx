@@ -10,6 +10,9 @@ import {
   DEFAULT_COMMON_LABELS,
 } from "../index";
 import { Icon } from "../../ui/foundations/Icon";
+import { Text } from "../../ui/foundations/Typography";
+import { Button } from "../../ui/forms/Button";
+import { NumberField } from "../../ui/forms/NumberField";
 import { Input } from "../../ui/forms/Input";
 import { Select } from "../../ui/forms/Select";
 import { Switch } from "../../ui/forms/Switch";
@@ -164,6 +167,36 @@ describe("Internationalization & Bidirectional Layout Suite", () => {
         <Icon name="chevronRight" shouldMirror={false} />
       );
       expect(htmlDisabled).not.toContain("rtl:pb:-scale-x-100");
+    });
+
+    it("Text component renders logical start and end alignment", () => {
+      const htmlStart = renderToString(<Text align="start">Aligned Start</Text>);
+      expect(htmlStart).toContain("pb:text-start");
+
+      const htmlEnd = renderToString(<Text align="end">Aligned End</Text>);
+      expect(htmlEnd).toContain("pb:text-end");
+    });
+
+    it("Button uses logical margins for left and right icons", () => {
+      const htmlWithLeft = renderToString(
+        <Button leftIcon={<span>L</span>}>Click</Button>
+      );
+      expect(htmlWithLeft).toContain("pb:me-2");
+      expect(htmlWithLeft).toContain("pb:-ms-1");
+
+      const htmlWithRight = renderToString(
+        <Button rightIcon={<span>R</span>}>Click</Button>
+      );
+      expect(htmlWithRight).toContain("pb:ms-2");
+      expect(htmlWithRight).toContain("pb:-me-1");
+    });
+
+    it("NumberField uses logical borders and rounded corners", () => {
+      const html = renderToString(<NumberField id="num" aria-label="Number" showButtons />);
+      expect(html).toContain("pb:rounded-s-md");
+      expect(html).toContain("pb:border-e");
+      expect(html).toContain("pb:rounded-e-md");
+      expect(html).toContain("pb:border-s");
     });
   });
 

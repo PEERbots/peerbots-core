@@ -18,7 +18,7 @@ export interface PopoverProps {
   /** Callback fired when open state changes */
   onOpenChange?: (open: boolean) => void;
   /** Side where the popover appears */
-  side?: "top" | "bottom" | "left" | "right";
+  side?: "top" | "bottom" | "left" | "right" | "inline-start" | "inline-end";
   /** Alignment relative to the trigger */
   align?: "start" | "center" | "end";
   /** Distance from the trigger in pixels */
