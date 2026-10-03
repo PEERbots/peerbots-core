@@ -1,6 +1,11 @@
 import { useFormStatus } from "react-dom";
 import { Button, Input, Heading, Text, Icon, Field } from "..";
-import React from "react";
+import React, { useState } from "react";
+import {
+  DEFAULT_AUTH_FORM_LABELS,
+  AuthFormLabels,
+  usePeerbotsI18n,
+} from "../../i18n";
 
 function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
@@ -19,59 +24,84 @@ function SubmitButton({ label }: { label: string }) {
 export type AuthFormMode = "signing up" | "signing in" | "resetting password";
 
 export interface AuthFormUIProps {
-  mode: AuthFormMode;
-  onModeChange: (mode: AuthFormMode) => void;
-  formAction: (payload: FormData) => void;
-  actionState: { error: string; message: string };
+  mode?: AuthFormMode;
+  onModeChange?: (mode: AuthFormMode) => void;
+  formAction?: (payload: FormData) => void;
+  onSubmit?: (e: React.FormEvent<HTMLFormElement>) => void;
+  actionState?: { error?: string; message?: string };
   onGoogleSignIn?: () => void;
   title?: React.ReactNode;
   description?: React.ReactNode;
+  labels?: Partial<AuthFormLabels>;
 }
 
 export function AuthFormUI({
-  mode,
-  onModeChange,
+  mode: propMode,
+  onModeChange: propOnModeChange,
   formAction,
-  actionState,
+  onSubmit,
+  actionState = { error: "", message: "" },
   onGoogleSignIn,
   title,
   description,
+  labels: propLabels,
 }: AuthFormUIProps) {
+  const { labels: contextLabels } = usePeerbotsI18n();
+  const [internalMode, setInternalMode] = useState<AuthFormMode>("signing in");
+  const mode = propMode ?? internalMode;
+  const onModeChange = propOnModeChange ?? setInternalMode;
+
+  // 3-tier cascade: Component Prop (Method A) -> Provider Context (Method B) -> Built-in English Defaults
+  const labels: AuthFormLabels = {
+    ...DEFAULT_AUTH_FORM_LABELS,
+    ...contextLabels?.auth,
+    ...propLabels,
+  };
+
   const defaultTitle =
     mode === "signing up"
-      ? "Sign up"
+      ? labels.signUp
       : mode === "signing in"
-        ? "Sign In"
-        : "Reset Password";
+        ? labels.signIn
+        : labels.resetPassword;
+
+  const emailLabel = labels.email || labels.emailLabel;
+  const passwordLabel = labels.password || labels.passwordLabel;
 
   return (
-    <div className="pb:text-left pb:overflow-hidden">
+    <div className="pb:text-start pb:overflow-hidden">
       <Heading level={2} className="pb:text-center pb:mb-2">
         {title || defaultTitle}
       </Heading>
 
-      <form className="pb:md:m-10 pb:sm:m-4 pb:space-y-4" action={formAction}>
+      <form
+        className="pb:md:m-10 pb:sm:m-4 pb:space-y-4"
+        action={formAction}
+        onSubmit={onSubmit}
+      >
         {description && (
           <Text className="pb:text-center pb:mb-6" color="muted">
             {description}
           </Text>
         )}
 
-        {mode === "resetting password" && (
+        {mode === "resetting password" && actionState?.message && (
           <Text className="pb:text-center pb:font-bold pb:text-dark-primary">
             {actionState.message}
           </Text>
         )}
-        <Text className="pb:text-center" color="error">
-          {actionState.error}
-        </Text>
+        {actionState?.error && (
+          <Text className="pb:text-center" color="error">
+            {actionState.error}
+          </Text>
+        )}
 
         <div className="pb:space-y-4">
           <Field
             id="email"
-            label="Email"
+            label={emailLabel}
             error={
-              actionState.error && actionState.error.includes("email")
+              actionState?.error && actionState.error.includes("email")
                 ? actionState.error
                 : ""
             }
@@ -80,7 +110,7 @@ export function AuthFormUI({
               name="email"
               type="email"
               required
-              placeholder="Email"
+              placeholder={emailLabel}
               leftIcon={<Icon name="envelope" />}
             />
           </Field>
@@ -88,9 +118,9 @@ export function AuthFormUI({
           {mode !== "resetting password" && (
             <Field
               id="password"
-              label="Password"
+              label={passwordLabel}
               error={
-                actionState.error && actionState.error.includes("password")
+                actionState?.error && actionState.error.includes("password")
                   ? actionState.error
                   : ""
               }
@@ -99,7 +129,7 @@ export function AuthFormUI({
                 name="password"
                 type="password"
                 required
-                placeholder="Password"
+                placeholder={passwordLabel}
                 leftIcon={<Icon name="lockClosed" />}
               />
             </Field>
@@ -107,37 +137,37 @@ export function AuthFormUI({
         </div>
 
         <div className="pb:text-center pb:mt-6 pb:space-y-4">
-          {mode === "signing up" && <SubmitButton label="Sign Up" />}
-          {mode === "signing in" && <SubmitButton label="Sign In" />}
+          {mode === "signing up" && <SubmitButton label={labels.signUp} />}
+          {mode === "signing in" && <SubmitButton label={labels.signIn} />}
           {mode === "resetting password" && (
-            <SubmitButton label="Reset Password" />
+            <SubmitButton label={labels.resetPassword} />
           )}
 
           <div className="pb:text-center pb:text-sm pb:text-gray-500">
             {mode === "signing up" && (
               <Text size="sm">
-                Already have an account?{" "}
+                {labels.alreadyHaveAccount}{" "}
                 <Button
                   variant="link"
                   color="teal"
                   size="sm"
                   onClick={() => onModeChange("signing in")}
                 >
-                  Sign in
+                  {labels.signIn}
                 </Button>
               </Text>
             )}
             {mode === "signing in" && (
               <div className="pb:flex pb:flex-col pb:gap-2">
                 <Text size="sm">
-                  Forgot your password?{" "}
+                  {labels.forgotPassword}{" "}
                   <Button
                     variant="link"
                     color="teal"
                     size="sm"
                     onClick={() => onModeChange("resetting password")}
                   >
-                    Reset password.
+                    {labels.resetPassword}
                   </Button>
                 </Text>
                 <div className="pb:relative">
@@ -145,18 +175,20 @@ export function AuthFormUI({
                     <div className="pb:w-full pb:border-t pb:border-gray-300"></div>
                   </div>
                   <div className="pb:relative pb:flex pb:justify-center pb:text-sm">
-                    <span className="pb:px-2 pb:bg-white pb:text-gray-700">or</span>
+                    <span className="pb:px-2 pb:bg-white pb:text-gray-700">
+                      {labels.or}
+                    </span>
                   </div>
                 </div>
                 <Text size="sm">
-                  Don&apos;t have an account?{" "}
+                  {labels.dontHaveAccount}{" "}
                   <Button
                     variant="link"
                     color="teal"
                     size="sm"
                     onClick={() => onModeChange("signing up")}
                   >
-                    Sign up
+                    {labels.signUp}
                   </Button>
                 </Text>
               </div>
@@ -164,14 +196,14 @@ export function AuthFormUI({
             {mode === "resetting password" && (
               <div className="pb:flex pb:flex-col pb:gap-2">
                 <Text size="sm">
-                  Don&apos;t have an account?{" "}
+                  {labels.dontHaveAccount}{" "}
                   <Button
                     variant="link"
                     color="teal"
                     size="sm"
                     onClick={() => onModeChange("signing up")}
                   >
-                    Sign up
+                    {labels.signUp}
                   </Button>
                 </Text>
                 <div className="pb:relative">
@@ -179,18 +211,20 @@ export function AuthFormUI({
                     <div className="pb:w-full pb:border-t pb:border-gray-300"></div>
                   </div>
                   <div className="pb:relative pb:flex pb:justify-center pb:text-sm">
-                    <span className="pb:px-2 pb:bg-white pb:text-gray-700">or</span>
+                    <span className="pb:px-2 pb:bg-white pb:text-gray-700">
+                      {labels.or}
+                    </span>
                   </div>
                 </div>
                 <Text size="sm">
-                  Remembered your password?{" "}
+                  {labels.rememberedPassword}{" "}
                   <Button
                     variant="link"
                     color="teal"
                     size="sm"
                     onClick={() => onModeChange("signing in")}
                   >
-                    Sign In
+                    {labels.signIn}
                   </Button>
                 </Text>
               </div>
@@ -207,8 +241,12 @@ export function AuthFormUI({
               className="pb:w-full pb:flex pb:items-center pb:justify-center pb:gap-2"
             >
               <Icon name="google" stroke="none" />
-              {mode === "signing up" && <span>Sign up with Google</span>}
-              {mode === "signing in" && <span>Sign in with Google</span>}
+              {mode === "signing up" && (
+                <span>{labels.signUpWithGoogle}</span>
+              )}
+              {mode === "signing in" && (
+                <span>{labels.signInWithGoogle}</span>
+              )}
             </Button>
           </div>
         )}

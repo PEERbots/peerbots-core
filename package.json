@@ -38,6 +38,7 @@
     "url": "git+https://github.com/PEERbots/peerbots-core.git"
   },
   "scripts": {
+    "test": "vitest run --project unit",
     "build": "tsup",
     "changeset": "changeset",
     "release": "changeset publish",

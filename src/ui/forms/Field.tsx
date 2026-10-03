@@ -10,7 +10,7 @@ export interface FieldProps extends BaseField.Root.Props {
   tooltip?: string;
   children: React.ReactNode;
   icon?: React.ReactNode;
-  labelPlacement?: "top" | "left" | "right";
+  labelPlacement?: "top" | "left" | "right" | "start" | "end";
   labelWeight?: "bold" | "normal";
 }
 
@@ -35,8 +35,11 @@ export const Field = React.forwardRef<HTMLDivElement, FieldProps>(
     ref,
   ) => {
     const isHorizontal =
-      labelPlacement === "left" || labelPlacement === "right";
-    const labelOnRight = labelPlacement === "right";
+      labelPlacement === "left" ||
+      labelPlacement === "right" ||
+      labelPlacement === "start" ||
+      labelPlacement === "end";
+    const labelOnEnd = labelPlacement === "right" || labelPlacement === "end";
 
     return (
       <BaseField.Root
@@ -54,7 +57,7 @@ export const Field = React.forwardRef<HTMLDivElement, FieldProps>(
             isHorizontal ? "pb:flex-row pb:items-center pb:gap-2" : "pb:flex-col pb:gap-1.5",
           )}
         >
-          {labelOnRight && <div className="pb:relative">{children}</div>}
+          {labelOnEnd && <div className="pb:relative">{children}</div>}
 
           {label && (
             <BaseField.Label
@@ -76,14 +79,14 @@ export const Field = React.forwardRef<HTMLDivElement, FieldProps>(
             />
           )}
 
-          {!labelOnRight && <div className="pb:relative">{children}</div>}
+          {!labelOnEnd && <div className="pb:relative">{children}</div>}
         </div>
 
         {description && (
           <BaseField.Description
             className={cn(
               "pb:text-xs pb:text-gray-500",
-              labelOnRight && "pb:ml-7", // Aligns description with label text when child is on left
+              labelOnEnd && "pb:ms-7", // Aligns description with label text when child is on start
             )}
           >
             {description}
@@ -94,7 +97,7 @@ export const Field = React.forwardRef<HTMLDivElement, FieldProps>(
           <BaseField.Error
             className={cn(
               "pb:text-xs pb:text-red-600 pb:font-medium",
-              labelOnRight && "pb:ml-7",
+              labelOnEnd && "pb:ms-7",
             )}
           >
             {error}

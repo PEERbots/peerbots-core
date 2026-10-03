@@ -159,7 +159,7 @@ export function Alert({
         type="button"
         onClick={handleDismiss}
         aria-label="Dismiss alert"
-        className="pb:shrink-0 pb:p-1 pb:rounded-lg pb:opacity-70 pb:hover:opacity-100 pb:transition-opacity pb:cursor-pointer pb:self-start pb:-mr-1"
+        className="pb:shrink-0 pb:p-1 pb:rounded-lg pb:opacity-70 pb:hover:opacity-100 pb:transition-opacity pb:cursor-pointer pb:self-start pb:-me-1"
       >
         <Icon name="xCircle" className="pb:w-5 pb:h-5" />
       </button>
