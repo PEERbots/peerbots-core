@@ -67,7 +67,7 @@ export const ExportActionsPopover: Story = {
       <div className="pb:flex pb:flex-col pb:gap-2 pb:w-64 pb:py-1">
         <button
           type="button"
-          className="pb:flex pb:items-center pb:gap-2.5 pb:p-2 pb:rounded-xl pb:hover:bg-gray-100 pb:text-left pb:cursor-pointer pb:transition-colors"
+          className="pb:flex pb:items-center pb:gap-2.5 pb:p-2 pb:rounded-xl pb:hover:bg-gray-100 pb:text-start pb:cursor-pointer pb:transition-colors"
         >
           <div className="pb:w-7 pb:h-7 pb:rounded-lg pb:bg-peerbots-teal/15 pb:text-peerbots-darkteal pb:flex pb:items-center pb:justify-center">
             <Icon name="code" className="pb:w-4 pb:h-4" />
@@ -80,7 +80,7 @@ export const ExportActionsPopover: Story = {
 
         <button
           type="button"
-          className="pb:flex pb:items-center pb:gap-2.5 pb:p-2 pb:rounded-xl pb:hover:bg-gray-100 pb:text-left pb:cursor-pointer pb:transition-colors"
+          className="pb:flex pb:items-center pb:gap-2.5 pb:p-2 pb:rounded-xl pb:hover:bg-gray-100 pb:text-start pb:cursor-pointer pb:transition-colors"
         >
           <div className="pb:w-7 pb:h-7 pb:rounded-lg pb:bg-peerbots-pink/15 pb:text-peerbots-pink pb:flex pb:items-center pb:justify-center">
             <Icon name="cube" className="pb:w-4 pb:h-4" />
@@ -102,7 +102,7 @@ export const GlassPopoverInContext: Story = {
         <div>3D Robot Viewport Stage</div>
       </div>
 
-      <div className="pb:absolute pb:top-6 pb:right-6">
+      <div className="pb:absolute pb:top-6 pb:end-6">
         <Popover
           title="Viewport HUD"
           variant="glass"

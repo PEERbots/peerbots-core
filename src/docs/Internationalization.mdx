@@ -23,6 +23,24 @@ When a component renders a label, it checks:
 2. **Provider Context (Method B):** `labels` provided at the application root via `<PeerbotsI18nProvider>`.
 3. **Built-in Defaults:** Sensible English fallback strings.
 
+```mermaid
+flowchart TD
+    Host["Host Application"]
+    Provider["PeerbotsI18nProvider<br/>(dir, lang, labels)"]
+    Prop["Component Props<br/>(labels override)"]
+    Resolver["3-Tier Label Resolver<br/>(Prop ➔ Context ➔ Default English)"]
+    Primitives["@peerbots/core Components<br/>(AuthFormUI, Select, etc.)"]
+    DOM["DOM & CSS Logical Layout<br/>(dir='rtl'/'ltr', ps/pe, me/ms)"]
+
+    Host -->|Method B: Global labels| Provider
+    Host -->|Method A: Local labels| Prop
+    Provider --> Resolver
+    Prop --> Resolver
+    Resolver --> Primitives
+    Provider -->|Sync dir/lang attributes| DOM
+    Primitives --> DOM
+```
+
 ---
 
 ## Quick Start

@@ -68,7 +68,7 @@ export const NumberField = React.forwardRef<HTMLDivElement, NumberFieldProps>(
             {showButtons && (
               <BaseNumberField.Decrement
                 aria-label="Decrement"
-                className="pb:relative pb:z-20 pb:flex pb:items-center pb:justify-center pb:w-8 pb:h-9 pb:text-gray-500 pb:hover:text-gray-700 pb:hover:bg-gray-100/50 pb:rounded-l-md pb:border-r pb:border-gray-300 disabled:pb:opacity-30 pb:cursor-pointer"
+                className="pb:relative pb:z-20 pb:flex pb:items-center pb:justify-center pb:w-8 pb:h-9 pb:text-gray-500 pb:hover:text-gray-700 pb:hover:bg-gray-100/50 pb:rounded-s-md pb:border-e pb:border-gray-300 disabled:pb:opacity-30 pb:cursor-pointer"
               >
                 <Icon size="sm">
                   <path
@@ -92,7 +92,7 @@ export const NumberField = React.forwardRef<HTMLDivElement, NumberFieldProps>(
             {showButtons && (
               <BaseNumberField.Increment
                 aria-label="Increment"
-                className="pb:relative pb:z-20 pb:flex pb:items-center pb:justify-center pb:w-8 pb:h-9 pb:text-gray-500 pb:hover:text-gray-700 pb:hover:bg-gray-100/50 pb:rounded-r-md pb:border-l pb:border-gray-300 disabled:pb:opacity-30 pb:cursor-pointer"
+                className="pb:relative pb:z-20 pb:flex pb:items-center pb:justify-center pb:w-8 pb:h-9 pb:text-gray-500 pb:hover:text-gray-700 pb:hover:bg-gray-100/50 pb:rounded-e-md pb:border-s pb:border-gray-300 disabled:pb:opacity-30 pb:cursor-pointer"
               >
                 <Icon size="sm">
                   <path

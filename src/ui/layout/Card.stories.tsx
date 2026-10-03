@@ -52,7 +52,7 @@ export const GlassInContext: Story = {
           </div>
 
           {/* Floating HUD Camera Toolbar (Glass) */}
-          <div className="pb:absolute pb:left-6 pb:top-1/2 pb:-translate-y-1/2">
+          <div className="pb:absolute pb:start-6 pb:top-1/2 pb:-translate-y-1/2">
             <Card variant="glass" padding="none" className="pb:p-1.5 pb:flex pb:flex-col pb:gap-2 pb:shadow-2xl">
               <button aria-label="Zoom in" className="pb:w-9 pb:h-9 pb:flex pb:items-center pb:justify-center pb:rounded-xl pb:hover:bg-black/5 pb:text-gray-900 pb:font-bold pb:text-lg">
                 +
@@ -69,7 +69,7 @@ export const GlassInContext: Story = {
           </div>
 
           {/* Floating Parameter Overlay (Glass) */}
-          <div className="pb:absolute pb:right-6 pb:bottom-6 pb:max-w-xs">
+          <div className="pb:absolute pb:end-6 pb:bottom-6 pb:max-w-xs">
             <Card variant="glass" padding="sm" className="pb:shadow-2xl pb:space-y-2">
               <div className="pb:flex pb:items-center pb:justify-between">
                 <span className="pb:text-xs pb:font-bold pb:text-gray-900">Head Rotation</span>

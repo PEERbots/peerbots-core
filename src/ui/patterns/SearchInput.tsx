@@ -69,7 +69,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
           onChange={onChange}
           onKeyDown={handleKeyDown}
           leftIcon={<Icon name="search" className="pb:w-4 pb:h-4 pb:text-gray-400" />}
-          className="pb:pr-8"
+          className="pb:pe-8"
           {...props}
         />
         {showClearButton && (
@@ -78,7 +78,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
             aria-label="Clear search"
             onClick={handleClear}
             className={cn(
-              "pb:absolute pb:inset-y-0 pb:right-0 pb:flex pb:items-center pb:pr-2.5 pb:text-gray-400 pb:hover:text-gray-600 pb:cursor-pointer pb:transition-opacity pb:duration-150 pb:focus-visible:outline-none pb:focus-visible:ring-2 pb:focus-visible:ring-primary pb:rounded-r-md",
+              "pb:absolute pb:inset-y-0 pb:end-0 pb:flex pb:items-center pb:pe-2.5 pb:text-gray-400 pb:hover:text-gray-600 pb:cursor-pointer pb:transition-opacity pb:duration-150 pb:focus-visible:outline-none pb:focus-visible:ring-2 pb:focus-visible:ring-primary pb:rounded-e-md",
               hasValue ? "pb:opacity-100 pb:visible" : "pb:opacity-0 pb:invisible",
             )}
           >
