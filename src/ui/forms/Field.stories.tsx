@@ -159,7 +159,7 @@ export const Variations: Story = {
           <div className="pb:flex pb:flex-col pb:gap-4">
             <Field
               label="Break up long sentences"
-              labelPlacement="right"
+              labelPlacement="end"
               labelWeight="normal"
               description="Ensures buttons don't have too much text"
             >
@@ -167,7 +167,7 @@ export const Variations: Story = {
             </Field>
             <Field
               label="Detect emotions"
-              labelPlacement="right"
+              labelPlacement="end"
               labelWeight="normal"
               error="Requires active connection"
             >

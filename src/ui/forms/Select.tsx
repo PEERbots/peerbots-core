@@ -1,5 +1,6 @@
 import React from "react";
 import { Select as BaseSelect } from "@base-ui/react";
+import { usePeerbotsI18n } from "../../i18n";
 import { cn } from "../utils";
 import { Icon } from "../foundations/Icon";
 
@@ -30,13 +31,16 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
       defaultValue,
       onChange,
       disabled,
-      placeholder = "Select...",
+      placeholder,
       onFocus,
       "aria-label": ariaLabel,
       ...props
     },
     ref,
   ) => {
+    const { labels } = usePeerbotsI18n();
+    const resolvedPlaceholder =
+      placeholder || labels?.common?.select || "Select...";
     const generatedId = React.useId();
     const selectId = propsId || generatedId;
 
@@ -62,16 +66,16 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
           <BaseSelect.Trigger
             ref={ref}
             id={selectId}
-            aria-label={ariaLabel || (typeof placeholder === "string" ? placeholder : "Select an option")}
+            aria-label={ariaLabel || (typeof resolvedPlaceholder === "string" ? resolvedPlaceholder : "Select an option")}
             className={cn(
-              "pb:flex pb:w-full pb:items-center pb:justify-between pb:rounded-md pb:border-0 pb:py-1.5 pb:pl-3 pb:pr-3 pb:text-gray-900 pb:ring-1 pb:ring-inset pb:ring-gray-300 pb:focus:ring-2 pb:focus:ring-primary pb:sm:text-sm pb:sm:leading-6 pb:bg-primary/10 pb:min-h-[36px]",
+              "pb:flex pb:w-full pb:items-center pb:justify-between pb:rounded-md pb:border-0 pb:py-1.5 pb:ps-3 pb:pe-3 pb:text-gray-900 pb:ring-1 pb:ring-inset pb:ring-gray-300 pb:focus:ring-2 pb:focus:ring-primary pb:sm:text-sm pb:sm:leading-6 pb:bg-primary/10 pb:min-h-[36px]",
               disabled && "pb:opacity-50 pb:cursor-not-allowed",
               className,
             )}
             onFocus={onFocus}
             {...props}
           >
-            <BaseSelect.Value placeholder={placeholder} />
+            <BaseSelect.Value placeholder={resolvedPlaceholder} />
             <BaseSelect.Icon>
               <Icon size="sm">
                 <path
@@ -97,10 +101,10 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                     <BaseSelect.Item
                       key={`${value}-${index}`}
                       value={value}
-                      className="pb:relative pb:cursor-default pb:select-none pb:py-2 pb:pl-3 pb:pr-9 pb:text-gray-900 pb:hover:bg-gray-100 data-[highlighted]:pb:bg-gray-100 data-[selected]:pb:font-semibold"
+                      className="pb:relative pb:cursor-default pb:select-none pb:py-2 pb:ps-3 pb:pe-9 pb:text-gray-900 pb:hover:bg-gray-100 data-[highlighted]:pb:bg-gray-100 data-[selected]:pb:font-semibold"
                     >
                       <BaseSelect.ItemText>{label}</BaseSelect.ItemText>
-                      <BaseSelect.ItemIndicator className="pb:absolute pb:inset-y-0 pb:right-0 pb:flex pb:items-center pb:pr-4 pb:text-primary">
+                      <BaseSelect.ItemIndicator className="pb:absolute pb:inset-y-0 pb:end-0 pb:flex pb:items-center pb:pe-4 pb:text-primary">
                         <Icon size="sm">
                           <path
                             strokeLinecap="round"

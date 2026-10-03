@@ -49,6 +49,7 @@ export const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
             className={cn(
               "pb:pointer-events-none pb:inline-block pb:h-5 pb:w-5 pb:transform pb:rounded-full pb:bg-white pb:shadow pb:ring-0 pb:transition pb:duration-200 pb:ease-in-out",
               "pb:data-[checked]:translate-x-5 pb:data-[unchecked]:translate-x-0",
+              "rtl:pb:data-[checked]:-translate-x-5",
             )}
           />
         </BaseSwitch.Root>

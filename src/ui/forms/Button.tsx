@@ -245,7 +245,7 @@ export const Button = React.forwardRef<
           <svg
             className={cn(
               "pb:animate-spin pb:h-4 pb:w-4",
-              !isActuallyIconOnly && "pb:mr-2 pb:-ml-1",
+              !isActuallyIconOnly && "pb:me-2 pb:-ms-1",
             )}
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -270,7 +270,7 @@ export const Button = React.forwardRef<
           <span
             className={cn(
               "pb:inline-flex pb:items-center pb:justify-center",
-              !isActuallyIconOnly && "pb:mr-2 pb:-ml-1",
+              !isActuallyIconOnly && "pb:me-2 pb:-ms-1",
             )}
           >
             {leftIcon}
@@ -281,7 +281,7 @@ export const Button = React.forwardRef<
           <span
             className={cn(
               "pb:inline-flex pb:items-center pb:justify-center",
-              !isActuallyIconOnly && "pb:ml-2 pb:-mr-1",
+              !isActuallyIconOnly && "pb:ms-2 pb:-me-1",
             )}
           >
             {rightIcon}

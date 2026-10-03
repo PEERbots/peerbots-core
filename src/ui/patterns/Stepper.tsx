@@ -101,7 +101,7 @@ export function Stepper({
                 disabled={!isClickable}
                 onClick={() => onStepClick?.(step.id)}
                 className={cn(
-                  "pb:inline-flex pb:items-center pb:gap-1.5 pb:pl-1.5 pb:pr-3 pb:py-1 pb:rounded-full pb:border pb:transition-all pb:duration-150 pb:text-xs pb:font-bold",
+                  "pb:inline-flex pb:items-center pb:gap-1.5 pb:ps-1.5 pb:pe-3 pb:py-1 pb:rounded-full pb:border pb:transition-all pb:duration-150 pb:text-xs pb:font-bold",
                   isClickable ? "pb:cursor-pointer" : "pb:cursor-default",
                   isCurrent
                     ? cn(colorStyle.current, "pb:shadow-sm")
@@ -159,7 +159,7 @@ export function Stepper({
               {!isLast && (
                 <div
                   className={cn(
-                    "pb:absolute pb:left-4 pb:top-8 pb:-bottom-0 pb:w-0.5 pb:bg-gray-200",
+                    "pb:absolute pb:start-4 pb:top-8 pb:-bottom-0 pb:w-0.5 pb:bg-gray-200",
                     isComplete && colorStyle.line,
                   )}
                 />

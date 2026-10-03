@@ -43,7 +43,7 @@ export function TabSelection({
             <span className="pb:inline-block pb:align-middle">{tab.label}</span>
 
             {isActive && (tab.onEdit || tab.onClose) && (
-              <span className="pb:inline-flex pb:items-center pb:ml-2 pb:align-middle">
+              <span className="pb:inline-flex pb:items-center pb:ms-2 pb:align-middle">
                 {tab.onEdit && (
                   <Button
                     variant="ghost"

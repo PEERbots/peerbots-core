@@ -135,7 +135,7 @@ export const Accordion: React.FC<AccordionProps> = ({
                 aria-controls={panelId}
                 onClick={() => toggleItem(index)}
                 className={cn(
-                  "pb:w-full pb:box-border pb:px-5 pb:py-4 sm:pb:px-6 sm:pb:py-4.5 pb:text-left pb:flex pb:items-center pb:justify-between pb:gap-4 pb:font-bold pb:text-gray-900 pb:hover:text-peerbots-darkteal pb:transition-colors pb:focus:outline-none pb:focus-visible:ring-2 pb:focus-visible:ring-peerbots-teal pb:cursor-pointer",
+                  "pb:w-full pb:box-border pb:px-5 pb:py-4 sm:pb:px-6 sm:pb:py-4.5 pb:text-start pb:flex pb:items-center pb:justify-between pb:gap-4 pb:font-bold pb:text-gray-900 pb:hover:text-peerbots-darkteal pb:transition-colors pb:focus:outline-none pb:focus-visible:ring-2 pb:focus-visible:ring-peerbots-teal pb:cursor-pointer",
                   headerClassName,
                 )}
               >

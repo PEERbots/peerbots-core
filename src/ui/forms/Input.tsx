@@ -11,8 +11,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, leftIcon, rightIcon, id, ...props }, ref) => {
     const inputClasses = cn(
       "pb:block pb:w-full pb:rounded-md pb:border-0 pb:px-1.5 pb:py-1.5 pb:text-gray-900 pb:shadow-sm pb:ring-1 pb:ring-inset pb:ring-gray-300 pb:placeholder:text-gray-400 pb:focus:ring-2 pb:focus:ring-inset pb:focus:ring-primary pb:sm:text-sm pb:sm:leading-6 pb:bg-primary/10 pb:appearance-none",
-      leftIcon && "pb:pl-10",
-      rightIcon && "pb:pr-10",
+      leftIcon && "pb:ps-10",
+      rightIcon && "pb:pe-10",
       className,
     );
 
@@ -25,13 +25,13 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="pb:relative">
         {leftIcon && (
-          <div className="pb:pointer-events-none pb:absolute pb:inset-y-0 pb:left-0 pb:flex pb:items-center pb:pl-3">
+          <div className="pb:pointer-events-none pb:absolute pb:inset-y-0 pb:start-0 pb:flex pb:items-center pb:ps-3">
             <span className="pb:text-gray-500 pb:sm:text-sm">{leftIcon}</span>
           </div>
         )}
         <BaseInput ref={ref} id={id} className={inputClasses} {...props} />
         {rightIcon && (
-          <div className="pb:pointer-events-none pb:absolute pb:inset-y-0 pb:right-0 pb:flex pb:items-center pb:pr-3">
+          <div className="pb:pointer-events-none pb:absolute pb:inset-y-0 pb:end-0 pb:flex pb:items-center pb:pe-3">
             <span className="pb:text-gray-500 pb:sm:text-sm">{rightIcon}</span>
           </div>
         )}

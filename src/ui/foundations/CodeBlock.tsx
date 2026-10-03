@@ -62,7 +62,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
             <span className="pb:w-3 pb:h-3 pb:rounded-full pb:bg-yellow-500/80 pb:inline-block" />
             <span className="pb:w-3 pb:h-3 pb:rounded-full pb:bg-green-500/80 pb:inline-block" />
             {fileName && (
-              <span className="pb:ml-2 pb:text-xs pb:text-gray-300 pb:font-sans pb:font-medium">
+              <span className="pb:ms-2 pb:text-xs pb:text-gray-300 pb:font-sans pb:font-medium">
                 {fileName}
               </span>
             )}
@@ -99,7 +99,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
       ) : (
         /* Floating Copy & Language badge for default / simple variant */
         (showCopyButton || language) && (
-          <div className="pb:absolute pb:top-3 pb:right-3 pb:flex pb:items-center pb:gap-2 pb:z-10">
+          <div className="pb:absolute pb:top-3 pb:end-3 pb:flex pb:items-center pb:gap-2 pb:z-10">
             {language && (
               <span className="pb:text-[11px] pb:uppercase pb:font-bold pb:text-gray-200 pb:bg-gray-800/80 pb:px-2 pb:py-0.5 pb:rounded-md pb:select-none">
                 {language}
@@ -131,7 +131,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
             {showLineNumbers ? (
               codeLines.map((line, idx) => (
                 <div key={idx} className="pb:table-row">
-                  <span className="pb:table-cell pb:pr-4 pb:text-right pb:select-none pb:text-gray-400 pb:text-xs">
+                  <span className="pb:table-cell pb:pe-4 pb:text-end pb:select-none pb:text-gray-400 pb:text-xs">
                     {idx + 1}
                   </span>
                   <span className="pb:table-cell">{line}</span>
