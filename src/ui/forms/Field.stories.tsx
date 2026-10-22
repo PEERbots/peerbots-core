@@ -21,7 +21,6 @@ const meta: Meta<typeof Field> = {
     error: { control: "text" },
     tooltip: { control: "text" },
     fullWidth: { control: "boolean" },
-    inline: { control: "boolean" },
   },
 };
 
@@ -153,7 +152,7 @@ export const Variations: Story = {
           level={4}
           className="pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider"
         >
-          Full Width vs Inline / Auto Width
+          Full Width On vs Off
         </Heading>
         <div className="pb:space-y-6">
           <div className="pb:space-y-2">
@@ -183,7 +182,7 @@ export const Variations: Story = {
 
           <div className="pb:space-y-2">
             <Text variant="small" className="pb:font-bold">
-              fullWidth=false / inline=true — auto-width side-by-side in a flex row
+              fullWidth=false — auto-width side-by-side in a flex row
             </Text>
             <div className="pb:flex pb:flex-wrap pb:items-end pb:gap-4 pb:rounded-lg pb:border pb:border-dashed pb:border-gray-300 pb:p-4">
               <Field label="Send Emotion" fullWidth={false}>
@@ -195,7 +194,7 @@ export const Variations: Story = {
                   defaultValue="happy"
                 />
               </Field>
-              <Field label="Send Color" inline>
+              <Field label="Send Color" fullWidth={false}>
                 <Select
                   options={[
                     { label: "Teal", value: "teal" },
@@ -208,7 +207,7 @@ export const Variations: Story = {
                 label="Auto-play"
                 labelPlacement="right"
                 labelWeight="normal"
-                inline
+                fullWidth={false}
                 className="pb:pb-1.5"
               >
                 <Checkbox id="inline-check" defaultChecked />

@@ -14,8 +14,6 @@ export interface FieldProps extends BaseField.Root.Props {
   labelWeight?: "bold" | "normal";
   /** Whether the field container should stretch to 100% width (default: true) */
   fullWidth?: boolean;
-  /** Shorthand for inline auto-width layout (`pb:w-auto`) */
-  inline?: boolean;
 }
 
 /**
@@ -35,7 +33,6 @@ export const Field = React.forwardRef<HTMLDivElement, FieldProps>(
       labelPlacement = "top",
       labelWeight = "bold",
       fullWidth = true,
-      inline = false,
       ...props
     },
     ref,
@@ -46,14 +43,13 @@ export const Field = React.forwardRef<HTMLDivElement, FieldProps>(
       labelPlacement === "start" ||
       labelPlacement === "end";
     const labelOnEnd = labelPlacement === "right" || labelPlacement === "end";
-    const shouldFullWidth = inline ? false : fullWidth;
 
     return (
       <BaseField.Root
         ref={ref}
         className={cn(
           "pb:flex",
-          shouldFullWidth ? "pb:w-full" : "pb:w-auto",
+          fullWidth ? "pb:w-full" : "pb:w-auto",
           isHorizontal ? "pb:flex-col pb:gap-1" : "pb:flex-col pb:gap-1.5",
           className as string,
         )}
