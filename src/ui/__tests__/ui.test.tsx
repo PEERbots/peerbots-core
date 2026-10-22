@@ -51,8 +51,8 @@ describe("Core UI Components & Utilities", () => {
     });
   });
 
-  describe("Issue #21: Field fullWidth support", () => {
-    it("defaults to pb:w-full when fullWidth is omitted or true", () => {
+  describe("Issue #21: Field inline support", () => {
+    it("defaults to pb:w-full when inline is omitted or false", () => {
       const html = renderToString(
         <Field label="Name">
           <span>Control</span>
@@ -62,14 +62,14 @@ describe("Core UI Components & Utilities", () => {
       expect(html).not.toContain("pb:w-auto");
     });
 
-    it("uses pb:w-auto when fullWidth={false}", () => {
-      const htmlNotFull = renderToString(
-        <Field label="Name" fullWidth={false}>
+    it("uses pb:w-auto when inline={true}", () => {
+      const htmlInline = renderToString(
+        <Field label="Name" inline>
           <span>Control</span>
         </Field>,
       );
-      expect(htmlNotFull).toContain("pb:w-auto");
-      expect(htmlNotFull).not.toContain("pb:w-full");
+      expect(htmlInline).toContain("pb:w-auto");
+      expect(htmlInline).not.toContain("pb:w-full");
     });
 
     it("allows consumer className='w-auto' to override default pb:w-full without !important", () => {

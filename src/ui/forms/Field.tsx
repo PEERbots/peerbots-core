@@ -12,8 +12,8 @@ export interface FieldProps extends BaseField.Root.Props {
   icon?: React.ReactNode;
   labelPlacement?: "top" | "left" | "right" | "start" | "end";
   labelWeight?: "bold" | "normal";
-  /** Whether the field container should stretch to 100% width (default: true) */
-  fullWidth?: boolean;
+  /** Whether the field container should size to its content (`pb:w-auto`) instead of stretching to 100% width (default: false) */
+  inline?: boolean;
 }
 
 /**
@@ -32,7 +32,7 @@ export const Field = React.forwardRef<HTMLDivElement, FieldProps>(
       icon,
       labelPlacement = "top",
       labelWeight = "bold",
-      fullWidth = true,
+      inline = false,
       ...props
     },
     ref,
@@ -49,7 +49,7 @@ export const Field = React.forwardRef<HTMLDivElement, FieldProps>(
         ref={ref}
         className={cn(
           "pb:flex",
-          fullWidth ? "pb:w-full" : "pb:w-auto",
+          inline ? "pb:w-auto" : "pb:w-full",
           isHorizontal ? "pb:flex-col pb:gap-1" : "pb:flex-col pb:gap-1.5",
           className as string,
         )}

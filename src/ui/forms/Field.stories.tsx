@@ -20,7 +20,7 @@ const meta: Meta<typeof Field> = {
     description: { control: "text" },
     error: { control: "text" },
     tooltip: { control: "text" },
-    fullWidth: { control: "boolean" },
+    inline: { control: "boolean" },
   },
 };
 
@@ -152,15 +152,15 @@ export const Variations: Story = {
           level={4}
           className="pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider"
         >
-          Full Width On vs Off
+          Inline On vs Off
         </Heading>
         <div className="pb:space-y-6">
           <div className="pb:space-y-2">
             <Text variant="small" className="pb:font-bold">
-              fullWidth=true (default) — stretches to 100% of container
+              inline=false (default) — stretches to 100% of container
             </Text>
             <div className="pb:flex pb:flex-wrap pb:items-center pb:gap-4 pb:rounded-lg pb:border pb:border-dashed pb:border-gray-300 pb:p-4">
-              <Field label="Full Width Select" fullWidth>
+              <Field label="Default Select">
                 <Select
                   options={[
                     { label: "Happy", value: "happy" },
@@ -170,10 +170,9 @@ export const Variations: Story = {
                 />
               </Field>
               <Field
-                label="Full Width Checkbox"
+                label="Default Checkbox"
                 labelPlacement="right"
                 labelWeight="normal"
-                fullWidth
               >
                 <Checkbox id="fullwidth-check" />
               </Field>
@@ -182,10 +181,10 @@ export const Variations: Story = {
 
           <div className="pb:space-y-2">
             <Text variant="small" className="pb:font-bold">
-              fullWidth=false — auto-width side-by-side in a flex row
+              inline=true — auto-width side-by-side in a flex row
             </Text>
             <div className="pb:flex pb:flex-wrap pb:items-end pb:gap-4 pb:rounded-lg pb:border pb:border-dashed pb:border-gray-300 pb:p-4">
-              <Field label="Send Emotion" fullWidth={false}>
+              <Field label="Send Emotion" inline>
                 <Select
                   options={[
                     { label: "Happy", value: "happy" },
@@ -194,7 +193,7 @@ export const Variations: Story = {
                   defaultValue="happy"
                 />
               </Field>
-              <Field label="Send Color" fullWidth={false}>
+              <Field label="Send Color" inline>
                 <Select
                   options={[
                     { label: "Teal", value: "teal" },
@@ -207,7 +206,7 @@ export const Variations: Story = {
                 label="Auto-play"
                 labelPlacement="right"
                 labelWeight="normal"
-                fullWidth={false}
+                inline
                 className="pb:pb-1.5"
               >
                 <Checkbox id="inline-check" defaultChecked />
