@@ -19,6 +19,8 @@ const meta: Meta<typeof Field> = {
     description: { control: "text" },
     error: { control: "text" },
     tooltip: { control: "text" },
+    fullWidth: { control: "boolean" },
+    inline: { control: "boolean" },
   },
 };
 

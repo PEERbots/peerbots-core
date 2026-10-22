@@ -1,6 +1,17 @@
 import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { extendTailwindMerge } from "tailwind-merge";
+
+const customTwMerge = extendTailwindMerge({
+  experimentalParseClassName({ className, parseClassName }) {
+    return parseClassName(
+      className.startsWith("pb:")
+        ? className.slice(3)
+        : className.replace(/:pb:/g, ":"),
+    );
+  },
+});
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+  return customTwMerge(clsx(inputs));
 }
+

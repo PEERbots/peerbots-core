@@ -44,10 +44,20 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
     const generatedId = React.useId();
     const selectId = propsId || generatedId;
 
+    const normalizedOptions = React.useMemo(
+      () =>
+        options.map((option) => ({
+          label: typeof option === "object" ? option.label : option,
+          value: String(typeof option === "object" ? option.value : option),
+        })),
+      [options],
+    );
+
     return (
       <div className="pb:w-full">
         <BaseSelect.Root
-          value={value === undefined ? null : String(value)}
+          items={normalizedOptions}
+          value={value === undefined ? undefined : String(value)}
           defaultValue={
             defaultValue === undefined ? undefined : String(defaultValue)
           }
@@ -92,30 +102,24 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
               className="pb:z-50 pb:w-[var(--anchor-width)]"
             >
               <BaseSelect.Popup className="pb:max-h-60 pb:overflow-auto pb:rounded-md pb:bg-white pb:py-1 pb:text-base pb:shadow-lg pb:ring-1 pb:ring-black pb:ring-opacity-5 focus:pb:outline-none pb:sm:text-sm">
-                {options.map((option, index) => {
-                  const label =
-                    typeof option === "object" ? option.label : option;
-                  const value =
-                    typeof option === "object" ? option.value : option;
-                  return (
-                    <BaseSelect.Item
-                      key={`${value}-${index}`}
-                      value={value}
-                      className="pb:relative pb:cursor-default pb:select-none pb:py-2 pb:ps-3 pb:pe-9 pb:text-gray-900 pb:hover:bg-gray-100 data-[highlighted]:pb:bg-gray-100 data-[selected]:pb:font-semibold"
-                    >
-                      <BaseSelect.ItemText>{label}</BaseSelect.ItemText>
-                      <BaseSelect.ItemIndicator className="pb:absolute pb:inset-y-0 pb:end-0 pb:flex pb:items-center pb:pe-4 pb:text-primary">
-                        <Icon size="sm">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M4.5 12.75l6 6 9-13.5"
-                          />
-                        </Icon>
-                      </BaseSelect.ItemIndicator>
-                    </BaseSelect.Item>
-                  );
-                })}
+                {normalizedOptions.map((option, index) => (
+                  <BaseSelect.Item
+                    key={`${option.value}-${index}`}
+                    value={option.value}
+                    className="pb:relative pb:cursor-default pb:select-none pb:py-2 pb:ps-3 pb:pe-9 pb:text-gray-900 pb:hover:bg-gray-100 data-[highlighted]:pb:bg-gray-100 data-[selected]:pb:font-semibold"
+                  >
+                    <BaseSelect.ItemText>{option.label}</BaseSelect.ItemText>
+                    <BaseSelect.ItemIndicator className="pb:absolute pb:inset-y-0 pb:end-0 pb:flex pb:items-center pb:pe-4 pb:text-primary">
+                      <Icon size="sm">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M4.5 12.75l6 6 9-13.5"
+                        />
+                      </Icon>
+                    </BaseSelect.ItemIndicator>
+                  </BaseSelect.Item>
+                ))}
               </BaseSelect.Popup>
             </BaseSelect.Positioner>
           </BaseSelect.Portal>
