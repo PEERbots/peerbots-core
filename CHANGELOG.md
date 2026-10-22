@@ -1,5 +1,14 @@
 # @peerbots/core
 
+## 1.2.0
+
+### Minor Changes
+
+- [#24](https://github.com/PEERbots/peerbots-core/pull/24) [`f892786`](https://github.com/PEERbots/peerbots-core/commit/f892786fd09aebdbcb724cd173fbf7ed472f0d65) Thanks [@sbeleidy](https://github.com/sbeleidy)! - - Add `eye` and `eyeSlash` (`eye-slash`) icons to `iconPaths` and `Icon` ([#19](https://github.com/PEERbots/peerbots-core/issues/19))
+  - Add `inline` prop to `Field` and configure `cn()` / stylesheet injection precedence so unprefixed consumer classes override `pb:` defaults without `!important` ([#21](https://github.com/PEERbots/peerbots-core/issues/21))
+  - Add `size` presets (`sm`, `md`, `lg`, `xl`, `2xl`, `full`, `auto`) to `Dialog` ([#22](https://github.com/PEERbots/peerbots-core/issues/22))
+  - Pass normalized `items` to `Select.Root` so closed `<Select.Trigger>` displays the human-readable option `label` instead of raw `value` ([#23](https://github.com/PEERbots/peerbots-core/issues/23))
+
 ## 1.1.0
 
 ### Minor Changes
