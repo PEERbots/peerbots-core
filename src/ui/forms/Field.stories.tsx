@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Field } from "./Field";
 import { Icon } from "../foundations/Icon";
-import { Heading } from "../foundations/Typography";
+import { Heading, Text } from "../foundations/Typography";
+import { Button } from "./Button";
 import { Input } from "./Input";
 import { Slider } from "./Slider";
 import { Select } from "./Select";
@@ -19,6 +20,7 @@ const meta: Meta<typeof Field> = {
     description: { control: "text" },
     error: { control: "text" },
     tooltip: { control: "text" },
+    inline: { control: "boolean" },
   },
 };
 
@@ -142,6 +144,76 @@ export const Variations: Story = {
           <Field label="With Search Icon" icon={<Icon name="search" />}>
             <Input placeholder="Search..." />
           </Field>
+        </div>
+      </div>
+
+      <div className="pb:space-y-4">
+        <Heading
+          level={4}
+          className="pb:text-sm pb:font-medium pb:text-black pb:uppercase pb:tracking-wider"
+        >
+          Inline On vs Off
+        </Heading>
+        <div className="pb:space-y-6">
+          <div className="pb:space-y-2">
+            <Text variant="small" className="pb:font-bold">
+              inline=false (default) — stretches to 100% of container
+            </Text>
+            <div className="pb:flex pb:flex-wrap pb:items-center pb:gap-4 pb:rounded-lg pb:border pb:border-dashed pb:border-gray-300 pb:p-4">
+              <Field label="Default Select">
+                <Select
+                  options={[
+                    { label: "Happy", value: "happy" },
+                    { label: "Calm", value: "calm" },
+                  ]}
+                  defaultValue="happy"
+                />
+              </Field>
+              <Field
+                label="Default Checkbox"
+                labelPlacement="right"
+                labelWeight="normal"
+              >
+                <Checkbox id="fullwidth-check" />
+              </Field>
+            </div>
+          </div>
+
+          <div className="pb:space-y-2">
+            <Text variant="small" className="pb:font-bold">
+              inline=true — auto-width side-by-side in a flex row
+            </Text>
+            <div className="pb:flex pb:flex-wrap pb:items-end pb:gap-4 pb:rounded-lg pb:border pb:border-dashed pb:border-gray-300 pb:p-4">
+              <Field label="Send Emotion" inline>
+                <Select
+                  options={[
+                    { label: "Happy", value: "happy" },
+                    { label: "Surprised", value: "surprised" },
+                  ]}
+                  defaultValue="happy"
+                />
+              </Field>
+              <Field label="Send Color" inline>
+                <Select
+                  options={[
+                    { label: "Teal", value: "teal" },
+                    { label: "Pink", value: "pink" },
+                  ]}
+                  defaultValue="teal"
+                />
+              </Field>
+              <Field
+                label="Auto-play"
+                labelPlacement="right"
+                labelWeight="normal"
+                inline
+                className="pb:pb-1.5"
+              >
+                <Checkbox id="inline-check" defaultChecked />
+              </Field>
+              <Button variant="primary">Send</Button>
+            </div>
+          </div>
         </div>
       </div>
 

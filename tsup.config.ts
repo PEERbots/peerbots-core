@@ -9,7 +9,8 @@ export default defineConfig([
     dts: true,
     minify: true,
     clean: true,
-    injectStyle: true,
+    injectStyle: (css) =>
+      `import styleInject from '#style-inject';styleInject(${css}, { insertAt: 'top' })`,
     sourcemap: true,
     splitting: false,
   },

@@ -8,14 +8,20 @@ const meta: Meta<typeof Dialog> = {
   parameters: {
     layout: "centered",
   },
+  argTypes: {
+    size: {
+      control: "select",
+      options: ["auto", "sm", "md", "lg", "xl", "2xl", "full"],
+    },
+  },
 };
 
 export default meta;
 type Story = StoryObj<typeof Dialog>;
 
 export const Default: Story = {
-  render: () => (
-    <Dialog trigger={<Button>Open Default Dialog</Button>}>
+  render: (args) => (
+    <Dialog {...args} trigger={<Button>Open Default Dialog</Button>}>
       <DialogTitle className="pb:text-xl pb:font-bold pb:mb-2">Dialog Title</DialogTitle>
       <DialogDescription className="pb:text-black pb:mb-6">
         This is a description of the dialog content.
