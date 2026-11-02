@@ -19,6 +19,21 @@ export interface SelectProps extends React.AriaAttributes {
   className?: string;
   id?: string;
   onFocus?: React.FocusEventHandler<HTMLButtonElement>;
+  /**
+   * Trigger height and padding scale.
+   * @default "md"
+   */
+  size?: "sm" | "md";
+  /**
+   * Visual treatment (`"ghost"` hides border/fill until hover or focus, ideal for table cells).
+   * @default "default"
+   */
+  variant?: "default" | "ghost" | "compact";
+  /**
+   * Whether the select trigger sizes to its content (`w-auto`) instead of stretching to `100%`.
+   * @default false
+   */
+  inline?: boolean;
 }
 
 export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
@@ -33,6 +48,9 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
       disabled,
       placeholder,
       onFocus,
+      size = "md",
+      variant = "default",
+      inline = false,
       "aria-label": ariaLabel,
       ...props
     },
@@ -53,8 +71,10 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
       [options],
     );
 
+    const isSmall = size === "sm" || variant === "compact";
+
     return (
-      <div className="pb:w-full">
+      <div className={cn(inline ? "pb:inline-block pb:w-auto" : "pb:w-full")}>
         <BaseSelect.Root
           items={normalizedOptions}
           value={value === undefined ? undefined : String(value)}
@@ -78,16 +98,27 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
             id={selectId}
             aria-label={ariaLabel || (typeof resolvedPlaceholder === "string" ? resolvedPlaceholder : "Select an option")}
             className={cn(
-              "pb:flex pb:w-full pb:items-center pb:justify-between pb:rounded-md pb:border-0 pb:py-1.5 pb:ps-3 pb:pe-3 pb:text-gray-900 pb:ring-1 pb:ring-inset pb:ring-gray-300 pb:focus:ring-2 pb:focus:ring-primary pb:sm:text-sm pb:sm:leading-6 pb:bg-primary/10 pb:min-h-[36px]",
+              "pb:flex pb:items-center pb:justify-between pb:gap-1.5 pb:rounded-md pb:border-0 pb:text-gray-900 pb:transition-colors pb:cursor-pointer pb:focus:outline-none",
+              inline ? "pb:w-auto" : "pb:w-full",
+              isSmall
+                ? "pb:py-1 pb:ps-2 pb:pe-2 pb:text-xs sm:pb:text-sm pb:leading-5 pb:min-h-[28px]"
+                : "pb:py-1.5 pb:ps-3 pb:pe-3 pb:sm:text-sm pb:sm:leading-6 pb:min-h-[36px]",
+              variant === "ghost"
+                ? "pb:bg-transparent pb:ring-1 pb:ring-inset pb:ring-transparent pb:hover:bg-gray-100/80 pb:hover:ring-gray-300 pb:focus:bg-white pb:focus:ring-2 pb:focus:ring-primary"
+                : variant === "compact"
+                  ? "pb:bg-white pb:ring-1 pb:ring-inset pb:ring-gray-200 pb:hover:ring-gray-300 pb:focus:ring-2 pb:focus:ring-primary pb:shadow-2xs"
+                  : "pb:ring-1 pb:ring-inset pb:ring-gray-300 pb:focus:ring-2 pb:focus:ring-primary pb:bg-primary/10",
               disabled && "pb:opacity-50 pb:cursor-not-allowed",
               className,
             )}
             onFocus={onFocus}
             {...props}
           >
-            <BaseSelect.Value placeholder={resolvedPlaceholder} />
-            <BaseSelect.Icon>
-              <Icon size="sm">
+            <span className="pb:truncate">
+              <BaseSelect.Value placeholder={resolvedPlaceholder} />
+            </span>
+            <BaseSelect.Icon className="pb:shrink-0 pb:text-gray-500">
+              <Icon size="sm" className={cn(isSmall && "pb:w-3.5 pb:h-3.5")}>
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -99,9 +130,9 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
           <BaseSelect.Portal>
             <BaseSelect.Positioner
               sideOffset={4}
-              className="pb:z-50 pb:w-[var(--anchor-width)]"
+              className="pb:z-[60] pb:min-w-[var(--anchor-width)]"
             >
-              <BaseSelect.Popup className="pb:max-h-60 pb:overflow-auto pb:rounded-md pb:bg-white pb:py-1 pb:text-base pb:shadow-lg pb:ring-1 pb:ring-black pb:ring-opacity-5 focus:pb:outline-none pb:sm:text-sm">
+              <BaseSelect.Popup className="pb:max-h-60 pb:overflow-auto pb:rounded-md pb:bg-white pb:py-1 pb:text-base pb:shadow-lg pb:ring-1 pb:ring-black/5 focus:pb:outline-none pb:sm:text-sm">
                 {normalizedOptions.map((option, index) => (
                   <BaseSelect.Item
                     key={`${option.value}-${index}`}

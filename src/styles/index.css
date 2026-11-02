@@ -39,3 +39,136 @@
 .pb-has-tooltip:hover+.pb-tooltip-slow {
     @apply pb:visible pb:opacity-100 pb:z-50 pb:transition-opacity pb:delay-1000 pb:ease-in-out;
 }
+
+/* Responsive Data Table (container-query adaptive layout + sticky headers) */
+.pb-table-wrapper {
+    overflow: auto;
+    max-inline-size: 100%;
+    container-type: inline-size;
+}
+
+.pb-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    inline-size: 100%;
+}
+
+/* Sticky column headers (desktop) */
+.pb-table-sticky-header thead {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 10;
+}
+
+.pb-table thead th:hover,
+.pb-table thead th:focus-within {
+    position: relative;
+    z-index: 20;
+}
+
+/* Sticky row headers (desktop) */
+.pb-table-sticky-row-header tbody th[scope="row"] {
+    position: sticky;
+    inset-inline-start: 0;
+    z-index: 5;
+    background-color: var(--pb-row-bg, #ffffff);
+}
+
+.pb-table-mobile-controls {
+    display: none;
+}
+
+@container (width < 600px) {
+    .pb-table-mobile-controls {
+        display: flex;
+    }
+
+    .pb-table-responsive-stack,
+    .pb-table-responsive-stack thead,
+    .pb-table-responsive-stack tbody,
+    .pb-table-responsive-stack tr,
+    .pb-table-responsive-stack th,
+    .pb-table-responsive-stack td {
+        display: block;
+    }
+
+    .pb-table-responsive-stack thead {
+        /* MANDATORY: Hide column header from layout and screen readers. */
+        display: none;
+    }
+
+    .pb-table-responsive-stack tbody {
+        padding: 0.75rem;
+    }
+
+    .pb-table-responsive-stack tbody tr {
+        margin-block-end: 1rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        background-color: var(--pb-row-bg, #ffffff);
+        box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    }
+
+    .pb-table-responsive-stack tbody tr:last-child {
+        margin-block-end: 0;
+    }
+
+    /* Sticky row headers at the top of each block/card */
+    .pb-table-responsive-stack tbody th[scope="row"] {
+        position: sticky;
+        inset-block-start: 0;
+        z-index: 2;
+        background-color: var(--pb-row-header-mobile-bg, #f8fafc);
+        border-block-end: 1px solid #e5e7eb;
+        border-start-start-radius: 0.75rem;
+        border-start-end-radius: 0.75rem;
+    }
+
+    .pb-table-responsive-stack td[data-has-label="true"]::before {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        color: #4b5563;
+        margin-block-end: 0.25rem;
+    }
+
+    /* MANDATORY: Map the label for each column via CSS variables */
+    .pb-table-responsive-stack td[data-has-label="true"]:nth-child(1)::before {
+        content: var(--label-1) ": ";
+    }
+    .pb-table-responsive-stack td[data-has-label="true"]:nth-child(2)::before {
+        content: var(--label-2) ": ";
+    }
+    .pb-table-responsive-stack td[data-has-label="true"]:nth-child(3)::before {
+        content: var(--label-3) ": ";
+    }
+    .pb-table-responsive-stack td[data-has-label="true"]:nth-child(4)::before {
+        content: var(--label-4) ": ";
+    }
+    .pb-table-responsive-stack td[data-has-label="true"]:nth-child(5)::before {
+        content: var(--label-5) ": ";
+    }
+    .pb-table-responsive-stack td[data-has-label="true"]:nth-child(6)::before {
+        content: var(--label-6) ": ";
+    }
+    .pb-table-responsive-stack td[data-has-label="true"]:nth-child(7)::before {
+        content: var(--label-7) ": ";
+    }
+    .pb-table-responsive-stack td[data-has-label="true"]:nth-child(8)::before {
+        content: var(--label-8) ": ";
+    }
+    .pb-table-responsive-stack td[data-has-label="true"]:nth-child(9)::before {
+        content: var(--label-9) ": ";
+    }
+    .pb-table-responsive-stack td[data-has-label="true"]:nth-child(10)::before {
+        content: var(--label-10) ": ";
+    }
+    .pb-table-responsive-stack td[data-has-label="true"]:nth-child(11)::before {
+        content: var(--label-11) ": ";
+    }
+    .pb-table-responsive-stack td[data-has-label="true"]:nth-child(12)::before {
+        content: var(--label-12) ": ";
+    }
+}
