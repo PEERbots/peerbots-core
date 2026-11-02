@@ -75,6 +75,7 @@ export function Popover({
           side={side}
           align={align}
           sideOffset={sideOffset}
+          className="pb:z-50"
         >
           <BasePopover.Popup
             className={cn(
@@ -86,9 +87,9 @@ export function Popover({
             {(title || showCloseButton) && (
               <div className="pb:flex pb:items-center pb:justify-between pb:gap-3 pb:border-b pb:border-gray-100 pb:pb-2.5 pb:mb-3">
                 {title ? (
-                  <div className="pb:text-xs pb:font-bold pb:text-gray-900 pb:uppercase pb:tracking-wider">
+                  <BasePopover.Title className="pb:text-xs pb:font-bold pb:text-gray-900 pb:uppercase pb:tracking-wider pb:m-0">
                     {title}
-                  </div>
+                  </BasePopover.Title>
                 ) : (
                   <div />
                 )}
