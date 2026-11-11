@@ -4,3 +4,6 @@ export * from "./SearchInput";
 export * from "./CopyButton";
 export * from "./useClipboard";
 export * from "./Stepper";
+export * from "./PeerbotsButton";
+export * from "./PeerbotsButtonRow";
+export * from "./PeerbotsButtonDisplay";

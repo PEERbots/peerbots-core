@@ -12,4 +12,7 @@ export * from "./Field";
 export * from "./TextArea";
 export * from "./Checkbox";
 export * from "./PeerbotsColorSelector";
+export * from "./EmotionSelector";
+export * from "./VoiceSelector";
+export * from "./LanguageSelector";
 export * from "./ChipGroup";
