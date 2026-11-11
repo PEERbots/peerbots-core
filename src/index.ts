@@ -5,3 +5,4 @@ export * from "./ui";
 export * from "./helpers/SEO";
 export * from "./charts";
 export * from "./i18n";
+export * from "./templates";
