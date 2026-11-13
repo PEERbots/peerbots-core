@@ -10,7 +10,7 @@ const meta: Meta<typeof SearchInput> = {
     docs: {
       description: {
         component:
-          "Single-field search input primitive built on `<Input>`, pairing a leading search icon with `Enter`-to-search (`onSearch`) and `Escape` / clear-button reset (`onClear`). Categorized under `Forms/` alongside `<Input>` while remaining re-exported from `@peerbots/core`.",
+          "Single-field search input control built on `<Input>`, pairing a leading search icon with IME-safe `Enter`-to-search (`onSearch`) and `Escape` / clear-button reset (`onClear`). Lives in `ui/forms` (`Forms/SearchInput`) alongside `<Input>`.",
       },
     },
   },
