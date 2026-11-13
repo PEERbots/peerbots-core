@@ -647,7 +647,7 @@ function FlowViewInner({
 
   const onNodeDragStop = useCallback(
     (
-      _: React.MouseEvent,
+      _: React.MouseEvent | MouseEvent | TouchEvent,
       draggedNode: Node<PeerbotsFlowNodeData>,
       draggedNodes: Node[],
     ) => {
