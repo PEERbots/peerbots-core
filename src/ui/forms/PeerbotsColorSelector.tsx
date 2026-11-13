@@ -1,6 +1,9 @@
 import React from "react";
 import { cn } from "../utils";
 
+/**
+ * Canonical named color palette used across Peerbots controller buttons and robot face screens.
+ */
 export type PeerbotsColor =
   | "Light Blue"
   | "Blue"
@@ -14,6 +17,9 @@ export type PeerbotsColor =
   | "Black"
   | "White";
 
+/**
+ * Hex background fills corresponding to each `PeerbotsColor`.
+ */
 export const PEERBOTS_COLOR_MAP: Record<PeerbotsColor, string> = {
   "Light Blue": "#ABE3FA",
   Blue: "#5F94D6",
@@ -28,6 +34,9 @@ export const PEERBOTS_COLOR_MAP: Record<PeerbotsColor, string> = {
   White: "#FDFEFE",
 };
 
+/**
+ * Accessible WCAG 2.1 AA foreground text colors paired with each `PeerbotsColor` fill.
+ */
 export const PEERBOTS_FONT_COLOR_MAP: Record<PeerbotsColor, string> = {
   "Light Blue": "#020307",
   Blue: "#020307",
@@ -42,12 +51,21 @@ export const PEERBOTS_FONT_COLOR_MAP: Record<PeerbotsColor, string> = {
   White: "#020307",
 };
 
+/**
+ * Props for `<PeerbotsColorSelector>` — circular swatch radio group for choosing a `PeerbotsColor`.
+ */
 export interface PeerbotsColorSelectorProps {
+  /** Currently active `PeerbotsColor` name. */
   selectedColor?: PeerbotsColor | string;
+  /** Callback fired when a color swatch is clicked. */
   onColorSelect: (color: PeerbotsColor) => void;
+  /** Optional subset of colors to display (defaults to all 11 `PEERBOTS_COLOR_MAP` keys). */
   colors?: PeerbotsColor[];
+  /** Swatch diameter scale (@default "md"). */
   size?: "sm" | "md" | "lg";
+  /** Additional classes applied to the `radiogroup` container. */
   className?: string;
+  /** Prefix prepended to each swatch's `aria-label` (@default "Select color"). */
   ariaLabelPrefix?: string;
 }
 

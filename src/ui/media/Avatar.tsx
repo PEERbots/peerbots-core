@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Icon } from "../foundations/Icon";
 import { cn } from "../utils";
 
+/** Props for {@link Avatar}. */
 export interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Image source URL. */
   src?: string | null;

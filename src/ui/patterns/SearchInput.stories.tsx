@@ -3,8 +3,17 @@ import { useState } from "react";
 import { SearchInput } from "./SearchInput";
 
 const meta: Meta<typeof SearchInput> = {
-  title: "Patterns/SearchInput",
+  title: "Forms/SearchInput",
   component: SearchInput,
+  tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          "Single-field search input primitive built on `<Input>`, pairing a leading search icon with `Enter`-to-search (`onSearch`) and `Escape` / clear-button reset (`onClear`). Categorized under `Forms/` alongside `<Input>` while remaining re-exported from `@peerbots/core`.",
+      },
+    },
+  },
 };
 
 export default meta;

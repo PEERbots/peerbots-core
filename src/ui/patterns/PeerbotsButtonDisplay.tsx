@@ -27,10 +27,18 @@ export type { PeerbotsTemplateView };
 
 export type PeerbotsButtonDisplayLabels = ControlLabels;
 
+/**
+ * Context passed to {@link PeerbotsButtonDisplayProps.renderCustomView} when extending
+ * `PeerbotsButtonDisplay` with application-specific presentation modes.
+ */
 export interface PeerbotsButtonDisplayCustomViewProps {
+  /** Active view key string. */
   view: string;
+  /** Canonical Peerbots template being displayed. */
   template: Template;
+  /** Whether interactions and edits are disabled. */
   disabled?: boolean;
+  /** Action dispatcher for button selection, activation, edits, moves, and deletes. */
   onButtonAction: PeerbotsButtonActionHandler;
 }
 
@@ -46,7 +54,7 @@ export interface PeerbotsButtonDisplayProps {
   /** Renders an inline `TabRadio` view switcher (`Buttons` / `Table` / `Flow`) */
   showViewSwitcher?: boolean;
 
-  /** Controlled active button ID highlighted in `"Buttons"` and `"Flow"` views */
+  /** Controlled active button ID highlighted in `"Buttons"`, `"Table"`, and `"Flow"` views */
   selectedButtonId?: string | null;
   /** Controlled multi-selected button IDs in `"Table"` and `"Buttons"` views */
   selectedButtonIds?: readonly string[];
@@ -194,6 +202,7 @@ export function PeerbotsButtonDisplay({
         template={template}
         onButtonAction={onButtonAction}
         disabled={disabled}
+        selectedButtonId={selectedButtonId}
         selectedButtonIds={selectedButtonIds}
         multiSelectedButtonIds={multiSelectedButtonIds}
         defaultSelectedButtonIds={defaultSelectedButtonIds}

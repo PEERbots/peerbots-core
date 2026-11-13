@@ -3,6 +3,7 @@ import { Button, ButtonProps } from "../forms/Button";
 import { Icon } from "../foundations/Icon";
 import { cn } from "../utils";
 
+/** Props for {@link FileUpload}, a compact button-triggered file picker with size formatting and clear action. */
 export interface FileUploadProps {
   /** Accepted file types (e.g. `"image/*"`, `".pdf"`, `"audio/*"`). */
   accept?: string;

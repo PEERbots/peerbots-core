@@ -2,9 +2,14 @@ import { Input as BaseInput } from "@base-ui/react";
 import React from "react";
 import { cn } from "../utils";
 
+/**
+ * Props for `<Input>` — single-line text input primitive backed by `@base-ui/react`.
+ */
 export interface InputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
+  /** Optional non-interactive leading icon rendered inside the input frame. */
   leftIcon?: React.ReactNode;
+  /** Optional non-interactive trailing icon rendered inside the input frame. */
   rightIcon?: React.ReactNode;
   /**
    * Input height and padding scale.
@@ -12,7 +17,7 @@ export interface InputProps
    */
   size?: "sm" | "md";
   /**
-   * Visual treatment (`"ghost"` hides border/fill until hover or focus, ideal for table cells).
+   * Visual treatment (`"ghost"` hides border/fill until hover or focus; `"compact"` uses crisp bordered table-cell styling).
    * @default "default"
    */
   variant?: "default" | "ghost" | "compact";

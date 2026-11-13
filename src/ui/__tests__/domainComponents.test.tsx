@@ -1,4 +1,5 @@
 import React from "react";
+import axe from "axe-core";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -95,7 +96,7 @@ describe("Domain UI Components", () => {
       expect(PEERBOTS_EMOTION_IMAGES.Concerned).toContain("Concerned");
     });
 
-    it("renders all 6 emotions using PNG <img> icons (no custom SVG smileys) and neutral/selected borders", () => {
+    it("renders all 6 emotions using PNG <img> icons on Peerbots primary teal background with zero axe violations", async () => {
       const { container } = render(
         <EmotionSelector
           selectedEmotion="Happy"
@@ -120,14 +121,23 @@ describe("Domain UI Components", () => {
         name: "Select emotion Neutral",
       });
       expect(happyRadio).toHaveAttribute("aria-checked", "true");
+      expect(happyRadio.className).toContain("pb:bg-primary");
+      expect(happyRadio.className).toContain("hover:pb:bg-peerbots-teal");
+      expect(happyRadio.className).toContain("pb:text-gray-950");
       expect(happyRadio.className).toContain("pb:border-2");
-      expect(happyRadio.className).toContain("pb:border-black");
-      expect(happyRadio.className).not.toContain("bg-primary/20");
-      expect(neutralRadio.className).toContain("hover:pb:bg-gray-200");
+      expect(happyRadio.className).toContain("pb:border-gray-950");
+      expect(neutralRadio.className).toContain("pb:bg-primary");
+      expect(neutralRadio.className).toContain("hover:pb:bg-peerbots-teal");
+      expect(neutralRadio.className).toContain("pb:border-teal-800/25");
 
       const happyImg = happyRadio.querySelector("img")!;
       const neutralImg = neutralRadio.querySelector("img")!;
       expect(happyImg.getAttribute("src")).toBe(neutralImg.getAttribute("src"));
+
+      const axeResults = await axe.run(container, {
+        rules: { "color-contrast": { enabled: false } },
+      });
+      expect(axeResults.violations).toEqual([]);
     });
 
     it("renders with tooltips, custom icons (URL & ReactNode), and non-decorative img alt text", () => {

@@ -4,11 +4,24 @@ import { Tooltip } from "../feedback/Tooltip";
 import { cn } from "../utils";
 import { PEERBOTS_EMOTION_IMAGES } from "./emotionMapper";
 
+/**
+ * Props for {@link PeerbotsEmotionIcon}, which renders the canonical Peerbots
+ * robot face PNG artwork (or a consumer-supplied override) for a `PeerbotsEmotion`.
+ */
 export interface PeerbotsEmotionIconProps {
+  /** Target Peerbots emotion expression to display. */
   emotion: PeerbotsEmotion;
+  /** Optional custom image URL or React node overriding the default PNG asset. */
   customIcon?: string | React.ReactNode;
+  /**
+   * Whether the icon is purely decorative (`alt=""` and `aria-hidden="true"`).
+   * Keep `true` when rendered inside a button that already has text or `aria-label`.
+   * @default true
+   */
   decorative?: boolean;
+  /** Accessible label used when `decorative` is `false` (defaults to `emotion`). */
   label?: string;
+  /** Optional additional CSS classes applied to the `<img>` or wrapper `<span>`. */
   className?: string;
 }
 
@@ -58,35 +71,61 @@ export function PeerbotsEmotionIcon({
   );
 }
 
+/**
+ * Props for {@link EmotionSelector}, an accessible radio group for choosing a
+ * Peerbots robot facial expression (`Neutral`, `Surprised`, `Happy`, `Sad`, `Concerned`, `Sleepy`).
+ */
 export interface EmotionSelectorProps {
-  /** Currently selected emotion (controlled) */
+  /** Currently selected emotion (controlled). */
   selectedEmotion?: PeerbotsEmotion | "";
-  /** Alias for `selectedEmotion` */
+  /** Alias for `selectedEmotion` for standard form control ergonomics. */
   value?: PeerbotsEmotion | "";
-  /** Callback fired when an emotion is selected */
+  /** Callback fired when an emotion button is selected. */
   onEmotionSelect?: (emotion: PeerbotsEmotion) => void;
-  /** Alias for `onEmotionSelect` */
+  /** Alias for `onEmotionSelect`. */
   onChange?: (emotion: PeerbotsEmotion) => void;
-  /** Available emotions to display (defaults to all 6 `PEERBOTS_EMOTIONS`) */
+  /** Available emotions to display (defaults to all 6 `PEERBOTS_EMOTIONS`). */
   emotions?: readonly PeerbotsEmotion[];
-  /** Optional custom icon map (image URL or React node per emotion) */
+  /** Optional custom icon map (image URL or React node per emotion). */
   emotionIcons?: Partial<Record<PeerbotsEmotion, string | React.ReactNode>>;
-  /** Optional localized display names per emotion */
+  /** Optional localized display names per emotion. */
   emotionLabels?: Partial<Record<PeerbotsEmotion, string>>;
-  /** Size preset */
+  /**
+   * Button and icon size preset.
+   * @default "md"
+   */
   size?: "sm" | "md" | "lg";
-  /** Whether to stack the emotion name below each icon (@default true) */
+  /**
+   * Whether to stack the emotion name below each icon. Set `false` for compact
+   * icon-only selector bars matching `app.peerbots.org`.
+   * @default true
+   */
   showLabels?: boolean;
-  /** Whether to wrap each option in a tooltip showing the emotion name */
+  /**
+   * Whether to wrap each option in a hover/focus tooltip showing the emotion name.
+   * @default false
+   */
   showTooltips?: boolean;
-  /** Accessible label for the radiogroup */
+  /**
+   * Accessible label for the `radiogroup` container.
+   * @default "Emotion selector"
+   */
   ariaLabel?: string;
-  /** Prefix for individual radio button accessible names */
+  /**
+   * Prefix prepended to individual radio button `aria-label`s.
+   * @default "Select emotion"
+   */
   ariaLabelPrefix?: string;
+  /** Disables all emotion radio buttons when `true`. */
   disabled?: boolean;
+  /** Optional additional CSS classes applied to the `radiogroup` container. */
   className?: string;
 }
 
+/**
+ * Accessible Peerbots robot expression picker rendering each emotion's dark
+ * line-art face PNG on the high-contrast Peerbots primary teal (`#46d9d9`) surface.
+ */
 export function EmotionSelector({
   selectedEmotion,
   value,
@@ -155,11 +194,11 @@ export function EmotionSelector({
             disabled={disabled}
             onClick={() => handleSelect(emotion)}
             className={cn(
-              "pb:inline-flex pb:flex-col pb:items-center pb:justify-center pb:gap-1 pb:rounded-lg pb:bg-transparent hover:pb:bg-gray-200 dark:hover:pb:bg-zinc-800 pb:cursor-pointer pb:transition-all pb:duration-150 pb:focus-visible:outline-2 pb:focus-visible:outline-offset-2 pb:focus-visible:outline-peerbots-darkteal pb:disabled:opacity-50 pb:disabled:cursor-not-allowed",
+              "pb:inline-flex pb:flex-col pb:items-center pb:justify-center pb:gap-1 pb:rounded-lg pb:bg-primary hover:pb:bg-peerbots-teal pb:text-gray-950 pb:cursor-pointer pb:transition-all pb:duration-150 pb:focus-visible:outline-2 pb:focus-visible:outline-offset-2 pb:focus-visible:outline-peerbots-darkteal pb:disabled:opacity-50 pb:disabled:cursor-not-allowed",
               buttonPaddingClasses[size],
               isSelected
-                ? "pb:border-2 pb:border-black dark:pb:border-white"
-                : "pb:border pb:border-transparent hover:pb:border-gray-400 dark:hover:pb:border-zinc-600",
+                ? "pb:border-2 pb:border-gray-950 pb:ring-2 pb:ring-gray-950/20 pb:shadow-sm"
+                : "pb:border pb:border-teal-800/25 hover:pb:border-gray-900/50",
             )}
           >
             <span className={cn("pb:block pb:shrink-0", iconSizeClasses[size])}>
@@ -171,14 +210,14 @@ export function EmotionSelector({
                   "pb:transition-opacity",
                   isSelected
                     ? "pb:opacity-100"
-                    : "pb:opacity-75 hover:pb:opacity-100",
+                    : "pb:opacity-90 hover:pb:opacity-100",
                 )}
               />
             </span>
             {showLabels && (
               <span
                 className={cn(
-                  "pb:text-[11px] pb:leading-tight pb:text-gray-800 dark:pb:text-gray-100",
+                  "pb:text-[11px] pb:leading-tight pb:text-gray-950",
                   isSelected ? "pb:font-bold" : "pb:font-medium",
                 )}
               >

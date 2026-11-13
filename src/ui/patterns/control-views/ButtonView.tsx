@@ -31,14 +31,21 @@ export interface ButtonViewProps {
   emotionLabels?: Partial<Record<PeerbotsEmotion, string>>;
   /** Optional custom empty state rendered when template has no buttons */
   emptyState?: React.ReactNode;
+  /** Optional empty-state heading override when `template` has zero buttons */
   emptyTitle?: React.ReactNode;
+  /** Optional empty-state description override when `template` has zero buttons */
   emptyDescription?: React.ReactNode;
+  /** Optional localized empty-state copy overrides */
   labels?: Partial<
     Pick<ControlLabels, "emptyTemplateTitle" | "emptyTemplateDescription">
   >;
+  /** Additional grid container classes */
   className?: string;
 }
 
+/**
+ * Responsive controller button grid view for triggering `RobotControlButton` entries in a `Template`.
+ */
 export function ButtonView({
   template,
   onButtonAction,

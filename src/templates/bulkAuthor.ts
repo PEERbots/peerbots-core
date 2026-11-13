@@ -1,6 +1,15 @@
 import type { Emotion, RobotControlButton, TemplateDetails } from "./types";
 
-export const EMOTION_PREFIXES: { prefix: string; emotion: Emotion }[] = [
+/**
+ * Emoticon prefixes recognized at the start of bulk-authored lines or speech segments
+ * when {@link ParseItemOptions.detectEmotionAtStart} is enabled.
+ */
+export const EMOTION_PREFIXES: {
+  /** Leading ASCII emoticon token (e.g., `":)"`, `":("`). */
+  prefix: string;
+  /** Mapped Peerbots facial expression applied to the generated button. */
+  emotion: Emotion;
+}[] = [
   { prefix: ":)", emotion: "Happy" },
   { prefix: ":(", emotion: "Sad" },
   { prefix: ":/", emotion: "Surprised" },
@@ -8,23 +17,59 @@ export const EMOTION_PREFIXES: { prefix: string; emotion: Emotion }[] = [
   { prefix: ":z", emotion: "Sleepy" },
 ];
 
+/**
+ * Options controlling how a single raw text segment is parsed into a button's
+ * `title`, `speech`, and `emotion` by {@link parseItem}.
+ */
 export interface ParseItemOptions {
+  /**
+   * When `true`, splits `"Title: Speech"` on the first colon (`:`), using the left side
+   * as the button `title` and the right side as the spoken `speech`.
+   */
   parseTitlesAndSpeech?: boolean;
+  /**
+   * When `true`, checks for a leading emoticon from {@link EMOTION_PREFIXES} (either at the
+   * start of the line or immediately after `"Title:"`) to set `emotion` and strip the prefix.
+   */
   detectEmotionAtStart?: boolean;
+  /**
+   * When `true`, truncates the button `title` to at most 20 characters while keeping full `speech`.
+   */
   trimTitle?: boolean;
 }
 
+/**
+ * Delimiter mode used by {@link processBulkAuthorContent} to segment pasted script text into buttons:
+ * - `"New Lines"`: Creates one button per non-empty line (`\n` / `\r\n`).
+ * - `"Sentences"`: Splits after sentence-ending punctuation (`.`, `?`, `!`).
+ */
 export type ButtonFormationOptions = "New Lines" | "Sentences";
 
+/**
+ * Full configuration for {@link processBulkAuthorContent} when converting pasted scripts
+ * into Peerbots template buttons.
+ */
 export interface BulkAuthorOptions extends ParseItemOptions {
+  /** How raw script content is segmented into individual buttons (`"New Lines"` vs `"Sentences"`). */
   formButtonsOn: ButtonFormationOptions;
+  /** When `true`, splits utterances longer than 60 characters into smaller speech chunks via {@link breakUpSpeechIntoChunks}. */
   breakUpLongSentences: boolean;
+  /**
+   * When `true`, automatically appends one positive (`Green`) and one constructive (`Yellow`)
+   * feedback button after any generated button whose `speech` ends with `"?"`.
+   */
   addFeedbackAfterQuestions: boolean;
+  /** When `true`, truncates generated button titles to 20 characters. */
   trimTitle: boolean;
+  /** When `true`, splits `"Title: Speech"` segments on the first colon. */
   parseTitlesAndSpeech: boolean;
+  /** When `true`, extracts leading emoticon prefixes (`:)`, `:(`, `:/`, `:o`, `:z`) into `emotion`. */
   detectEmotionAtStart: boolean;
 }
 
+/**
+ * Default {@link BulkAuthorOptions} (splits on `"New Lines"` with optional transformations disabled).
+ */
 export const DEFAULT_BULK_AUTHOR_OPTIONS: BulkAuthorOptions = {
   formButtonsOn: "New Lines",
   breakUpLongSentences: false,
@@ -34,6 +79,10 @@ export const DEFAULT_BULK_AUTHOR_OPTIONS: BulkAuthorOptions = {
   detectEmotionAtStart: false,
 };
 
+/**
+ * Preset encouraging `"Message"` buttons (`labelColor: "Green"`, `emotion: "Happy"`, face `color: "Light Blue"`)
+ * sampled when {@link BulkAuthorOptions.addFeedbackAfterQuestions} is enabled.
+ */
 export const POSITIVE_FEEDBACK_BUTTONS: RobotControlButton[] = [
   {
     type: "Message",
@@ -67,6 +116,10 @@ export const POSITIVE_FEEDBACK_BUTTONS: RobotControlButton[] = [
   },
 ];
 
+/**
+ * Preset gentle retry `"Message"` buttons (`labelColor: "Yellow"`, `emotion: "Neutral"`, face `color: "Light Blue"`)
+ * sampled when {@link BulkAuthorOptions.addFeedbackAfterQuestions} is enabled.
+ */
 export const CONSTRUCTIVE_FEEDBACK_BUTTONS: RobotControlButton[] = [
   {
     type: "Message",
@@ -141,6 +194,10 @@ function cloneControlButton(button: RobotControlButton): RobotControlButton {
   };
 }
 
+/**
+ * Checks whether `text` starts with a recognized emoticon in {@link EMOTION_PREFIXES}.
+ * Returns the matched {@link Emotion} and prefix-stripped `cleanedText`, or `null` if no prefix matches.
+ */
 export function extractEmotion(
   text: string,
 ): { emotion: Emotion; cleanedText: string } | null {
@@ -156,6 +213,10 @@ export function extractEmotion(
   return null;
 }
 
+/**
+ * Parses a single raw bulk-authoring text item into `{ title, speech, emotion }`
+ * according to the provided {@link ParseItemOptions}.
+ */
 export function parseItem(
   rawItem: string,
   options: ParseItemOptions = {},
@@ -200,8 +261,15 @@ export function parseItem(
   return { title, speech, emotion };
 }
 
+/**
+ * Alias for {@link parseItem} exported for readability in external bulk-authoring consumers.
+ */
 export const parseBulkAuthorItem = parseItem;
 
+/**
+ * Breaks utterances longer than 60 characters into shorter ~5-word chunks
+ * (or 60-character slices for single unbroken tokens) so robot TTS pacing stays natural.
+ */
 export function breakUpSpeechIntoChunks(lines: readonly string[]): string[] {
   return lines.flatMap((line) => {
     const trimmed = line.trim();
@@ -244,6 +312,10 @@ export function breakUpSpeechIntoChunks(lines: readonly string[]): string[] {
   });
 }
 
+/**
+ * Converts free-form script text into {@link TemplateDetails} (`buttons` dictionary and flat `root` hierarchy)
+ * using the specified {@link BulkAuthorOptions}.
+ */
 export function processBulkAuthorContent(
   content: string,
   options: Partial<BulkAuthorOptions> = DEFAULT_BULK_AUTHOR_OPTIONS,

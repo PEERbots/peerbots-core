@@ -6,6 +6,7 @@ export * from "./helpers";
 export * from "./charts";
 export * from "./i18n";
 export * from "./templates";
+export { applyControlActionToTemplate } from "./ui/patterns/control-views/applyControlAction";
 export type {
   PeerbotsControlAction,
   RobotControlButtonAction,

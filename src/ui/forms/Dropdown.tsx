@@ -2,10 +2,17 @@ import React from "react";
 import { Menu as BaseMenu } from "@base-ui/react";
 import { cn } from "../utils";
 
+/**
+ * Props for `<Dropdown>` — an accessible action menu popup backed by `@base-ui/react` Menu primitives.
+ */
 export interface DropdownProps {
+  /** Trigger element (commonly a `<Button>`) that opens the menu when activated. */
   trigger: React.ReactNode;
+  /** Menu items (`<DropdownItem>`) and dividers (`<DropdownSeparator>`). */
   children: React.ReactNode;
+  /** Horizontal alignment of the popup relative to `trigger` (@default "end"). */
   align?: "start" | "center" | "end";
+  /** Additional classes applied to the popup surface. */
   className?: string;
 }
 

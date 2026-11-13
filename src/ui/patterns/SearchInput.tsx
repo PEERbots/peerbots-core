@@ -3,10 +3,17 @@ import { Icon } from "../foundations/Icon";
 import { Input, InputProps } from "../forms/Input";
 import { cn } from "../utils";
 
+/**
+ * Props for `<SearchInput>` — single-field search input primitive combining `<Input>`, a leading magnifying-glass icon,
+ * Enter-to-search, and Escape / clear-button reset behavior.
+ */
 export interface SearchInputProps
   extends Omit<InputProps, "leftIcon" | "rightIcon"> {
+  /** Callback invoked with the current query string when pressing `Enter` or clearing the input. */
   onSearch?: (query: string) => void;
+  /** Callback invoked when the clear button is clicked or `Escape` is pressed. */
   onClear?: () => void;
+  /** Whether to show the trailing clear (`xCircle`) button when the input is non-empty (@default true). */
   showClearButton?: boolean;
 }
 

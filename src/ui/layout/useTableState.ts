@@ -1,12 +1,21 @@
 import { useState, useMemo, useCallback } from "react";
 
+/** Active column sort direction (`null` means unsorted). */
 export type TableSortDirection = "asc" | "desc" | null;
+/** Row vertical padding density scale for `<Table>` and `<DataTable>`. */
 export type TableDensity = "compact" | "comfortable" | "spacious";
+/** Target row scope when batch-applying a column value (`"all"` rows vs `"selected"` rows). */
 export type TableApplyScope = "all" | "selected";
 
+/**
+ * Metadata describing what user gesture triggered `<Table onSelectionChange={...}>`.
+ */
 export interface TableSelectionChangeDetails {
+  /** Gesture category (`"row"` single toggle, `"all"` header checkbox, `"clear"`, or `"range"` Shift+Click). */
   type: "row" | "all" | "clear" | "range";
+  /** Row ID targeted by `"row"` or `"range"` toggles. */
   rowId?: string;
+  /** New checked state when applicable. */
   checked?: boolean;
 }
 

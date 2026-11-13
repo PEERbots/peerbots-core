@@ -1,5 +1,7 @@
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import React from "react";
+import axe from "axe-core";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 
 import { Icon, iconPaths } from "../foundations";
@@ -7,7 +9,14 @@ import { Select } from "../forms/Select";
 import { Field } from "../forms/Field";
 import { Dialog } from "../feedback/Dialog";
 import { Input } from "../forms/Input";
+import { Accordion } from "../layout/Accordion";
+import { Collapsible } from "../layout/Collapsible";
+import { TabSelection } from "../patterns/TabSelection";
 import { cn } from "../utils";
+
+afterEach(() => {
+  cleanup();
+});
 
 describe("Core UI Components & Utilities", () => {
   describe("Issue #19: eye and eyeSlash icons", () => {
@@ -134,6 +143,150 @@ describe("Core UI Components & Utilities", () => {
 
       const html = renderToString(<Select options={options} value={2} />);
       expect(html).toContain("Second Choice");
+    });
+  });
+
+  describe("TabSelection accessible tablist/tab semantics & actions", () => {
+    it("renders role='tablist' and role='tab' without nested buttons, supports keyboard navigation & add/edit/close callbacks, and passes axe", async () => {
+      const onTabClick = vi.fn();
+      const onAddClick = vi.fn();
+      const onEdit1 = vi.fn();
+      const onClose1 = vi.fn();
+
+      const { container } = render(
+        <TabSelection
+          ariaLabel="Workspace templates"
+          activeTabId="t1"
+          onTabClick={onTabClick}
+          onAddClick={onAddClick}
+          tabs={[
+            {
+              id: "t1",
+              label: "Morning Routine",
+              onEdit: onEdit1,
+              onClose: onClose1,
+            },
+            { id: "t2", label: "Calm Corner" },
+            { id: "t3", label: "Story Prompts" },
+          ]}
+        />,
+      );
+
+      const tablist = screen.getByRole("tablist", {
+        name: "Workspace templates",
+      });
+      expect(tablist).toBeInTheDocument();
+
+      const tabs = screen.getAllByRole("tab");
+      expect(tabs).toHaveLength(3);
+      expect(tabs[0]).toHaveAttribute("aria-selected", "true");
+      expect(tabs[1]).toHaveAttribute("aria-selected", "false");
+
+      // Inactive tab uses WCAG AA pb:text-gray-700 pb:bg-gray-100 (no invalid pb:font-gray-300)
+      expect(tabs[1].className).toContain("pb:text-gray-700");
+      expect(tabs[1].className).toContain("pb:bg-gray-100");
+      expect(tabs[1].className).not.toContain("pb:font-gray-300");
+
+      // Zero nested <button> inside <button>
+      expect(container.querySelectorAll("button button")).toHaveLength(0);
+
+      // Edit, Close, and Add callbacks fire without triggering tab selection
+      fireEvent.click(
+        screen.getByRole("button", { name: "Edit Tab: Morning Routine" }),
+      );
+      expect(onEdit1).toHaveBeenCalledTimes(1);
+
+      fireEvent.click(
+        screen.getByRole("button", { name: "Close Tab: Morning Routine" }),
+      );
+      expect(onClose1).toHaveBeenCalledTimes(1);
+
+      fireEvent.click(screen.getByRole("button", { name: "Create New Tab" }));
+      expect(onAddClick).toHaveBeenCalledTimes(1);
+      expect(onTabClick).not.toHaveBeenCalled();
+
+      // Keyboard ArrowRight / ArrowLeft / End / Home navigation
+      fireEvent.keyDown(tabs[0], { key: "ArrowRight" });
+      expect(onTabClick).toHaveBeenLastCalledWith("t2");
+      fireEvent.keyDown(tabs[0], { key: "ArrowLeft" });
+      expect(onTabClick).toHaveBeenLastCalledWith("t3");
+      fireEvent.keyDown(tabs[0], { key: "End" });
+      expect(onTabClick).toHaveBeenLastCalledWith("t3");
+      fireEvent.keyDown(tabs[2], { key: "Home" });
+      expect(onTabClick).toHaveBeenLastCalledWith("t1");
+
+      const axeResults = await axe.run(container, {
+        rules: { "color-contrast": { enabled: false } },
+      });
+      expect(axeResults.violations).toEqual([]);
+    });
+  });
+
+  describe("Collapsible size scale & Accordion single vs allowMultiple", () => {
+    it("honors Collapsible size variants ('sm', 'md', 'lg'), toggles open state, and passes axe", async () => {
+      const onToggle = vi.fn();
+      const { container } = render(
+        <div>
+          <Collapsible title="Small Section" size="sm" onToggle={onToggle}>
+            <p>Small body</p>
+          </Collapsible>
+          <Collapsible title="Medium Section" size="md" defaultOpen>
+            <p>Medium body</p>
+          </Collapsible>
+          <Collapsible title="Large Section" size="lg">
+            <p>Large body</p>
+          </Collapsible>
+        </div>,
+      );
+
+      expect(container.querySelector('[data-size="sm"]')).toBeInTheDocument();
+      expect(container.querySelector('[data-size="md"]')).toBeInTheDocument();
+      expect(container.querySelector('[data-size="lg"]')).toBeInTheDocument();
+
+      const smBtn = screen.getByRole("button", { name: "Small Section" });
+      expect(smBtn).toHaveAttribute("aria-expanded", "false");
+      fireEvent.click(smBtn);
+      expect(smBtn).toHaveAttribute("aria-expanded", "true");
+      expect(onToggle).toHaveBeenCalledWith(true);
+
+      const axeResults = await axe.run(container, {
+        rules: { "color-contrast": { enabled: false } },
+      });
+      expect(axeResults.violations).toEqual([]);
+    });
+
+    it("enforces mutual exclusivity when Accordion allowMultiple={false} and allows multi-open when allowMultiple={true}", async () => {
+      const items = [
+        { question: "First FAQ", answer: "Answer 1", isOpenDefault: true },
+        { question: "Second FAQ", answer: "Answer 2" },
+      ];
+
+      const { container } = render(
+        <Accordion items={items} allowMultiple={false} />,
+      );
+
+      const q1 = screen.getByRole("button", { name: "First FAQ" });
+      const q2 = screen.getByRole("button", { name: "Second FAQ" });
+      expect(q1).toHaveAttribute("aria-expanded", "true");
+      expect(q2).toHaveAttribute("aria-expanded", "false");
+
+      // Opening Second FAQ closes First FAQ when allowMultiple={false}
+      fireEvent.click(q2);
+      expect(q2).toHaveAttribute("aria-expanded", "true");
+      expect(q1).toHaveAttribute("aria-expanded", "false");
+
+      const axeResults = await axe.run(container, {
+        rules: { "color-contrast": { enabled: false } },
+      });
+      expect(axeResults.violations).toEqual([]);
+
+      cleanup();
+      render(<Accordion items={items} allowMultiple={true} />);
+      const m1 = screen.getByRole("button", { name: "First FAQ" });
+      const m2 = screen.getByRole("button", { name: "Second FAQ" });
+      fireEvent.click(m2);
+      expect(m1).toHaveAttribute("aria-expanded", "true");
+      expect(m2).toHaveAttribute("aria-expanded", "true");
     });
   });
 });

@@ -1,4 +1,5 @@
 import React from "react";
+import axe from "axe-core";
 import {
   cleanup,
   fireEvent,
@@ -8,9 +9,11 @@ import {
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { FlowView } from "../../flow/FlowView";
+import { moveButtonInHierarchy } from "../../templates/reordering";
 import type { Template } from "../../templates/types";
 import { ButtonView } from "../patterns/control-views/ButtonView";
 import { TableView } from "../patterns/control-views/TableView";
+import { applyControlActionToTemplate } from "../patterns/control-views/applyControlAction";
 import type { PeerbotsControlAction } from "../patterns/control-views/types";
 
 afterEach(() => {
@@ -509,6 +512,172 @@ describe("Control Views Suite (ButtonView, TableView, FlowView)", () => {
           expect(item.action.newButton.labelColor).toBe("Orange");
         }
       }
+    });
+
+    it("renders zero duplicate row <label>s, vivid WCAG AA row color pills, 28x28 emotion preview tiles (with Black invert), active row emphasis, and zero axe violations", async () => {
+      const template = makeRichTemplate();
+      template.buttons["btn-dark"] = {
+        type: "Message",
+        labelColor: "Black",
+        details: {
+          title: "Night Mode",
+          speech: "Goodnight!",
+          color: "Black",
+          emotion: "Sleepy",
+        },
+      };
+      template.hierarchy.root.push("btn-dark");
+
+      const { container } = render(
+        <TableView
+          template={template}
+          selectedButtonId="btn-1"
+          onButtonAction={() => undefined}
+        />,
+      );
+
+      // Zero visible <label> elements inside tbody (headers label the columns visually)
+      const tbody = container.querySelector("tbody")!;
+      expect(tbody.querySelectorAll("label")).toHaveLength(0);
+
+      // Active row emphasis on selectedButtonId="btn-1"
+      const activeRows = tbody.querySelectorAll('tr[data-active="true"]');
+      expect(activeRows).toHaveLength(1);
+
+      // Every row has a 4px start-edge color accent bar
+      const accents = tbody.querySelectorAll("[data-row-accent]");
+      expect(accents).toHaveLength(5);
+      expect(accents[0]).toHaveStyle({ backgroundColor: "rgb(95, 148, 214)" }); // Blue #5F94D6
+
+      // Button Title input is styled as a colored Peerbots button pill
+      const helloTitleInput = screen.getByRole("textbox", {
+        name: "Title: Hello",
+      });
+      expect(helloTitleInput).toHaveStyle({
+        backgroundColor: "rgb(95, 148, 214)",
+        color: "rgb(2, 3, 7)",
+      });
+
+      const darkTitleInput = screen.getByRole("textbox", {
+        name: "Title: Night Mode",
+      });
+      expect(darkTitleInput).toHaveStyle({
+        backgroundColor: "rgb(77, 77, 77)",
+        color: "rgb(253, 254, 254)",
+      });
+
+      // Label Color & Robot Color Select triggers are color-tinted pills
+      const needHelpLabelSelect = screen.getByRole("combobox", {
+        name: "Label Color: Need Help",
+      });
+      expect(needHelpLabelSelect).toHaveStyle({
+        backgroundColor: "rgb(155, 134, 243)", // Purple #9B86F3
+        color: "rgb(2, 3, 7)",
+      });
+
+      const needHelpRobotSelect = screen.getByRole("combobox", {
+        name: "Robot Color: Need Help",
+      });
+      expect(needHelpRobotSelect).toHaveStyle({
+        backgroundColor: "rgb(248, 237, 177)", // Yellow #F8EDB1
+        color: "rgb(2, 3, 7)",
+      });
+
+      // 28x28 Robot Face Expression preview tiles rendered for the 4 Message rows (not Log row)
+      const emotionTiles = tbody.querySelectorAll("[data-emotion-tile]");
+      expect(emotionTiles).toHaveLength(4);
+      const blackEmotionImg =
+        emotionTiles[3].querySelector("img")!;
+      expect(blackEmotionImg.className).toContain("pb:invert");
+
+      // Play button uses soft teal styling and fires SELECT + CLICK
+      const playBtn = screen.getByRole("button", {
+        name: "Send message: Hello",
+      });
+      expect(playBtn.className).toContain("pb:bg-peerbots-teal/20");
+
+      const axeResults = await axe.run(container, {
+        rules: { "color-contrast": { enabled: false } },
+      });
+      expect(axeResults.violations).toEqual([]);
+    });
+  });
+
+  describe("applyControlActionToTemplate & moveButtonInHierarchy", () => {
+    it("handles SAVE, MOVE (BACK/FORWARD + boundaries), DELETE (leaf & parent promotion), and selection no-ops purely", () => {
+      const initial = makeRichTemplate();
+
+      // 1. Selection / trigger actions return exact same template reference
+      expect(
+        applyControlActionToTemplate(initial, "btn-1", { type: "SELECT" }),
+      ).toBe(initial);
+      expect(
+        applyControlActionToTemplate(initial, "btn-1", { type: "CLICK" }),
+      ).toBe(initial);
+      expect(
+        applyControlActionToTemplate(initial, "btn-1", {
+          type: "ADD TO SELECTION",
+        }),
+      ).toBe(initial);
+      expect(
+        applyControlActionToTemplate(initial, "btn-1", {
+          type: "REMOVE FROM SELECTION",
+        }),
+      ).toBe(initial);
+
+      // 2. SAVE updates button immutably
+      const updatedBtn = {
+        ...initial.buttons["btn-2"],
+        labelColor: "Orange" as const,
+      };
+      const saved = applyControlActionToTemplate(initial, "btn-2", {
+        type: "SAVE",
+        newButton: updatedBtn,
+      });
+      expect(saved).not.toBe(initial);
+      expect(saved.buttons["btn-2"].labelColor).toBe("Orange");
+      expect(initial.buttons["btn-2"].labelColor).toBe("Purple");
+
+      // 3. MOVE uses moveButtonInHierarchy cleanly and respects boundaries
+      expect(
+        moveButtonInHierarchy(initial.hierarchy, "btn-1", "up"),
+      ).toBe(initial.hierarchy);
+      const movedBack = applyControlActionToTemplate(initial, "btn-2", {
+        type: "MOVE",
+        direction: "BACK",
+      });
+      expect(movedBack.hierarchy.root).toEqual(["btn-2", "btn-1", "btn-log"]);
+
+      const movedForward = applyControlActionToTemplate(movedBack, "btn-1", {
+        type: "MOVE",
+        direction: "FORWARD",
+      });
+      expect(movedForward.hierarchy.root).toEqual([
+        "btn-2",
+        "btn-log",
+        "btn-1",
+      ]);
+
+      // 4. DELETE on parent ("btn-1") removes "btn-1" and promotes surviving child "btn-1a" into root!
+      const deletedParent = applyControlActionToTemplate(initial, "btn-1", {
+        type: "DELETE",
+      });
+      expect(deletedParent.buttons["btn-1"]).toBeUndefined();
+      expect(deletedParent.hierarchy["btn-1"]).toBeUndefined();
+      expect(deletedParent.hierarchy.root).toEqual([
+        "btn-1a",
+        "btn-2",
+        "btn-log",
+      ]);
+
+      // 5. DELETE on leaf ("btn-log") removes it cleanly
+      const deletedLeaf = applyControlActionToTemplate(
+        deletedParent,
+        "btn-log",
+        { type: "DELETE" },
+      );
+      expect(deletedLeaf.buttons["btn-log"]).toBeUndefined();
+      expect(deletedLeaf.hierarchy.root).toEqual(["btn-1a", "btn-2"]);
     });
   });
 

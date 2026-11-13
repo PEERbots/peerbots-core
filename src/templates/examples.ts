@@ -6,8 +6,9 @@ import {
 import type { Palette, Template } from "./types";
 
 /**
- * Canonical 17-button Q&A chain (`1 -> 2 -> 3 -> 4`) and 11-color exploration
- * (`6 -> 7..17`) template ported from `app.peerbots.org/src/constants/initialTemplates.ts`.
+ * Canonical 17-button hierarchical {@link Template} featuring a multi-turn Q&A chain
+ * (`1 -> 2 -> 3 -> 4`) and an 11-color exploration branch (`6 -> 7..17`),
+ * ported from `app.peerbots.org/src/constants/initialTemplates.ts`.
  */
 export const EXAMPLE_QA_AND_COLORS_TEMPLATE: Template = {
   title: "Example Template",
@@ -352,13 +353,15 @@ const INITIAL_PALETTE_SOURCE: Palette = {
 };
 
 /**
- * Canonical flat `Template` ported from `templateFromPaletteExample` in `app.peerbots.org/src/constants/initialTemplates.ts`.
+ * Canonical flat {@link Template} converted from a 17-row {@link Palette},
+ * ported from `templateFromPaletteExample` in `app.peerbots.org/src/constants/initialTemplates.ts`.
  */
 export const EXAMPLE_PALETTE_TEMPLATE: Template =
   convertPaletteToTemplate(INITIAL_PALETTE_SOURCE);
 
 /**
- * Canonical `Palette` fixture with goals, subgoals, proficiencies, andlegacy-compatible colors/emotions.
+ * Canonical {@link Palette} fixture demonstrating curriculum `goal`, `subgoal`, and `proficiency`
+ * tags alongside legacy-compatible `0-7` colors and emotions.
  */
 export const EXAMPLE_PALETTE: Palette = {
   title: "Social Check-In Palette",
@@ -403,13 +406,14 @@ export const EXAMPLE_PALETTE: Palette = {
 };
 
 /**
- * Modern Palette CSV fixture (`title,color,emotion,speech,goal,subgoal,proficiency`).
+ * Modern Palette CSV fixture serialized with headers `title,color,emotion,speech,goal,subgoal,proficiency`.
  */
 export const EXAMPLE_MODERN_PALETTE_CSV: string =
   convertPaletteToCSV(EXAMPLE_PALETTE);
 
 /**
- * Legacy Peerbots `0-7` Palette CSV fixture (`TITLE(text),COLOR(0-7),EMOTION(0-7),...`).
+ * Legacy Peerbots `0-7` Palette CSV fixture serialized with headers
+ * `TITLE(text),COLOR(0-7),EMOTION(0-7),SPEECH(text),GOAL(text),SUBGOAL(text),PROFICIENCY(text)`.
  */
 export const EXAMPLE_LEGACY_PALETTE_CSV: string = convertPaletteToCSV(
   EXAMPLE_PALETTE,
@@ -417,7 +421,8 @@ export const EXAMPLE_LEGACY_PALETTE_CSV: string = convertPaletteToCSV(
 );
 
 /**
- * Flat button-array agent starter JSON fixture (used by constrained dialogue agents).
+ * Serialized JSON fixture in flat button-array format (`{ id, title, description, buttons: [...] }`),
+ * including `category`, `keywords`, and `isFallback` fields used by constrained dialogue agents.
  */
 export const EXAMPLE_AGENT_FLAT_TEMPLATE_JSON: string = JSON.stringify(
   {
@@ -595,15 +600,15 @@ export const EXAMPLE_AGENT_FLAT_TEMPLATE_JSON: string = JSON.stringify(
 );
 
 /**
- * Canonical `Template` normalized from `default-starter-template.json`.
+ * Canonical {@link Template} parsed and normalized from {@link EXAMPLE_AGENT_FLAT_TEMPLATE_JSON}.
  */
 export const EXAMPLE_STARTER_SOCIAL_TEMPLATE: Template = parseTemplateJson(
   EXAMPLE_AGENT_FLAT_TEMPLATE_JSON,
 )[0];
 
 /**
- * Canonical `Template` demonstrating `"Message"` speech buttons alongside `"Log"`
- * facilitator observation markers in a single hierarchy.
+ * Canonical {@link Template} demonstrating spoken `"Message"` buttons alongside silent `"Log"`
+ * facilitator observation markers within a shared hierarchy.
  */
 export const EXAMPLE_LOG_AND_SPEAK_TEMPLATE: Template = {
   id: "session-log-and-speak",

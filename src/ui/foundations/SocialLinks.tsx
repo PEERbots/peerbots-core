@@ -2,10 +2,17 @@ import React from "react";
 import { cn } from "../utils";
 import { Icon, IconName } from "./Icon";
 
+/**
+ * Social platform link descriptor rendered by `<SocialLinks>`.
+ */
 export interface SocialLinkItem {
+  /** Display name of the social platform (e.g. `"GitHub"`). */
   name: string;
+  /** External profile URL opened in a new tab. */
   url: string;
+  /** Optional explicit accessible label for screen readers. */
   ariaLabel?: string;
+  /** Optional icon name override from `IconRegistry`. */
   icon?: IconName;
 }
 
@@ -54,10 +61,17 @@ export const DEFAULT_PEERBOTS_SOCIAL_LINKS: SocialLinkItem[] = [
   },
 ];
 
+/**
+ * Props for `<SocialLinks>` — horizontal row of accessible social profile icon links.
+ */
 export interface SocialLinksProps {
+  /** Additional container classes. */
   className?: string;
+  /** Social link items to render (defaults to `DEFAULT_PEERBOTS_SOCIAL_LINKS`). */
   links?: SocialLinkItem[];
+  /** Icon and button padding scale (@default "md"). */
   size?: "sm" | "md" | "lg";
+  /** Color theme suited for light, dark, or brand footer surfaces (@default "default"). */
   variant?: "default" | "white" | "teal" | "dark" | "muted";
 }
 

@@ -3,39 +3,93 @@ import { cn } from "../utils";
 import { Icon } from "../foundations/Icon";
 import { Text } from "../foundations/Typography";
 
+/**
+ * Data descriptor for a single expandable section within a multi-item {@link Accordion}.
+ */
 export interface AccordionItem {
+  /** Optional stable identifier for React keying. */
   id?: string;
+  /** Trigger heading text/node (FAQ style; alias for `title`). */
   question?: React.ReactNode;
+  /** Trigger heading text/node (section style; alias for `question`). */
   title?: React.ReactNode;
+  /** Expandable panel content (FAQ style; alias for `content`). */
   answer?: React.ReactNode;
+  /** Expandable panel content (section style). */
   content?: React.ReactNode;
+  /** Expandable panel content fallback alias. */
   description?: React.ReactNode;
+  /** Optional pre-sanitized HTML string rendered when rich CMS markup is supplied. */
   bodyHtml?: string;
+  /** Whether this item starts expanded on initial mount. */
   isOpenDefault?: boolean;
 }
 
+/**
+ * Props for {@link Accordion}, a coordinated vertical stack of 2+ expandable
+ * disclosure items with optional single-open mutual exclusivity (`allowMultiple={false}`).
+ *
+ * **When to use `Accordion` vs `Collapsible`:**
+ * - Use **`Accordion`** when rendering a **coordinated list of 2+ sections** (e.g., FAQs,
+ *   troubleshooting guides, or multi-category help panels) driven by an `items` array,
+ *   especially when only one item should stay open at a time (`allowMultiple={false}`).
+ * - Use **`Collapsible`** when wrapping a **single standalone disclosure** around arbitrary
+ *   React `children` (e.g., an "Advanced Settings" drawer inside a `SettingsPanel` or form).
+ */
 export interface AccordionProps {
-  /** List of accordion items for multi-item list mode */
+  /** List of accordion items for multi-item list mode. */
   items?: AccordionItem[];
-  /** Allow multiple items to be opened simultaneously */
+  /**
+   * Allow multiple items to remain expanded simultaneously.
+   * When `false` (default), opening one item automatically collapses the previously open item.
+   * @default false
+   */
   allowMultiple?: boolean;
-  /** Visual style variant */
+  /**
+   * Visual container style variant.
+   * @default "default"
+   */
   variant?: "default" | "bordered" | "flat";
-  /** Single-item mode: title for the disclosure */
+  /**
+   * Single-item mode: title for the disclosure.
+   * @deprecated For a single standalone disclosure section, prefer `<Collapsible>`.
+   */
   title?: React.ReactNode;
-  /** Single-item mode: content/children for the disclosure */
+  /**
+   * Single-item mode: content/children for the disclosure.
+   * @deprecated For a single standalone disclosure section, prefer `<Collapsible>`.
+   */
   children?: React.ReactNode;
-  /** Single-item mode: default open state */
+  /**
+   * Single-item mode: default open state.
+   * @deprecated For a single standalone disclosure section, prefer `<Collapsible>`.
+   */
   defaultOpen?: boolean;
-  /** Controlled open state for single-item mode */
+  /**
+   * Controlled open state for single-item mode.
+   * @deprecated For a single standalone disclosure section, prefer `<Collapsible>`.
+   */
   isOpen?: boolean;
-  /** Controlled toggle callback for single-item mode */
+  /**
+   * Controlled toggle callback for single-item mode.
+   * @deprecated For a single standalone disclosure section, prefer `<Collapsible>`.
+   */
   onToggle?: (open: boolean) => void;
+  /** Additional CSS classes applied to the outer stack container. */
   className?: string;
+  /** Additional CSS classes applied to each item's trigger `<button>`. */
   headerClassName?: string;
+  /** Additional CSS classes applied to each item's body wrapper. */
   contentClassName?: string;
 }
 
+/**
+ * Coordinated multi-item disclosure stack (`items` array) supporting exclusive
+ * single-open (`allowMultiple={false}`) or multi-open (`allowMultiple={true}`) behavior.
+ *
+ * For a single standalone expandable section wrapping arbitrary React `children`,
+ * prefer {@link Collapsible} (`<Collapsible title="...">...</Collapsible>`).
+ */
 export const Accordion: React.FC<AccordionProps> = ({
   items,
   allowMultiple = false,

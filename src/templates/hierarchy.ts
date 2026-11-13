@@ -5,18 +5,35 @@ import type {
   TemplateHierarchy,
 } from "./types";
 
+/**
+ * Entry produced by {@link flattenHierarchy}, pairing a unique button key with its
+ * zero-based nesting depth in the template tree (`0` for `"root"` buttons).
+ */
 export type FlattenedButton = {
+  /** Key of the button in `Template.buttons`. */
   buttonId: string;
+  /** Zero-based indentation level (`0` for root-level buttons, `1` for their children, etc.). */
   depth: number;
 };
 
+/**
+ * Normalized `"Message"` button extracted from a {@link Template} in hierarchy-flattened
+ * depth-first order for constrained dialogue matchers, button grids, and follow-up prediction.
+ */
 export interface ExtractedMessageButton {
+  /** Key of this button within `Template.buttons` and `Template.hierarchy`. */
   buttonKey: string;
+  /** Resolved identifier of the parent template (explicit `Template.id` or slugified title). */
   templateId: string;
+  /** Human-readable title of the parent template. */
   templateTitle: string;
+  /** Spoken message payload (`title`, `speech`, face `color`, `emotion`, `keywords`, etc.). */
   details: Message;
+  /** Controller UI button accent color (distinct from `details.color` shown on the robot face). */
   labelColor: PeerbotsColor;
+  /** Ordered keys of direct child buttons in `Template.hierarchy` that are also `"Message"` buttons. */
   childIds: string[];
+  /** Resolved flag indicating whether this button acts as a low-confidence fallback response. */
   isFallback: boolean;
 }
 
@@ -31,11 +48,11 @@ function slugifyTemplateTitle(value: string): string {
 }
 
 /**
- * Flattens a Template hierarchy into an ordered list of button entries with
- * depth info. Guarantees:
- *   - No duplicate IDs in the output
- *   - No infinite recursion from cycles
- *   - Children appear directly after their parent, indented one level deeper
+ * Flattens a {@link TemplateHierarchy} into a depth-first ordered list of button entries
+ * with zero-based nesting depth. Guarantees:
+ * - No duplicate button IDs in the output (first-seen wins)
+ * - No infinite recursion even if the input contains cycles
+ * - Direct children appear immediately after their parent at `depth + 1`
  */
 export function flattenHierarchy(
   hierarchy: TemplateHierarchy,
@@ -66,7 +83,7 @@ export function flattenHierarchy(
 }
 
 /**
- * Returns the deduplicated list of root-level button IDs in a hierarchy.
+ * Returns the deduplicated list of root-level button IDs from `hierarchy.root` in display order.
  */
 export function getRootButtonIds(hierarchy: TemplateHierarchy): string[] {
   if (!Array.isArray(hierarchy?.root)) {
@@ -102,7 +119,7 @@ export function getDirectChildIds(
 
 /**
  * Builds a cycle-safe, first-seen-wins parent lookup dictionary mapping each
- * reachable `buttonId` in the hierarchy to its parent `buttonId` (or `null` for root-level buttons).
+ * reachable `buttonId` in `hierarchy` to its parent `buttonId` (or `null` for root-level buttons).
  */
 export function getParentMap(
   hierarchy: TemplateHierarchy,
@@ -137,8 +154,8 @@ export function getParentMap(
 }
 
 /**
- * Returns `true` if `buttonId` is resolved as a root-level button in `hierarchy`
- * (`depth === 0` in `flattenHierarchy`), and `false` otherwise.
+ * Returns `true` if `buttonId` resolves as a root-level button in `hierarchy`
+ * (`depth === 0` in {@link flattenHierarchy}), and `false` otherwise.
  */
 export function isRootButton(
   hierarchy: TemplateHierarchy,
@@ -168,9 +185,9 @@ function resolveIsFallback(details: Message): boolean {
 }
 
 /**
- * Extracts all reachable `"Message"` buttons from a `Template` in hierarchy-flattened
- * DFS order, preserving direct child IDs and fallback status for response matching
- * and hierarchy-aware next-utterance prediction.
+ * Extracts all reachable `"Message"` buttons from a {@link Template} in hierarchy-flattened
+ * depth-first order (skipping silent `"Log"` buttons), preserving direct `"Message"` child IDs
+ * and fallback status for constrained response matching and next-utterance prediction.
  */
 export function extractMessageButtons<TRef>(
   template: Template<TRef>,
