@@ -96,13 +96,9 @@ describe("Domain UI Components", () => {
       expect(PEERBOTS_EMOTION_IMAGES.Concerned).toContain("Concerned");
     });
 
-    it("renders all 6 emotions using PNG <img> icons on Peerbots primary teal background with zero axe violations", async () => {
+    it("renders compact icon-only buttons using PNG <img> icons on Peerbots primary teal background with zero axe violations", async () => {
       const { container } = render(
-        <EmotionSelector
-          selectedEmotion="Happy"
-          size="lg"
-          showTooltips={false}
-        />,
+        <EmotionSelector selectedEmotion="Happy" />,
       );
       const group = screen.getByRole("radiogroup", {
         name: "Emotion selector",
@@ -121,9 +117,13 @@ describe("Domain UI Components", () => {
         name: "Select emotion Neutral",
       });
       expect(happyRadio).toHaveAttribute("aria-checked", "true");
+      // Compact icon-only buttons must not render stacked visible label text inside the button
+      expect(happyRadio.textContent).toBe("");
+      expect(neutralRadio.textContent).toBe("");
+      expect(happyRadio.className).toContain("pb:h-8");
+      expect(happyRadio.className).toContain("pb:w-8");
       expect(happyRadio.className).toContain("pb:bg-primary");
       expect(happyRadio.className).toContain("hover:pb:bg-peerbots-teal");
-      expect(happyRadio.className).toContain("pb:text-gray-950");
       expect(happyRadio.className).toContain("pb:border-2");
       expect(happyRadio.className).toContain("pb:border-gray-950");
       expect(neutralRadio.className).toContain("pb:bg-primary");
@@ -140,12 +140,12 @@ describe("Domain UI Components", () => {
       expect(axeResults.violations).toEqual([]);
     });
 
-    it("renders with tooltips, custom icons (URL & ReactNode), and non-decorative img alt text", () => {
-      const htmlWithTooltip = renderToString(
+    it("supports showTooltips={false}, size presets, custom icons (URL & ReactNode), and non-decorative img alt text", () => {
+      const htmlWithoutTooltip = renderToString(
         <EmotionSelector
           value="Concerned"
-          size="sm"
-          showTooltips
+          size="lg"
+          showTooltips={false}
           emotionIcons={{
             Happy: "https://example.com/happy.png",
             Sad: <span data-testid="custom-sad">:(</span>,
@@ -153,9 +153,10 @@ describe("Domain UI Components", () => {
           emotionLabels={{ Concerned: "Preocupado" }}
         />,
       );
-      expect(htmlWithTooltip).toContain("https://example.com/happy.png");
-      expect(htmlWithTooltip).toContain("custom-sad");
-      expect(htmlWithTooltip).toContain("Select emotion Preocupado");
+      expect(htmlWithoutTooltip).toContain("pb:h-10 pb:w-10");
+      expect(htmlWithoutTooltip).toContain("https://example.com/happy.png");
+      expect(htmlWithoutTooltip).toContain("custom-sad");
+      expect(htmlWithoutTooltip).toContain("Select emotion Preocupado");
 
       const nonDecorativeDefault = renderToString(
         <PeerbotsEmotionIcon
