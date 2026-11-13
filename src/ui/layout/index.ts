@@ -3,3 +3,5 @@ export * from "./Accordion";
 export * from "./Collapsible";
 export * from "./Separator";
 export * from "./SettingsPanel";
+export * from "./Table";
+export * from "./useTableState";
