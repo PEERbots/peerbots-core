@@ -15,7 +15,7 @@ export interface PeerbotsEmotionIconProps {
   customIcon?: string | React.ReactNode;
   /**
    * Whether the icon is purely decorative (`alt=""` and `aria-hidden="true"`).
-   * Keep `true` when rendered inside a button that already has text or `aria-label`.
+   * Keep `true` when rendered inside a button that already has an `aria-label`.
    * @default true
    */
   decorative?: boolean;
@@ -72,7 +72,7 @@ export function PeerbotsEmotionIcon({
 }
 
 /**
- * Props for {@link EmotionSelector}, an accessible radio group for choosing a
+ * Props for {@link EmotionSelector}, a compact icon-only radio group for choosing a
  * Peerbots robot facial expression (`Neutral`, `Surprised`, `Happy`, `Sad`, `Concerned`, `Sleepy`).
  */
 export interface EmotionSelectorProps {
@@ -88,22 +88,16 @@ export interface EmotionSelectorProps {
   emotions?: readonly PeerbotsEmotion[];
   /** Optional custom icon map (image URL or React node per emotion). */
   emotionIcons?: Partial<Record<PeerbotsEmotion, string | React.ReactNode>>;
-  /** Optional localized display names per emotion. */
+  /** Optional localized display names per emotion (used for `aria-label` and tooltips). */
   emotionLabels?: Partial<Record<PeerbotsEmotion, string>>;
   /**
-   * Button and icon size preset.
+   * Square icon-button size preset (`sm` = 28px, `md` = 32px, `lg` = 40px).
    * @default "md"
    */
   size?: "sm" | "md" | "lg";
   /**
-   * Whether to stack the emotion name below each icon. Set `false` for compact
-   * icon-only selector bars matching `app.peerbots.org`.
+   * Whether to wrap each compact icon button in a hover/focus tooltip showing the emotion name.
    * @default true
-   */
-  showLabels?: boolean;
-  /**
-   * Whether to wrap each option in a hover/focus tooltip showing the emotion name.
-   * @default false
    */
   showTooltips?: boolean;
   /**
@@ -123,8 +117,9 @@ export interface EmotionSelectorProps {
 }
 
 /**
- * Accessible Peerbots robot expression picker rendering each emotion's dark
- * line-art face PNG on the high-contrast Peerbots primary teal (`#46d9d9`) surface.
+ * Compact icon-only Peerbots robot expression picker rendering each emotion's dark
+ * line-art face PNG on the high-contrast Peerbots primary teal (`#46d9d9`) tile with
+ * hover/focus tooltips.
  */
 export function EmotionSelector({
   selectedEmotion,
@@ -135,8 +130,7 @@ export function EmotionSelector({
   emotionIcons,
   emotionLabels,
   size = "md",
-  showLabels = true,
-  showTooltips = false,
+  showTooltips = true,
   ariaLabel = "Emotion selector",
   ariaLabelPrefix = "Select emotion",
   disabled = false,
@@ -149,30 +143,18 @@ export function EmotionSelector({
     onChange?.(emotion);
   };
 
-  const iconSizeClasses: Record<"sm" | "md" | "lg", string> = {
-    sm: "pb:h-6 pb:w-6",
-    md: "pb:h-7 pb:w-7",
-    lg: "pb:h-9 pb:w-9",
+  const buttonSizeClasses: Record<"sm" | "md" | "lg", string> = {
+    sm: "pb:min-h-7 pb:min-w-7 pb:h-7 pb:w-7 pb:p-0.5",
+    md: "pb:min-h-8 pb:min-w-8 pb:h-8 pb:w-8 pb:p-1",
+    lg: "pb:min-h-10 pb:min-w-10 pb:h-10 pb:w-10 pb:p-1.5",
   };
-
-  const buttonPaddingClasses: Record<"sm" | "md" | "lg", string> = showLabels
-    ? {
-        sm: "pb:px-1.5 pb:py-1 pb:min-w-[52px]",
-        md: "pb:px-2 pb:py-1.5 pb:min-w-[60px]",
-        lg: "pb:px-2.5 pb:py-2 pb:min-w-[72px]",
-      }
-    : {
-        sm: "pb:h-7 pb:w-7 pb:p-0.5",
-        md: "pb:h-8 pb:w-8 pb:p-1",
-        lg: "pb:h-10 pb:w-10 pb:p-1.5",
-      };
 
   return (
     <div
       role="radiogroup"
       aria-label={ariaLabel}
       className={cn(
-        "pb:inline-flex pb:flex-wrap pb:gap-1.5 pb:items-center",
+        "pb:inline-flex pb:flex-wrap pb:gap-1 pb:items-center",
         className,
       )}
     >
@@ -194,36 +176,24 @@ export function EmotionSelector({
             disabled={disabled}
             onClick={() => handleSelect(emotion)}
             className={cn(
-              "pb:inline-flex pb:flex-col pb:items-center pb:justify-center pb:gap-1 pb:rounded-lg pb:bg-primary hover:pb:bg-peerbots-teal pb:text-gray-950 pb:cursor-pointer pb:transition-all pb:duration-150 pb:focus-visible:outline-2 pb:focus-visible:outline-offset-2 pb:focus-visible:outline-peerbots-darkteal pb:disabled:opacity-50 pb:disabled:cursor-not-allowed",
-              buttonPaddingClasses[size],
+              "pb:inline-flex pb:items-center pb:justify-center pb:shrink-0 pb:rounded-lg pb:bg-primary hover:pb:bg-peerbots-teal pb:text-gray-950 pb:cursor-pointer pb:transition-all pb:duration-150 pb:focus-visible:outline-2 pb:focus-visible:outline-offset-2 pb:focus-visible:outline-peerbots-darkteal pb:disabled:opacity-50 pb:disabled:cursor-not-allowed",
+              buttonSizeClasses[size],
               isSelected
                 ? "pb:border-2 pb:border-gray-950 pb:ring-2 pb:ring-gray-950/20 pb:shadow-sm"
                 : "pb:border pb:border-teal-800/25 hover:pb:border-gray-900/50",
             )}
           >
-            <span className={cn("pb:block pb:shrink-0", iconSizeClasses[size])}>
-              <PeerbotsEmotionIcon
-                emotion={emotion}
-                customIcon={emotionIcons?.[emotion]}
-                decorative
-                className={cn(
-                  "pb:transition-opacity",
-                  isSelected
-                    ? "pb:opacity-100"
-                    : "pb:opacity-90 hover:pb:opacity-100",
-                )}
-              />
-            </span>
-            {showLabels && (
-              <span
-                className={cn(
-                  "pb:text-[11px] pb:leading-tight pb:text-gray-950",
-                  isSelected ? "pb:font-bold" : "pb:font-medium",
-                )}
-              >
-                {displayLabel}
-              </span>
-            )}
+            <PeerbotsEmotionIcon
+              emotion={emotion}
+              customIcon={emotionIcons?.[emotion]}
+              decorative
+              className={cn(
+                "pb:transition-opacity",
+                isSelected
+                  ? "pb:opacity-100"
+                  : "pb:opacity-85 hover:pb:opacity-100",
+              )}
+            />
           </button>
         );
 
