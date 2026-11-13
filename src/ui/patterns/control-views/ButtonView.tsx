@@ -194,6 +194,7 @@ export function ButtonView({
               >
                 {editingButton && editingState && (
                   <SingleButtonEditPanel
+                    buttonId={editingState.buttonId}
                     button={editingButton}
                     isRoot={
                       Array.isArray(template.hierarchy?.root) &&
@@ -202,6 +203,7 @@ export function ButtonView({
                     emotionIcons={emotionIcons}
                     emotionLabels={emotionLabels}
                     colorLabels={colorLabels}
+                    labels={labels}
                     onSave={(nextButton) => {
                       const action = createSaveAction(nextButton);
                       onButtonAction(editingButton, editingState.buttonId, action);

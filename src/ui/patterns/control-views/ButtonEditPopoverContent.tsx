@@ -1,4 +1,9 @@
-import React from "react";
+import React, { useId, useState } from "react";
+import {
+  DEFAULT_CONTROL_LABELS,
+  usePeerbotsI18n,
+  type ControlLabels,
+} from "../../../i18n";
 import type {
   PeerbotsColor,
   PeerbotsEmotion,
@@ -8,38 +13,41 @@ import { Button } from "../../forms/Button";
 import { EmotionSelector } from "../../forms/EmotionSelector";
 import { Input } from "../../forms/Input";
 import { PeerbotsColorSelector } from "../../forms/PeerbotsColorSelector";
+import { Switch } from "../../forms/Switch";
 import { TextArea } from "../../forms/TextArea";
+import { Icon } from "../../foundations/Icon";
 import { cn } from "../../utils";
 
 export interface SingleButtonEditPanelProps {
-  /** Button currently being edited */
+  buttonId: string;
   button: RobotControlButton;
-  /** Whether this button is currently listed in `hierarchy.root` */
   isRoot?: boolean;
-  /** Called immediately whenever any field changes */
   onSave: (nextButton: RobotControlButton) => void;
-  /** Optional handler to toggle whether this button is in `hierarchy.root` */
-  onToggleRoot?: () => void;
-  /** Optional handler to add a child button connected to this node */
-  onAddChild?: (type: "Message" | "Log") => void;
-  /** Optional handler to duplicate this button */
+  onToggleRoot?: (isRoot: boolean) => void;
+  onAddChild?: () => void;
   onDuplicate?: () => void;
-  /** Optional handler to delete this button */
   onDelete?: () => void;
-  /** Optional handler to close the popover */
   onClose?: () => void;
-  /** Optional custom emotion icons passed to `EmotionSelector` */
   emotionIcons?: Partial<Record<PeerbotsEmotion, string | React.ReactNode>>;
-  /** Optional localized emotion names passed to `EmotionSelector` */
   emotionLabels?: Partial<Record<PeerbotsEmotion, string>>;
-  /** Optional localized color names passed to `PeerbotsColorSelector` */
   colorLabels?: Partial<Record<PeerbotsColor, string>>;
+  labels?: Partial<ControlLabels>;
+  /** Controlled Sync Speech with Title toggle. */
+  syncSpeech?: boolean;
+  /** Initial Sync Speech with Title state when uncontrolled. */
+  defaultSyncSpeech?: boolean;
+  /** Callback invoked when the Sync Speech with Title toggle changes. */
+  onSyncSpeechChange?: (sync: boolean) => void;
   className?: string;
 }
 
 /**
- * Concise single-button editor panel shared by `FlowView` (node edit popover)
- * and `ButtonView` (right-click edit popover).
+ * Concise single-button editor used inside FlowView's NodeToolbar popover
+ * and ButtonView's right-click context popover.
+ *
+ * Uses the exact `ControlLabels` naming from `TableView` and `PeerbotsButtonRow`,
+ * includes the `Sync Speech with Title` switch, and renders `Robot Color` and
+ * `Emotion` on separate rows.
  */
 export function SingleButtonEditPanel({
   button,
@@ -52,9 +60,45 @@ export function SingleButtonEditPanel({
   onClose,
   emotionIcons,
   emotionLabels,
-  colorLabels,
+  labels,
+  syncSpeech,
+  defaultSyncSpeech,
+  onSyncSpeechChange,
   className,
 }: SingleButtonEditPanelProps) {
+  const { labels: contextLabels } = usePeerbotsI18n();
+  const resolvedLabels: ControlLabels = {
+    ...DEFAULT_CONTROL_LABELS,
+    ...contextLabels?.control,
+    ...labels,
+  };
+
+  const syncSwitchId = useId();
+  const [uncontrolledSync, setUncontrolledSync] = useState<boolean>(() => {
+    if (defaultSyncSpeech !== undefined) return defaultSyncSpeech;
+    if (button.type !== "Message") return true;
+    return (
+      !button.details.speech || button.details.speech === button.details.title
+    );
+  });
+  const isSyncControlled = syncSpeech !== undefined;
+  const syncActive = isSyncControlled ? syncSpeech : uncontrolledSync;
+
+  const handleToggleSync = (nextSync: boolean) => {
+    if (!isSyncControlled) {
+      setUncontrolledSync(nextSync);
+    }
+    onSyncSpeechChange?.(nextSync);
+    if (nextSync && button.type === "Message") {
+      if (button.details.speech !== button.details.title) {
+        onSave({
+          ...button,
+          details: { ...button.details, speech: button.details.title },
+        });
+      }
+    }
+  };
+
   const handleTypeSwitch = (nextType: "Message" | "Log") => {
     if (button.type === nextType) return;
     if (nextType === "Message" && button.type === "Log") {
@@ -90,7 +134,11 @@ export function SingleButtonEditPanel({
     if (button.type === "Message") {
       onSave({
         ...button,
-        details: { ...button.details, title },
+        details: {
+          ...button.details,
+          title,
+          ...(syncActive ? { speech: title } : {}),
+        },
       });
     } else {
       onSave({
@@ -100,79 +148,102 @@ export function SingleButtonEditPanel({
     }
   };
 
-  const handleBodyChange = (text: string) => {
+  const handleSpeechOrDetailsChange = (value: string) => {
     if (button.type === "Message") {
+      if (syncActive && value !== button.details.title) {
+        if (!isSyncControlled) {
+          setUncontrolledSync(false);
+        }
+        onSyncSpeechChange?.(false);
+      }
       onSave({
         ...button,
-        details: { ...button.details, speech: text },
+        details: { ...button.details, speech: value },
       });
     } else {
       onSave({
         ...button,
-        details: { ...button.details, details: text },
+        details: { ...button.details, details: value },
       });
+    }
+  };
+
+  const handleContainerKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape" && onClose) {
+      e.stopPropagation();
+      onClose();
     }
   };
 
   return (
     <div
       className={cn(
-        "pb:w-[320px] pb:flex pb:flex-col pb:gap-2.5 pb:text-left",
+        "pb:w-[320px] pb:max-w-[calc(100vw-24px)] pb:rounded-xl pb:bg-white pb:border pb:border-gray-200 pb:shadow-xl pb:p-3 pb:flex pb:flex-col pb:gap-2.5 pb:text-left",
         className,
       )}
+      onKeyDown={handleContainerKeyDown}
+      onClick={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
     >
-      {/* Header: Message/Log switcher + optional Root toggle + Close */}
-      <div className="pb:flex pb:items-center pb:justify-between pb:gap-2 pb:pb-2 pb:border-b pb:border-gray-100">
+      {/* Header: Type switcher + Root Entry toggle + Close */}
+      <div className="pb:flex pb:items-center pb:justify-between pb:gap-2">
         <div
+          className="pb:inline-flex pb:rounded-lg pb:bg-gray-100 pb:p-0.5 pb:gap-0.5"
           role="group"
-          aria-label="Button type"
-          className="pb:inline-flex pb:rounded-lg pb:bg-gray-100 pb:p-0.5 pb:border pb:border-gray-200"
+          aria-label={resolvedLabels.buttonType}
         >
-          {(["Message", "Log"] as const).map((kind) => {
-            const active = button.type === kind;
-            return (
-              <button
-                key={kind}
-                type="button"
-                aria-pressed={active}
-                onClick={() => handleTypeSwitch(kind)}
-                className={cn(
-                  "pb:px-2.5 pb:py-1 pb:text-xs pb:font-semibold pb:rounded-md pb:cursor-pointer pb:transition-colors",
-                  active
-                    ? "pb:bg-white pb:text-gray-950 pb:shadow-xs"
-                    : "pb:text-gray-600 hover:pb:text-gray-900",
-                )}
-              >
-                {kind}
-              </button>
-            );
-          })}
+          <button
+            type="button"
+            onClick={() => handleTypeSwitch("Message")}
+            className={cn(
+              "pb:inline-flex pb:items-center pb:gap-1 pb:px-2 pb:py-1 pb:rounded-md pb:text-xs pb:font-semibold pb:cursor-pointer pb:transition-colors",
+              button.type === "Message"
+                ? "pb:bg-white pb:text-gray-900 pb:shadow-xs"
+                : "pb:text-gray-600 pb:hover:text-gray-900",
+            )}
+          >
+            {resolvedLabels.message}
+          </button>
+          <button
+            type="button"
+            onClick={() => handleTypeSwitch("Log")}
+            className={cn(
+              "pb:inline-flex pb:items-center pb:gap-1 pb:px-2 pb:py-1 pb:rounded-md pb:text-xs pb:font-semibold pb:cursor-pointer pb:transition-colors",
+              button.type === "Log"
+                ? "pb:bg-white pb:text-gray-900 pb:shadow-xs"
+                : "pb:text-gray-600 pb:hover:text-gray-900",
+            )}
+          >
+            <Icon name="zap" size="sm" />
+            {resolvedLabels.log}
+          </button>
         </div>
 
         <div className="pb:flex pb:items-center pb:gap-1.5">
-          {onToggleRoot && (
+          {onToggleRoot && isRoot !== undefined && (
             <button
               type="button"
-              aria-pressed={Boolean(isRoot)}
-              onClick={onToggleRoot}
+              onClick={() => onToggleRoot(!isRoot)}
+              aria-pressed={isRoot}
               className={cn(
-                "pb:px-2 pb:py-0.5 pb:text-[11px] pb:font-semibold pb:rounded-full pb:border pb:cursor-pointer pb:transition-colors",
+                "pb:px-2 pb:py-1 pb:rounded-md pb:text-[11px] pb:font-semibold pb:border pb:cursor-pointer pb:transition-colors",
                 isRoot
-                  ? "pb:bg-teal-50 pb:text-teal-800 pb:border-teal-300"
-                  : "pb:bg-gray-50 pb:text-gray-600 pb:border-gray-200 hover:pb:bg-gray-100",
+                  ? "pb:bg-teal-50 pb:border-teal-300 pb:text-teal-800"
+                  : "pb:bg-gray-50 pb:border-gray-200 pb:text-gray-600 pb:hover:bg-gray-100",
               )}
+              title="Toggle whether this button is a top-level root entry"
             >
-              {isRoot ? "✓ Root Entry" : "Child Only"}
+              Root
             </button>
           )}
           {onClose && (
             <button
               type="button"
-              aria-label="Close editor"
               onClick={onClose}
-              className="pb:px-1.5 pb:py-0.5 pb:text-xs pb:font-semibold pb:text-gray-400 hover:pb:text-gray-700 pb:rounded pb:cursor-pointer"
+              aria-label="Close edit popover"
+              className="pb:p-1 pb:rounded-md pb:text-gray-400 pb:hover:text-gray-700 pb:hover:bg-gray-100 pb:cursor-pointer"
             >
-              ✕
+              <Icon name="x" size="sm" />
             </button>
           )}
         </div>
@@ -181,59 +252,82 @@ export function SingleButtonEditPanel({
       {/* Title */}
       <label className="pb:flex pb:flex-col pb:gap-1">
         <span className="pb:text-[11px] pb:font-semibold pb:text-gray-600">
-          {button.type === "Message" ? "Title" : "Event Title"}
+          {resolvedLabels.buttonTitle}
         </span>
         <Input
-          aria-label={button.type === "Message" ? "Title" : "Event Title"}
+          size="sm"
           value={button.details.title}
+          placeholder={resolvedLabels.buttonTitle}
           onChange={(e) => handleTitleChange(e.target.value)}
-          className="pb:h-8 pb:text-xs"
         />
       </label>
 
-      {/* Speech or Event Details */}
+      {/* Sync Speech with Title Switch (Messages) */}
+      {button.type === "Message" && (
+        <div className="pb:flex pb:items-center pb:justify-between pb:gap-2 pb:py-0.5">
+          <label
+            htmlFor={syncSwitchId}
+            className="pb:text-[11px] pb:font-semibold pb:text-gray-600 pb:cursor-pointer pb:select-none"
+          >
+            {resolvedLabels.syncSpeechWithTitle}
+          </label>
+          <Switch
+            id={syncSwitchId}
+            name="syncSpeechWithTitle"
+            aria-label={resolvedLabels.syncTitleSpeechAria}
+            checked={syncActive}
+            onChange={(checked) => handleToggleSync(Boolean(checked))}
+          />
+        </div>
+      )}
+
+      {/* Speech phrase or Event details */}
       <label className="pb:flex pb:flex-col pb:gap-1">
         <span className="pb:text-[11px] pb:font-semibold pb:text-gray-600">
-          {button.type === "Message" ? "Robot Speech" : "Event Details"}
+          {button.type === "Message"
+            ? resolvedLabels.speech
+            : resolvedLabels.details}
         </span>
         <TextArea
-          aria-label={
-            button.type === "Message" ? "Robot Speech" : "Event Details"
-          }
           rows={2}
           value={
             button.type === "Message"
               ? button.details.speech
-              : (button.details.details ?? "")
+              : button.details.details
           }
-          onChange={(e) => handleBodyChange(e.target.value)}
+          placeholder={
+            button.type === "Message"
+              ? resolvedLabels.speech
+              : resolvedLabels.details
+          }
+          onChange={(e) => handleSpeechOrDetailsChange(e.target.value)}
           className="pb:text-xs pb:min-h-[52px] pb:py-1.5"
         />
       </label>
 
-      {/* Button Label Color */}
+      {/* Label Color */}
       <div className="pb:flex pb:flex-col pb:gap-1">
         <span className="pb:text-[11px] pb:font-semibold pb:text-gray-600">
-          Button Label Color
+          {resolvedLabels.labelColor}
         </span>
         <PeerbotsColorSelector
           size="sm"
           selectedColor={button.labelColor}
-          ariaLabelPrefix="Button label color"
+          ariaLabelPrefix={resolvedLabels.labelColor}
           onColorSelect={(labelColor) => onSave({ ...button, labelColor })}
         />
       </div>
 
-      {/* Robot Face Color & Emotion (Messages only) */}
+      {/* Robot Color (own row, Messages only) */}
       {button.type === "Message" && (
-        <div className="pb:flex pb:flex-col pb:gap-1.5">
+        <div className="pb:flex pb:flex-col pb:gap-1">
           <span className="pb:text-[11px] pb:font-semibold pb:text-gray-600">
-            Robot Face Color &amp; Emotion
+            {resolvedLabels.robotColor}
           </span>
           <PeerbotsColorSelector
             size="sm"
             selectedColor={button.details.color}
-            ariaLabelPrefix="Robot face color"
+            ariaLabelPrefix={resolvedLabels.robotColor}
             onColorSelect={(color) =>
               onSave({
                 ...button,
@@ -241,12 +335,21 @@ export function SingleButtonEditPanel({
               })
             }
           />
+        </div>
+      )}
+
+      {/* Emotion (own row, Messages only) */}
+      {button.type === "Message" && (
+        <div className="pb:flex pb:flex-col pb:gap-1">
+          <span className="pb:text-[11px] pb:font-semibold pb:text-gray-600">
+            {resolvedLabels.emotion}
+          </span>
           <EmotionSelector
             size="sm"
             selectedEmotion={button.details.emotion}
             emotionIcons={emotionIcons}
             emotionLabels={emotionLabels}
-            ariaLabel="Robot emotion"
+            ariaLabel={resolvedLabels.emotion}
             onEmotionSelect={(emotion) =>
               onSave({
                 ...button,
@@ -257,36 +360,27 @@ export function SingleButtonEditPanel({
         </div>
       )}
 
-      {/* Footer Quick Actions */}
+      {/* Footer actions */}
       {(onAddChild || onDuplicate || onDelete) && (
-        <div className="pb:flex pb:items-center pb:justify-between pb:gap-2 pb:pt-2 pb:border-t pb:border-gray-100">
+        <div className="pb:flex pb:items-center pb:justify-between pb:gap-1.5 pb:pt-1.5 pb:border-t pb:border-gray-100">
           <div className="pb:flex pb:items-center pb:gap-1">
             {onAddChild && (
-              <>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="pb:h-7 pb:px-2 pb:text-[11px]"
-                  onClick={() => onAddChild("Message")}
-                >
-                  + Msg
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="pb:h-7 pb:px-2 pb:text-[11px]"
-                  onClick={() => onAddChild("Log")}
-                >
-                  + Log
-                </Button>
-              </>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={onAddChild}
+              >
+                + Add
+              </Button>
             )}
             {onDuplicate && (
               <Button
+                type="button"
+                variant="ghost"
                 size="sm"
-                variant="outline"
-                className="pb:h-7 pb:px-2 pb:text-[11px]"
                 onClick={onDuplicate}
+                title="Duplicate button"
               >
                 Duplicate
               </Button>
@@ -294,12 +388,14 @@ export function SingleButtonEditPanel({
           </div>
           {onDelete && (
             <Button
+              type="button"
+              variant="ghost"
               size="sm"
-              variant="ghostly-danger"
-              className="pb:h-7 pb:px-2 pb:text-[11px]"
               onClick={onDelete}
+              aria-label={resolvedLabels.deleteButton}
+              className="pb:text-red-600 pb:hover:text-red-700 pb:hover:bg-red-50"
             >
-              Delete
+              <Icon name="close" size="sm" aria-hidden="true" />
             </Button>
           )}
         </div>
@@ -309,21 +405,16 @@ export function SingleButtonEditPanel({
 }
 
 export interface BatchButtonEditPanelProps {
-  /** Selected buttons with their IDs */
   selectedButtons: Array<{ buttonId: string; button: RobotControlButton }>;
-  /** Apply a partial labelColor update to all selected buttons */
-  onApplyLabelColor: (color: PeerbotsColor) => void;
-  /** Apply a face color update to all selected `"Message"` buttons */
-  onApplyFaceColor: (color: PeerbotsColor) => void;
-  /** Apply an emotion update to all selected `"Message"` buttons */
+  onApplyLabelColor: (labelColor: PeerbotsColor) => void;
+  onApplyFaceColor: (faceColor: PeerbotsColor) => void;
   onApplyEmotion: (emotion: PeerbotsEmotion) => void;
-  /** Clear multi-selection */
-  onClearSelection: () => void;
-  /** Delete all selected buttons */
   onDeleteSelected?: () => void;
+  onClearSelection: () => void;
   emotionIcons?: Partial<Record<PeerbotsEmotion, string | React.ReactNode>>;
   emotionLabels?: Partial<Record<PeerbotsEmotion, string>>;
   colorLabels?: Partial<Record<PeerbotsColor, string>>;
+  labels?: Partial<ControlLabels>;
   className?: string;
 }
 
@@ -334,22 +425,29 @@ function getSharedValue<T>(values: T[]): T | undefined {
 }
 
 /**
- * Selection-aware multi-button batch editor for `FlowView`.
+ * Multi-select batch editor docked in FlowView when 2+ nodes are selected.
  * - Updates `labelColor` across all selected buttons (`Message` + `Log`).
- * - Updates `details.color` and `details.emotion` only for `"Message"` buttons in the selection.
+ * - Updates `Robot Color` and `Emotion` on separate rows scoped to selected `Message` buttons.
  */
 export function BatchButtonEditPanel({
   selectedButtons,
   onApplyLabelColor,
   onApplyFaceColor,
   onApplyEmotion,
-  onClearSelection,
   onDeleteSelected,
+  onClearSelection,
   emotionIcons,
   emotionLabels,
-  colorLabels,
+  labels,
   className,
 }: BatchButtonEditPanelProps) {
+  const { labels: contextLabels } = usePeerbotsI18n();
+  const resolvedLabels: ControlLabels = {
+    ...DEFAULT_CONTROL_LABELS,
+    ...contextLabels?.control,
+    ...labels,
+  };
+
   const messageButtons = selectedButtons.filter(
     (entry): entry is { buttonId: string; button: Extract<RobotControlButton, { type: "Message" }> } =>
       entry.button.type === "Message",
@@ -366,90 +464,119 @@ export function BatchButtonEditPanel({
     messageButtons.map((entry) => entry.button.details.emotion),
   );
 
-  const countSummary = [
-    messageButtons.length > 0
-      ? `${messageButtons.length} ${messageButtons.length === 1 ? "Message" : "Messages"}`
-      : null,
-    logCount > 0 ? `${logCount} ${logCount === 1 ? "Log" : "Logs"}` : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const summaryParts: string[] = [];
+  if (messageButtons.length > 0) {
+    summaryParts.push(
+      `${messageButtons.length} ${messageButtons.length === 1 ? resolvedLabels.message : `${resolvedLabels.message}s`}`,
+    );
+  }
+  if (logCount > 0) {
+    summaryParts.push(
+      `${logCount} ${logCount === 1 ? resolvedLabels.log : `${resolvedLabels.log}s`}`,
+    );
+  }
 
   return (
     <div
       className={cn(
-        "pb:w-[300px] pb:bg-white pb:rounded-xl pb:border pb:border-gray-200 pb:shadow-lg pb:p-3 pb:flex pb:flex-col pb:gap-2.5",
+        "pb:w-[320px] pb:max-w-[calc(100vw-24px)] pb:rounded-xl pb:bg-white/95 pb:backdrop-blur pb:border pb:border-gray-200 pb:shadow-xl pb:p-3 pb:flex pb:flex-col pb:gap-2.5",
         className,
       )}
+      onClick={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
     >
-      <div className="pb:flex pb:items-center pb:justify-between pb:gap-2 pb:pb-2 pb:border-b pb:border-gray-100">
-        <span className="pb:text-xs pb:font-bold pb:text-gray-900">
-          Batch Edit Selection
-        </span>
-        <span className="pb:px-2 pb:py-0.5 pb:rounded-full pb:bg-teal-50 pb:text-teal-800 pb:text-[10px] pb:font-bold">
-          {countSummary}
-        </span>
+      <div className="pb:flex pb:items-center pb:justify-between pb:gap-2">
+        <div className="pb:flex pb:items-center pb:gap-1.5">
+          <span className="pb:text-xs pb:font-bold pb:text-gray-900">
+            Batch Edit
+          </span>
+          <span className="pb:text-[11px] pb:font-semibold pb:px-2 pb:py-0.5 pb:rounded-full pb:bg-teal-50 pb:text-teal-800 pb:border pb:border-teal-200">
+            {summaryParts.join(" · ")}
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={onClearSelection}
+          className="pb:text-[11px] pb:font-semibold pb:text-gray-500 pb:hover:text-gray-800 pb:cursor-pointer"
+        >
+          Clear
+        </button>
       </div>
 
+      {/* Label Color (all selected) */}
       <div className="pb:flex pb:flex-col pb:gap-1">
         <span className="pb:text-[11px] pb:font-semibold pb:text-gray-600">
-          Button Label Color{" "}
+          {resolvedLabels.labelColor}{" "}
           <span className="pb:text-teal-700">(All {selectedButtons.length})</span>
         </span>
         <PeerbotsColorSelector
           size="sm"
           selectedColor={sharedLabelColor}
-          ariaLabelPrefix="Batch button label color"
+          ariaLabelPrefix={resolvedLabels.labelColor}
           onColorSelect={onApplyLabelColor}
         />
       </div>
 
+      {/* Robot Color (own row, Messages only) */}
       {messageButtons.length > 0 && (
-        <div className="pb:flex pb:flex-col pb:gap-1.5">
+        <div className="pb:flex pb:flex-col pb:gap-1">
           <span className="pb:text-[11px] pb:font-semibold pb:text-gray-600">
-            Robot Face &amp; Emotion{" "}
+            {resolvedLabels.robotColor}{" "}
             <span className="pb:text-teal-700">
               ({messageButtons.length}{" "}
-              {messageButtons.length === 1 ? "Message" : "Messages"})
+              {messageButtons.length === 1
+                ? resolvedLabels.message
+                : `${resolvedLabels.message}s`}
+              )
             </span>
           </span>
           <PeerbotsColorSelector
             size="sm"
             selectedColor={sharedFaceColor}
-            ariaLabelPrefix="Batch robot face color"
+            ariaLabelPrefix={resolvedLabels.robotColor}
             onColorSelect={onApplyFaceColor}
           />
+        </div>
+      )}
+
+      {/* Emotion (own row, Messages only) */}
+      {messageButtons.length > 0 && (
+        <div className="pb:flex pb:flex-col pb:gap-1">
+          <span className="pb:text-[11px] pb:font-semibold pb:text-gray-600">
+            {resolvedLabels.emotion}{" "}
+            <span className="pb:text-teal-700">
+              ({messageButtons.length}{" "}
+              {messageButtons.length === 1
+                ? resolvedLabels.message
+                : `${resolvedLabels.message}s`}
+              )
+            </span>
+          </span>
           <EmotionSelector
             size="sm"
             selectedEmotion={sharedEmotion ?? ""}
             emotionIcons={emotionIcons}
             emotionLabels={emotionLabels}
-            ariaLabel="Batch robot emotion"
+            ariaLabel={resolvedLabels.emotion}
             onEmotionSelect={onApplyEmotion}
           />
         </div>
       )}
 
-      <div className="pb:flex pb:items-center pb:justify-between pb:gap-2 pb:pt-2 pb:border-t pb:border-gray-100">
-        <Button
-          size="sm"
-          variant="outline"
-          className="pb:h-7 pb:px-2.5 pb:text-[11px]"
-          onClick={onClearSelection}
-        >
-          Clear Selection
-        </Button>
-        {onDeleteSelected && (
+      {onDeleteSelected && (
+        <div className="pb:flex pb:justify-end pb:pt-1.5 pb:border-t pb:border-gray-100">
           <Button
+            type="button"
+            variant="ghost"
             size="sm"
-            variant="ghostly-danger"
-            className="pb:h-7 pb:px-2.5 pb:text-[11px]"
             onClick={onDeleteSelected}
+            className="pb:text-red-600 pb:hover:text-red-700 pb:hover:bg-red-50"
           >
+            <Icon name="close" size="sm" aria-hidden="true" />
             Delete ({selectedButtons.length})
           </Button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

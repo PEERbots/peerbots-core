@@ -1,5 +1,6 @@
 import React, {
   createContext,
+  memo,
   useCallback,
   useContext,
   useEffect,
@@ -18,14 +19,17 @@ import {
   Panel,
   Position,
   ReactFlow,
+  ReactFlowProvider,
   SelectionMode,
   useEdgesState,
   useNodesState,
+  useReactFlow,
   type Connection,
   type Edge,
   type IsValidConnection,
   type Node,
   type NodeProps,
+  type OnConnectEnd,
   type OnSelectionChangeParams,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -58,6 +62,7 @@ import {
   computeNextButtonPosition,
   createDefaultButton,
   generateUniqueButtonId,
+  getTemplateTopologyKey,
   removeHierarchyConnection,
   reorderHierarchySiblingsFromPositions,
   templateToFlowElements,
@@ -81,11 +86,12 @@ interface FlowNodeContextValue {
   emotionIcons?: Partial<Record<PeerbotsEmotion, string | React.ReactNode>>;
   emotionLabels?: Partial<Record<PeerbotsEmotion, string>>;
   colorLabels?: Partial<Record<PeerbotsColor, string>>;
+  labels?: Partial<ControlLabels>;
   onOpenEdit: (buttonId: string) => void;
   onCloseEdit: () => void;
   onSaveNode: (buttonId: string, nextButton: RobotControlButton) => void;
   onToggleRoot: (buttonId: string) => void;
-  onAddChild: (parentId: string, type: "Message" | "Log") => void;
+  onAddChild: (parentId: string) => void;
   onDuplicateNode: (buttonId: string) => void;
   onDeleteNode: (buttonId: string) => void;
 }
@@ -105,7 +111,7 @@ const FlowNodeContext = createContext<FlowNodeContextValue>({
   onDeleteNode: () => undefined,
 });
 
-function PeerbotsButtonNode({
+const PeerbotsButtonNode = memo(function PeerbotsButtonNode({
   data,
   selected,
 }: NodeProps<Node<PeerbotsFlowNodeData, "peerbotsButton">>) {
@@ -119,6 +125,7 @@ function PeerbotsButtonNode({
     emotionIcons,
     emotionLabels,
     colorLabels,
+    labels,
     onOpenEdit,
     onCloseEdit,
     onSaveNode,
@@ -158,17 +165,10 @@ function PeerbotsButtonNode({
           </button>
           <button
             type="button"
-            onClick={() => onAddChild(buttonId, "Message")}
-            className="pb:px-1.5 pb:py-0.5 pb:text-[11px] pb:font-semibold pb:rounded pb:bg-gray-100 pb:text-gray-800 hover:pb:bg-gray-200 pb:cursor-pointer"
+            onClick={() => onAddChild(buttonId)}
+            className="pb:px-2 pb:py-0.5 pb:text-[11px] pb:font-semibold pb:rounded pb:bg-gray-100 pb:text-gray-800 hover:pb:bg-gray-200 pb:cursor-pointer"
           >
-            + Msg
-          </button>
-          <button
-            type="button"
-            onClick={() => onAddChild(buttonId, "Log")}
-            className="pb:px-1.5 pb:py-0.5 pb:text-[11px] pb:font-semibold pb:rounded pb:bg-gray-100 pb:text-gray-800 hover:pb:bg-gray-200 pb:cursor-pointer"
-          >
-            + Log
+            + Add
           </button>
           <button
             type="button"
@@ -183,7 +183,7 @@ function PeerbotsButtonNode({
 
       <NodeToolbar isVisible={isEditing} position={Position.Bottom} offset={12}>
         <div
-          className="nodrag nopan pb:rounded-xl pb:bg-white pb:border pb:border-gray-200 pb:shadow-xl pb:p-3"
+          className="nodrag nopan"
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => {
             if (e.key === "Escape") {
@@ -193,14 +193,16 @@ function PeerbotsButtonNode({
           }}
         >
           <SingleButtonEditPanel
+            buttonId={buttonId}
             button={button}
             isRoot={isRoot}
             emotionIcons={emotionIcons}
             emotionLabels={emotionLabels}
             colorLabels={colorLabels}
+            labels={labels}
             onSave={(nextButton) => onSaveNode(buttonId, nextButton)}
             onToggleRoot={() => onToggleRoot(buttonId)}
-            onAddChild={(type) => onAddChild(buttonId, type)}
+            onAddChild={() => onAddChild(buttonId)}
             onDuplicate={() => onDuplicateNode(buttonId)}
             onDelete={() => onDeleteNode(buttonId)}
             onClose={onCloseEdit}
@@ -214,7 +216,11 @@ function PeerbotsButtonNode({
         </span>
       )}
 
-      <Handle type="target" position={targetPos} />
+      <Handle
+        type="target"
+        position={targetPos}
+        className={handleHitClassName}
+      />
       <PeerbotsButton
         button={button}
         selected={isSelected}
@@ -231,22 +237,21 @@ function PeerbotsButtonNode({
           onOpenEdit(buttonId);
         }}
       />
-      <Handle type="source" position={sourcePos} />
+      <Handle
+        type="source"
+        position={sourcePos}
+        className={handleHitClassName}
+      />
     </div>
   );
-}
+});
+
+const handleHitClassName =
+  "pb:!w-3 pb:!h-3 pb:!bg-white pb:!border-2 pb:!border-slate-400 hover:pb:!border-teal-600 hover:pb:!bg-teal-50 hover:pb:!scale-125 pb:transition-transform after:pb:content-[''] after:pb:absolute after:pb:-inset-2.5 after:pb:rounded-full after:pb:cursor-crosshair";
 
 const nodeTypes = { peerbotsButton: PeerbotsButtonNode };
 
-/**
- * Interactive modeless node-graph editor and viewer for Peerbots templates powered by
- * `@xyflow/react` and `@dagrejs/dagre` (imported from `@peerbots/core/flow`).
- *
- * Supports simultaneous two-finger scroll panning, pinch/Ctrl+scroll zoom, `Space`+drag panning,
- * `Shift`/marquee multi-select, batch color/emotion editing, inline single-node edit popovers,
- * sticky manual coordinates, sibling drag-reordering, and edge reconnection.
- */
-export function FlowView({
+function FlowViewInner({
   template,
   selectedButtonId = null,
   onButtonAction,
@@ -269,6 +274,7 @@ export function FlowView({
   className,
 }: FlowViewProps) {
   const { labels: contextLabels } = usePeerbotsI18n();
+  const { screenToFlowPosition, fitView, setCenter, getZoom } = useReactFlow();
   const [uncontrolledDirection, setUncontrolledDirection] =
     useState<FlowDirection>(defaultDirection);
   const [dragBehavior, setDragBehavior] = useState<FlowDragBehavior>(
@@ -276,6 +282,7 @@ export function FlowView({
   );
   const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
+  const [isLayoutTransitioning, setIsLayoutTransitioning] = useState(false);
 
   // Preserve manual drag positions across template edits until Auto-Layout or direction change
   const manualPositionsRef = useRef<Map<string, { x: number; y: number }>>(
@@ -283,23 +290,64 @@ export function FlowView({
   );
   const [layoutEpoch, setLayoutEpoch] = useState(0);
   const lastDirectionRef = useRef<FlowDirection | null>(null);
+  const layoutTransitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+
+  // Refs keep FlowNodeContext callbacks stable across keystrokes so typing never re-renders the entire graph
+  const templateRef = useRef(template);
+  templateRef.current = template;
+  const onButtonActionRef = useRef(onButtonAction);
+  onButtonActionRef.current = onButtonAction;
+  const onTemplateChangeRef = useRef(onTemplateChange);
+  onTemplateChangeRef.current = onTemplateChange;
+  const onHierarchyChangeRef = useRef(onHierarchyChange);
+  onHierarchyChangeRef.current = onHierarchyChange;
+  const onAddConnectionRef = useRef(onAddConnection);
+  onAddConnectionRef.current = onAddConnection;
+  const editingNodeIdRef = useRef(editingNodeId);
+  editingNodeIdRef.current = editingNodeId;
 
   const isDirectionControlled = controlledDirection !== undefined;
   const activeDirection = isDirectionControlled
     ? controlledDirection
     : uncontrolledDirection;
 
+  const triggerSmoothLayoutTransition = useCallback(() => {
+    setIsLayoutTransitioning(true);
+    if (layoutTransitionTimerRef.current) {
+      clearTimeout(layoutTransitionTimerRef.current);
+    }
+    layoutTransitionTimerRef.current = setTimeout(() => {
+      setIsLayoutTransitioning(false);
+    }, 320);
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(() => {
+        fitView({ duration: 280, padding: 0.2 });
+      });
+    }
+  }, [fitView]);
+
+  useEffect(() => {
+    return () => {
+      if (layoutTransitionTimerRef.current) {
+        clearTimeout(layoutTransitionTimerRef.current);
+      }
+    };
+  }, []);
+
   const handleDirectionChange = useCallback(
     (nextDirection: FlowDirection | undefined) => {
       if (!nextDirection) return;
       manualPositionsRef.current.clear();
       setLayoutEpoch((prev) => prev + 1);
+      triggerSmoothLayoutTransition();
       if (!isDirectionControlled) {
         setUncontrolledDirection(nextDirection);
       }
       onDirectionChange?.(nextDirection);
     },
-    [isDirectionControlled, onDirectionChange],
+    [isDirectionControlled, onDirectionChange, triggerSmoothLayoutTransition],
   );
 
   const resolvedLabels: ControlLabels = {
@@ -308,9 +356,17 @@ export function FlowView({
     ...labels,
   };
 
+  // Only recompute Dagre positions when structural topology or layoutEpoch changes — NEVER on keystrokes
+  const topologyKey = useMemo(
+    () => getTemplateTopologyKey(template, activeDirection),
+    [template, activeDirection],
+  );
+
   const computedElements = useMemo(() => {
-    return templateToFlowElements(template, activeDirection);
-  }, [template, activeDirection]);
+    void layoutEpoch;
+    return templateToFlowElements(templateRef.current, activeDirection);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [topologyKey, activeDirection, layoutEpoch]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState<
     Node<PeerbotsFlowNodeData>
@@ -319,7 +375,10 @@ export function FlowView({
     computedElements.edges,
   );
 
-  // Sync template updates into ReactFlow while preserving dragged positions
+  const nodesRef = useRef(nodes);
+  nodesRef.current = nodes;
+
+  // Sync structural topology changes into ReactFlow while preserving dragged positions
   useEffect(() => {
     const directionChanged =
       lastDirectionRef.current !== null &&
@@ -353,23 +412,43 @@ export function FlowView({
     setEdges(computedElements.edges);
   }, [computedElements, activeDirection, layoutEpoch, setNodes, setEdges]);
 
-  const emitHierarchyUpdate = useCallback(
-    (nextHierarchy: TemplateHierarchy) => {
-      onHierarchyChange?.(nextHierarchy);
-      if (onTemplateChange) {
-        onTemplateChange({
-          ...template,
-          hierarchy: nextHierarchy,
-        });
-      }
-    },
-    [onHierarchyChange, onTemplateChange, template],
-  );
+  // Lightweight button-data sync: updates only edited node(s) without touching Dagre layout or edges
+  useEffect(() => {
+    setNodes((prevNodes) => {
+      let anyChanged = false;
+      const nextNodes = prevNodes.map((node) => {
+        const latestButton = template.buttons[node.id];
+        if (!latestButton || node.data.button === latestButton) {
+          return node;
+        }
+        anyChanged = true;
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            button: latestButton,
+          },
+        };
+      });
+      return anyChanged ? nextNodes : prevNodes;
+    });
+  }, [template.buttons, setNodes]);
+
+  const emitHierarchyUpdate = useCallback((nextHierarchy: TemplateHierarchy) => {
+    onHierarchyChangeRef.current?.(nextHierarchy);
+    if (onTemplateChangeRef.current) {
+      onTemplateChangeRef.current({
+        ...templateRef.current,
+        hierarchy: nextHierarchy,
+      });
+    }
+  }, []);
 
   const handleAutoLayout = useCallback(() => {
     manualPositionsRef.current.clear();
     setLayoutEpoch((prev) => prev + 1);
-  }, []);
+    triggerSmoothLayoutTransition();
+  }, [triggerSmoothLayoutTransition]);
 
   const isValidConnection: IsValidConnection = useCallback(
     (connection) => {
@@ -377,34 +456,137 @@ export function FlowView({
       const source = connection.source;
       const target = connection.target;
       if (!source || !target || source === target) return false;
-      const existingChildren = template.hierarchy?.[source] ?? [];
+      const existingChildren = templateRef.current.hierarchy?.[source] ?? [];
       return !existingChildren.includes(target);
     },
-    [disabled, template.hierarchy],
+    [disabled],
   );
 
   const onConnect = useCallback(
     (connection: Connection) => {
       if (disabled || !connection.source || !connection.target) return;
       if (connection.source === connection.target) return;
-      onAddConnection?.(connection.source, connection.target);
-      if (onHierarchyChange || onTemplateChange) {
+      onAddConnectionRef.current?.(connection.source, connection.target);
+      if (onHierarchyChangeRef.current || onTemplateChangeRef.current) {
         emitHierarchyUpdate(
           addHierarchyConnection(
-            template.hierarchy,
+            templateRef.current.hierarchy,
             connection.source,
             connection.target,
           ),
         );
       }
     },
+    [disabled, emitHierarchyUpdate],
+  );
+
+  const panToNewNode = useCallback(
+    (position: { x: number; y: number }) => {
+      if (typeof requestAnimationFrame !== "function") return;
+      requestAnimationFrame(() => {
+        // Offset slightly downward so the Edit Popover below the new node stays in view
+        setCenter(position.x + 105, position.y + 90, {
+          zoom: Math.max(getZoom(), 0.85),
+          duration: 280,
+        });
+      });
+    },
+    [getZoom, setCenter],
+  );
+
+  const createConnectedButtonAt = useCallback(
+    (
+      parentId: string | null,
+      position: { x: number; y: number },
+      childIdToConnect?: string | null,
+    ) => {
+      const currentTemplate = templateRef.current;
+      const newId = generateUniqueButtonId(currentTemplate, "btn");
+      const newButton = createDefaultButton("Message");
+      manualPositionsRef.current.set(newId, position);
+
+      let nextHierarchy: TemplateHierarchy = { ...currentTemplate.hierarchy };
+      if (parentId) {
+        nextHierarchy = addHierarchyConnection(nextHierarchy, parentId, newId);
+      } else {
+        nextHierarchy = {
+          ...nextHierarchy,
+          root: [...(nextHierarchy.root ?? []), newId],
+        };
+      }
+
+      if (childIdToConnect) {
+        nextHierarchy = addHierarchyConnection(
+          nextHierarchy,
+          newId,
+          childIdToConnect,
+        );
+      }
+
+      if (onTemplateChangeRef.current) {
+        onTemplateChangeRef.current({
+          ...currentTemplate,
+          buttons: {
+            ...currentTemplate.buttons,
+            [newId]: newButton,
+          },
+          hierarchy: nextHierarchy,
+        });
+      } else {
+        onButtonActionRef.current(
+          newButton,
+          newId,
+          createSaveAction(newButton),
+        );
+        if (parentId) {
+          onAddConnectionRef.current?.(parentId, newId);
+        } else if (childIdToConnect) {
+          onAddConnectionRef.current?.(newId, childIdToConnect);
+        } else {
+          emitHierarchyUpdate(nextHierarchy);
+        }
+      }
+
+      setEditingNodeId(newId);
+      panToNewNode(position);
+    },
+    [emitHierarchyUpdate, panToNewNode],
+  );
+
+  // Connecting from a handle into empty canvas creates a new connected button at the drop point
+  const onConnectEnd: OnConnectEnd = useCallback(
+    (event, connectionState) => {
+      if (disabled || connectionState.isValid || connectionState.toNode) return;
+      const fromNodeId = connectionState.fromNode?.id;
+      if (!fromNodeId) return;
+
+      const pointer =
+        "changedTouches" in event && event.changedTouches.length > 0
+          ? event.changedTouches[0]
+          : (event as MouseEvent);
+      const clientX = pointer?.clientX ?? 0;
+      const clientY = pointer?.clientY ?? 0;
+      const dropPosition =
+        clientX !== 0 || clientY !== 0
+          ? screenToFlowPosition({ x: clientX, y: clientY })
+          : computeNextButtonPosition(
+              nodesRef.current,
+              fromNodeId,
+              activeDirection,
+            );
+
+      const draggedFromTarget = connectionState.fromHandle?.type === "target";
+      if (draggedFromTarget) {
+        createConnectedButtonAt(null, dropPosition, fromNodeId);
+      } else {
+        createConnectedButtonAt(fromNodeId, dropPosition);
+      }
+    },
     [
+      activeDirection,
+      createConnectedButtonAt,
       disabled,
-      emitHierarchyUpdate,
-      onAddConnection,
-      onHierarchyChange,
-      onTemplateChange,
-      template.hierarchy,
+      screenToFlowPosition,
     ],
   );
 
@@ -413,10 +595,10 @@ export function FlowView({
       if (disabled || !newConnection.source || !newConnection.target) return;
       if (newConnection.source === newConnection.target) return;
       onRemoveConnection?.(oldEdge.source, oldEdge.target);
-      onAddConnection?.(newConnection.source, newConnection.target);
-      if (onHierarchyChange || onTemplateChange) {
+      onAddConnectionRef.current?.(newConnection.source, newConnection.target);
+      if (onHierarchyChangeRef.current || onTemplateChangeRef.current) {
         const removed = removeHierarchyConnection(
-          template.hierarchy,
+          templateRef.current.hierarchy,
           oldEdge.source,
           oldEdge.target,
         );
@@ -429,21 +611,13 @@ export function FlowView({
         );
       }
     },
-    [
-      disabled,
-      emitHierarchyUpdate,
-      onAddConnection,
-      onHierarchyChange,
-      onRemoveConnection,
-      onTemplateChange,
-      template.hierarchy,
-    ],
+    [disabled, emitHierarchyUpdate, onRemoveConnection],
   );
 
   const onEdgesDelete = useCallback(
     (deletedEdges: Edge[]) => {
       if (disabled) return;
-      let nextHierarchy = template.hierarchy;
+      let nextHierarchy = templateRef.current.hierarchy;
       for (const edge of deletedEdges) {
         onRemoveConnection?.(edge.source, edge.target);
         nextHierarchy = removeHierarchyConnection(
@@ -452,41 +626,29 @@ export function FlowView({
           edge.target,
         );
       }
-      if (onHierarchyChange || onTemplateChange) {
+      if (
+        deletedEdges.length > 0 &&
+        (onHierarchyChangeRef.current || onTemplateChangeRef.current)
+      ) {
         emitHierarchyUpdate(nextHierarchy);
       }
     },
-    [
-      disabled,
-      emitHierarchyUpdate,
-      onHierarchyChange,
-      onRemoveConnection,
-      onTemplateChange,
-      template.hierarchy,
-    ],
+    [disabled, emitHierarchyUpdate, onRemoveConnection],
   );
 
   const onNodeClick = useCallback(
-    (event: React.MouseEvent, node: Node) => {
-      if (disabled) return;
-      const { button, buttonId } = node.data as PeerbotsFlowNodeData;
-      if (editingNodeId && editingNodeId !== buttonId) {
-        setEditingNodeId(null);
-      }
-      // Shift/Meta/Ctrl click is reserved for toggling multi-selection without firing CLICK
-      if (event.shiftKey || event.metaKey || event.ctrlKey) {
-        return;
-      }
-      onButtonAction(button, buttonId, { type: "SELECT" });
-      onButtonAction(button, buttonId, { type: "CLICK" });
+    (_: React.MouseEvent, node: Node<PeerbotsFlowNodeData>) => {
+      const btn = templateRef.current.buttons[node.id] ?? node.data.button;
+      onButtonActionRef.current(btn, node.id, { type: "SELECT" });
+      onButtonActionRef.current(btn, node.id, { type: "CLICK" });
     },
-    [disabled, editingNodeId, onButtonAction],
+    [],
   );
 
   const onNodeDragStop = useCallback(
     (
-      _event: React.MouseEvent,
-      draggedNode: Node,
+      _: React.MouseEvent,
+      draggedNode: Node<PeerbotsFlowNodeData>,
       draggedNodes: Node[],
     ) => {
       const movedList = draggedNodes.length > 0 ? draggedNodes : [draggedNode];
@@ -494,9 +656,14 @@ export function FlowView({
         manualPositionsRef.current.set(item.id, item.position);
       }
 
-      if (disabled || (!onHierarchyChange && !onTemplateChange)) return;
+      if (
+        disabled ||
+        (!onHierarchyChangeRef.current && !onTemplateChangeRef.current)
+      ) {
+        return;
+      }
       const posMap = new Map<string, { x: number; y: number }>();
-      for (const n of nodes) {
+      for (const n of nodesRef.current) {
         posMap.set(n.id, n.position);
       }
       for (const item of movedList) {
@@ -504,7 +671,7 @@ export function FlowView({
       }
 
       const reordered = reorderHierarchySiblingsFromPositions(
-        template.hierarchy,
+        templateRef.current.hierarchy,
         movedList.map((n) => n.id),
         posMap,
         activeDirection,
@@ -513,15 +680,7 @@ export function FlowView({
         emitHierarchyUpdate(reordered);
       }
     },
-    [
-      activeDirection,
-      disabled,
-      emitHierarchyUpdate,
-      nodes,
-      onHierarchyChange,
-      onTemplateChange,
-      template.hierarchy,
-    ],
+    [activeDirection, disabled, emitHierarchyUpdate],
   );
 
   const onSelectionChange = useCallback(
@@ -537,172 +696,143 @@ export function FlowView({
 
   const handleSaveNode = useCallback(
     (buttonId: string, nextButton: RobotControlButton) => {
-      const existing = template.buttons[buttonId];
+      const currentTemplate = templateRef.current;
+      const existing = currentTemplate.buttons[buttonId];
       if (!existing) return;
       const action = createSaveAction(nextButton);
-      onButtonAction(existing, buttonId, action);
-      if (onTemplateChange) {
-        onTemplateChange(applyControlActionToTemplate(template, buttonId, action));
+      onButtonActionRef.current(existing, buttonId, action);
+      if (onTemplateChangeRef.current) {
+        onTemplateChangeRef.current(
+          applyControlActionToTemplate(currentTemplate, buttonId, action),
+        );
       }
     },
-    [onButtonAction, onTemplateChange, template],
+    [],
   );
 
   const handleToggleRoot = useCallback(
     (buttonId: string) => {
       emitHierarchyUpdate(
-        toggleRootButtonInHierarchy(template.hierarchy, buttonId),
+        toggleRootButtonInHierarchy(templateRef.current.hierarchy, buttonId),
       );
     },
-    [emitHierarchyUpdate, template.hierarchy],
+    [emitHierarchyUpdate],
   );
 
   const handleCreateNode = useCallback(
-    (type: "Message" | "Log", parentId?: string | null) => {
-      const newId = generateUniqueButtonId(
-        template,
-        type === "Log" ? "log" : "msg",
+    (parentId?: string | null) => {
+      const nextPos = computeNextButtonPosition(
+        nodesRef.current,
+        parentId,
+        activeDirection,
       );
-      const newButton = createDefaultButton(type);
-      const nextPos = computeNextButtonPosition(nodes, parentId, activeDirection);
-      manualPositionsRef.current.set(newId, nextPos);
+      createConnectedButtonAt(parentId ?? null, nextPos);
+    },
+    [activeDirection, createConnectedButtonAt],
+  );
 
-      const nextHierarchy = parentId
-        ? addHierarchyConnection(template.hierarchy, parentId, newId)
+  const handleDuplicateNode = useCallback((buttonId: string) => {
+    const currentTemplate = templateRef.current;
+    const source = currentTemplate.buttons[buttonId];
+    if (!source) return;
+    const newId = generateUniqueButtonId(currentTemplate, `${buttonId}-copy`);
+    const cloned: RobotControlButton =
+      source.type === "Message"
+        ? {
+            ...source,
+            details: {
+              ...source.details,
+              title: `${source.details.title} (Copy)`,
+            },
+          }
         : {
-            ...template.hierarchy,
-            root: [...(template.hierarchy.root ?? []), newId],
+            ...source,
+            details: {
+              ...source.details,
+              title: `${source.details.title} (Copy)`,
+            },
           };
 
-      if (onTemplateChange) {
-        onTemplateChange({
-          ...template,
-          buttons: {
-            ...template.buttons,
-            [newId]: newButton,
-          },
-          hierarchy: nextHierarchy,
-        });
-      } else {
-        onButtonAction(newButton, newId, createSaveAction(newButton));
-        if (parentId) {
-          onAddConnection?.(parentId, newId);
-        } else {
-          emitHierarchyUpdate(nextHierarchy);
-        }
-      }
-      setEditingNodeId(newId);
-    },
-    [
-      activeDirection,
-      emitHierarchyUpdate,
-      nodes,
-      onAddConnection,
-      onButtonAction,
-      onTemplateChange,
-      template,
-    ],
-  );
-
-  const handleDuplicateNode = useCallback(
-    (buttonId: string) => {
-      const source = template.buttons[buttonId];
-      if (!source) return;
-      const newId = generateUniqueButtonId(template, `${buttonId}-copy`);
-      const cloned: RobotControlButton =
-        source.type === "Message"
-          ? {
-              ...source,
-              details: {
-                ...source.details,
-                title: `${source.details.title} (Copy)`,
-              },
-            }
-          : {
-              ...source,
-              details: {
-                ...source.details,
-                title: `${source.details.title} (Copy)`,
-              },
-            };
-
-      const sourceNode = nodes.find((n) => n.id === buttonId);
-      if (sourceNode) {
-        manualPositionsRef.current.set(newId, {
+    const sourceNode = nodesRef.current.find((n) => n.id === buttonId);
+    const dupPos = sourceNode
+      ? {
           x: sourceNode.position.x + 32,
           y: sourceNode.position.y + 72,
-        });
-      }
-
-      const isInRoot =
-        Array.isArray(template.hierarchy?.root) &&
-        template.hierarchy.root.includes(buttonId);
-      const nextHierarchy: TemplateHierarchy = {
-        ...template.hierarchy,
-        root: isInRoot
-          ? [...(template.hierarchy.root ?? []), newId]
-          : [...(template.hierarchy.root ?? [])],
-      };
-
-      for (const [parentKey, children] of Object.entries(
-        template.hierarchy ?? {},
-      )) {
-        if (
-          parentKey !== "root" &&
-          Array.isArray(children) &&
-          children.includes(buttonId)
-        ) {
-          nextHierarchy[parentKey] = [...children, newId];
         }
-      }
+      : null;
+    if (dupPos) {
+      manualPositionsRef.current.set(newId, dupPos);
+    }
 
-      if (onTemplateChange) {
-        onTemplateChange({
-          ...template,
-          buttons: {
-            ...template.buttons,
-            [newId]: cloned,
-          },
-          hierarchy: nextHierarchy,
-        });
-      } else {
-        onButtonAction(cloned, newId, createSaveAction(cloned));
-      }
-      setEditingNodeId(newId);
-    },
-    [nodes, onButtonAction, onTemplateChange, template],
-  );
+    const isInRoot =
+      Array.isArray(currentTemplate.hierarchy?.root) &&
+      currentTemplate.hierarchy.root.includes(buttonId);
+    const nextHierarchy: TemplateHierarchy = {
+      ...currentTemplate.hierarchy,
+      root: isInRoot
+        ? [...(currentTemplate.hierarchy.root ?? []), newId]
+        : [...(currentTemplate.hierarchy.root ?? [])],
+    };
 
-  const handleDeleteNode = useCallback(
-    (buttonId: string) => {
-      const existing = template.buttons[buttonId];
-      if (!existing) return;
-      if (editingNodeId === buttonId) {
-        setEditingNodeId(null);
+    for (const [parentKey, children] of Object.entries(
+      currentTemplate.hierarchy ?? {},
+    )) {
+      if (
+        parentKey !== "root" &&
+        Array.isArray(children) &&
+        children.includes(buttonId)
+      ) {
+        nextHierarchy[parentKey] = [...children, newId];
       }
-      onButtonAction(existing, buttonId, { type: "DELETE" });
-      if (onTemplateChange) {
-        onTemplateChange(
-          applyControlActionToTemplate(template, buttonId, { type: "DELETE" }),
-        );
-      }
-    },
-    [editingNodeId, onButtonAction, onTemplateChange, template],
-  );
+    }
+
+    if (onTemplateChangeRef.current) {
+      onTemplateChangeRef.current({
+        ...currentTemplate,
+        buttons: {
+          ...currentTemplate.buttons,
+          [newId]: cloned,
+        },
+        hierarchy: nextHierarchy,
+      });
+    } else {
+      onButtonActionRef.current(cloned, newId, createSaveAction(cloned));
+    }
+    setEditingNodeId(newId);
+    if (dupPos) {
+      panToNewNode(dupPos);
+    }
+  }, [panToNewNode]);
+
+  const handleDeleteNode = useCallback((buttonId: string) => {
+    const currentTemplate = templateRef.current;
+    const existing = currentTemplate.buttons[buttonId];
+    if (!existing) return;
+    if (editingNodeIdRef.current === buttonId) {
+      setEditingNodeId(null);
+    }
+    onButtonActionRef.current(existing, buttonId, { type: "DELETE" });
+    if (onTemplateChangeRef.current) {
+      onTemplateChangeRef.current(
+        applyControlActionToTemplate(currentTemplate, buttonId, {
+          type: "DELETE",
+        }),
+      );
+    }
+  }, []);
 
   const selectedEntries = useMemo(() => {
     return selectedNodeIds
       .map((id) => ({ buttonId: id, button: template.buttons[id] }))
-      .filter((entry): entry is { buttonId: string; button: RobotControlButton } =>
-        Boolean(entry.button),
+      .filter(
+        (entry): entry is { buttonId: string; button: RobotControlButton } =>
+          Boolean(entry.button),
       );
   }, [selectedNodeIds, template.buttons]);
 
   const applyBatchUpdate = useCallback(
     (
-      transform: (
-        button: RobotControlButton,
-      ) => RobotControlButton | null,
+      transform: (button: RobotControlButton) => RobotControlButton | null,
     ) => {
       const entries: Array<{
         buttonId: string;
@@ -746,29 +876,30 @@ export function FlowView({
     [onBatchSave, onButtonAction, onTemplateChange, selectedEntries, template],
   );
 
-  const clearSelection = useCallback(() => {
-    setSelectedNodeIds([]);
-    setNodes((prev) =>
-      prev.map((n) => (n.selected ? { ...n, selected: false } : n)),
-    );
-  }, [setNodes]);
-
   const handleDeleteSelected = useCallback(() => {
+    if (selectedEntries.length === 0) return;
     let nextTemplate = template;
     for (const { buttonId, button } of selectedEntries) {
-      if (!onTemplateChange) {
-        onButtonAction(button, buttonId, { type: "DELETE" });
+      if (onTemplateChange) {
+        nextTemplate = applyControlActionToTemplate(nextTemplate, buttonId, {
+          type: "DELETE",
+        });
       }
-      nextTemplate = applyControlActionToTemplate(nextTemplate, buttonId, {
-        type: "DELETE",
-      });
+      onButtonAction(button, buttonId, { type: "DELETE" });
     }
     if (onTemplateChange) {
       onTemplateChange(nextTemplate);
     }
     setSelectedNodeIds([]);
-    setEditingNodeId(null);
   }, [onButtonAction, onTemplateChange, selectedEntries, template]);
+
+  const clearSelection = useCallback(() => {
+    setNodes((prev) => prev.map((n) => (n.selected ? { ...n, selected: false } : n)));
+    setSelectedNodeIds([]);
+  }, [setNodes]);
+
+  const handleOpenEdit = useCallback((id: string) => setEditingNodeId(id), []);
+  const handleCloseEdit = useCallback(() => setEditingNodeId(null), []);
 
   const nodeContextValue = useMemo<FlowNodeContextValue>(
     () => ({
@@ -780,11 +911,12 @@ export function FlowView({
       emotionIcons,
       emotionLabels,
       colorLabels,
-      onOpenEdit: (id) => setEditingNodeId(id),
-      onCloseEdit: () => setEditingNodeId(null),
+      labels,
+      onOpenEdit: handleOpenEdit,
+      onCloseEdit: handleCloseEdit,
       onSaveNode: handleSaveNode,
       onToggleRoot: handleToggleRoot,
-      onAddChild: (parentId, type) => handleCreateNode(type, parentId),
+      onAddChild: handleCreateNode,
       onDuplicateNode: handleDuplicateNode,
       onDeleteNode: handleDeleteNode,
     }),
@@ -794,11 +926,14 @@ export function FlowView({
       editingNodeId,
       emotionIcons,
       emotionLabels,
+      handleCloseEdit,
       handleCreateNode,
       handleDeleteNode,
       handleDuplicateNode,
+      handleOpenEdit,
       handleSaveNode,
       handleToggleRoot,
+      labels,
       logIcon,
       selectedButtonId,
       selectedNodeIds,
@@ -811,13 +946,21 @@ export function FlowView({
 
   return (
     <FlowNodeContext.Provider value={nodeContextValue}>
-      <div className={cn("pb:w-full pb:h-full pb:min-h-[400px]", className)}>
+      <div
+        className={cn(
+          "pb:w-full pb:h-full pb:min-h-[400px]",
+          isLayoutTransitioning &&
+            "[&_.react-flow__node]:pb:transition-transform [&_.react-flow__node]:pb:duration-250 [&_.react-flow__node]:pb:ease-out",
+          className,
+        )}
+      >
         <ReactFlow
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onConnectEnd={onConnectEnd}
           onReconnect={onReconnect}
           isValidConnection={isValidConnection}
           onEdgesDelete={onEdgesDelete}
@@ -843,6 +986,7 @@ export function FlowView({
             markerEnd: { type: MarkerType.ArrowClosed },
           }}
           connectionLineType={ConnectionLineType.SmoothStep}
+          connectionRadius={28}
           fitView
           proOptions={{ hideAttribution: true }}
         >
@@ -902,17 +1046,9 @@ export function FlowView({
                   size="sm"
                   variant="outline"
                   className="pb:h-7 pb:px-2 pb:text-xs"
-                  onClick={() => handleCreateNode("Message", null)}
+                  onClick={() => handleCreateNode(null)}
                 >
-                  + Message
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="pb:h-7 pb:px-2 pb:text-xs"
-                  onClick={() => handleCreateNode("Log", null)}
-                >
-                  + Log
+                  + Add
                 </Button>
                 <Button
                   size="sm"
@@ -949,6 +1085,7 @@ export function FlowView({
                   emotionIcons={emotionIcons}
                   emotionLabels={emotionLabels}
                   colorLabels={colorLabels}
+                  labels={labels}
                   onApplyLabelColor={(labelColor) =>
                     applyBatchUpdate((btn) => ({ ...btn, labelColor }))
                   }
@@ -975,6 +1112,23 @@ export function FlowView({
         </ReactFlow>
       </div>
     </FlowNodeContext.Provider>
+  );
+}
+
+/**
+ * Interactive modeless node-graph editor and viewer for Peerbots templates powered by
+ * `@xyflow/react` and `@dagrejs/dagre` (imported from `@peerbots/core/flow`).
+ *
+ * Supports simultaneous two-finger scroll panning, pinch/Ctrl+scroll zoom, `Space`+drag panning,
+ * `Shift`/marquee multi-select, batch color/emotion editing, inline single-node edit popovers,
+ * drag-from-handle-to-empty-space button creation, sticky manual coordinates, sibling drag-reordering,
+ * and edge reconnection.
+ */
+export function FlowView(props: FlowViewProps) {
+  return (
+    <ReactFlowProvider>
+      <FlowViewInner {...props} />
+    </ReactFlowProvider>
   );
 }
 

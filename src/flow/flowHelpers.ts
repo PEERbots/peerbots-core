@@ -388,8 +388,10 @@ export function templateToFlowElements(
     const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
     g.setGraph({
       rankdir: direction,
-      nodesep: 44,
-      ranksep: 72,
+      ranker: "network-simplex",
+      nodesep: direction === "LR" ? 36 : 48,
+      ranksep: direction === "LR" ? 88 : 80,
+      edgesep: 28,
       marginx: 0,
       marginy: 0,
       acyclicer: "greedy",
@@ -478,4 +480,21 @@ export function templateToFlowElements(
     nodes: orderedIds.map((id) => nodeMap.get(id)!),
     edges,
   };
+}
+
+/**
+ * Computes a structural key representing the graph topology (`direction`,
+ * `template.buttons` keys, and `template.hierarchy`). Editing button copy,
+ * colors, or emotions does not alter this key, allowing `FlowView` to avoid
+ * recomputing Dagre positions on every keystroke.
+ */
+export function getTemplateTopologyKey(
+  template: Template,
+  direction: FlowDirection,
+): string {
+  const buttonIds = Object.keys(template.buttons ?? {}).sort();
+  const hierarchyEntries = Object.entries(template.hierarchy ?? {})
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, ids]) => [key, Array.isArray(ids) ? ids : []]);
+  return JSON.stringify({ direction, buttonIds, hierarchyEntries });
 }
