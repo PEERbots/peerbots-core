@@ -5,11 +5,21 @@ export default defineConfig([
     entry: {
       index: "src/index.ts",
       "templates/index": "src/templates/index.ts",
+      "flow/index": "src/flow/index.ts",
     },
     format: ["cjs", "esm"],
     dts: true,
     minify: true,
     clean: true,
+    loader: {
+      ".png": "dataurl",
+    },
+    external: [
+      "@peerbots/core/flow",
+      "@xyflow/react",
+      "@xyflow/react/dist/style.css",
+      "@dagrejs/dagre",
+    ],
     injectStyle: (css) =>
       `import styleInject from '#style-inject';styleInject(${css}, { insertAt: 'top' })`,
     sourcemap: true,

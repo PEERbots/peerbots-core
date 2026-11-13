@@ -10,8 +10,11 @@ import {
   type PeerbotsColor,
   type PeerbotsEmotion,
   type RobotControlButton,
-  type RobotControlButtonAction,
 } from "../../templates/types";
+import {
+  createSaveAction,
+  type RobotControlButtonAction,
+} from "./control-views/types";
 import { Button } from "../forms/Button";
 import { Checkbox } from "../forms/Checkbox";
 import { PeerbotsEmotionIcon } from "../forms/EmotionSelector";
@@ -288,29 +291,27 @@ export function PeerbotsButtonRow({
             if (disabled) return;
             const newValue = e.target.value;
             if (resolved.type === "Log") {
-              onAction({
-                type: "SAVE",
-                newButton: {
+              onAction(
+                createSaveAction({
                   ...resolved,
                   details: {
                     ...resolved.details,
                     title: newValue,
                     ...(syncVals && { details: newValue }),
                   },
-                },
-              });
+                }),
+              );
             } else {
-              onAction({
-                type: "SAVE",
-                newButton: {
+              onAction(
+                createSaveAction({
                   ...resolved,
                   details: {
                     ...resolved.details,
                     title: newValue,
                     ...(syncVals && { speech: newValue }),
                   },
-                },
-              });
+                }),
+              );
             }
           }}
           value={resolved.details.title}
@@ -328,13 +329,12 @@ export function PeerbotsButtonRow({
           options={colorOptions}
           onChange={(val) => {
             if (val && !disabled) {
-              onAction({
-                type: "SAVE",
-                newButton: {
+              onAction(
+                createSaveAction({
                   ...resolved,
                   labelColor: val as PeerbotsColor,
-                },
-              });
+                }),
+              );
             }
           }}
           onFocus={() => {
@@ -365,21 +365,19 @@ export function PeerbotsButtonRow({
           onChange={(val) => {
             if (disabled) return;
             if (resolved.type === "Message" && val === "Log") {
-              onAction({
-                type: "SAVE",
-                newButton: {
+              onAction(
+                createSaveAction({
                   type: "Log",
                   labelColor: resolved.labelColor,
                   details: {
                     title: resolved.details.title,
                     details: resolved.details.speech,
                   },
-                },
-              });
+                }),
+              );
             } else if (resolved.type === "Log" && val === "Message") {
-              onAction({
-                type: "SAVE",
-                newButton: {
+              onAction(
+                createSaveAction({
                   type: "Message",
                   labelColor: resolved.labelColor,
                   details: {
@@ -390,8 +388,8 @@ export function PeerbotsButtonRow({
                     color: resolved.labelColor,
                     emotion: "Neutral",
                   },
-                },
-              });
+                }),
+              );
             }
           }}
         />
@@ -417,17 +415,16 @@ export function PeerbotsButtonRow({
               onDetailsSelectionChange(e);
               if (disabled) return;
               const newValue = e.target.value;
-              onAction({
-                type: "SAVE",
-                newButton: {
+              onAction(
+                createSaveAction({
                   ...resolved,
                   details: {
                     ...resolved.details,
                     details: newValue,
                     ...(syncVals && { title: newValue }),
                   },
-                },
-              });
+                }),
+              );
             }}
             value={resolved.details.details ?? ""}
           />
@@ -450,17 +447,16 @@ export function PeerbotsButtonRow({
               onSpeechSelectionChange(e);
               if (disabled) return;
               const newValue = e.target.value;
-              onAction({
-                type: "SAVE",
-                newButton: {
+              onAction(
+                createSaveAction({
                   ...resolved,
                   details: {
                     ...resolved.details,
                     speech: newValue,
                     ...(syncVals && { title: newValue }),
                   },
-                },
-              });
+                }),
+              );
             }}
             value={resolved.details.speech}
           />
@@ -484,16 +480,15 @@ export function PeerbotsButtonRow({
             }}
             onChange={(val) => {
               if (val && !disabled) {
-                onAction({
-                  type: "SAVE",
-                  newButton: {
+                onAction(
+                  createSaveAction({
                     ...resolved,
                     details: {
                       ...resolved.details,
                       color: val as PeerbotsColor,
                     },
-                  },
-                });
+                  }),
+                );
               }
             }}
           />
@@ -532,16 +527,15 @@ export function PeerbotsButtonRow({
               }}
               onChange={(val) => {
                 if (val && !disabled) {
-                  onAction({
-                    type: "SAVE",
-                    newButton: {
+                  onAction(
+                    createSaveAction({
                       ...resolved,
                       details: {
                         ...resolved.details,
                         emotion: val as PeerbotsEmotion,
                       },
-                    },
-                  });
+                    }),
+                  );
                 }
               }}
             />

@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import type { Template, TemplateHierarchy } from "../../templates/types";
-import { Button } from "../forms/Button";
-import { PeerbotsButtonDisplay } from "./PeerbotsButtonDisplay";
+import {
+  PeerbotsButtonDisplay,
+  type PeerbotsTemplateView,
+} from "./PeerbotsButtonDisplay";
 
 const meta: Meta<typeof PeerbotsButtonDisplay> = {
   title: "Patterns/PeerbotsButtonDisplay",
@@ -67,10 +69,11 @@ export const Default: Story = {
     const [selectedId, setSelectedId] = useState<string | null>("btn-greet");
 
     return (
-      <div className="pb:p-4">
+      <div className="pb:p-4 pb:min-h-[520px]">
         <PeerbotsButtonDisplay
           template={template}
-          view="Buttons"
+          defaultView="Buttons"
+          showViewSwitcher
           selectedButtonId={selectedId}
           onButtonAction={(_btn, buttonId, action) => {
             if (action.type === "SELECT") {
@@ -91,7 +94,7 @@ export const Default: Story = {
 export const Variations: Story = {
   render: function Render() {
     const [template, setTemplate] = useState<Template>(initialTemplate);
-    const [view, setView] = useState<"Buttons" | "Table">("Table");
+    const [view, setView] = useState<PeerbotsTemplateView>("Table");
     const [selectedId, setSelectedId] = useState<string | null>("btn-greet");
     const [multiSelected, setMultiSelected] = useState<string[]>([
       "btn-greet",
@@ -99,41 +102,19 @@ export const Variations: Story = {
     ]);
 
     return (
-      <div className="pb:flex pb:flex-col pb:gap-4 pb:p-4">
-        <div className="pb:flex pb:items-center pb:gap-2">
-          <Button
-            size="sm"
-            variant={view === "Buttons" ? "solid" : "outline"}
-            color="teal"
-            onClick={() => setView("Buttons")}
-          >
-            Buttons View
-          </Button>
-          <Button
-            size="sm"
-            variant={view === "Table" ? "solid" : "outline"}
-            color="teal"
-            onClick={() => setView("Table")}
-          >
-            Table View (Nested Hierarchy + Multi-Select)
-          </Button>
-        </div>
-
+      <div className="pb:p-4 pb:min-h-[540px]">
         <PeerbotsButtonDisplay
           template={template}
           view={view}
+          onViewChange={setView}
+          showViewSwitcher
           selectedButtonId={selectedId}
-          multiSelectedButtonIds={multiSelected}
+          selectedButtonIds={multiSelected}
+          onSelectedButtonIdsChange={setMultiSelected}
           onClearSelection={() => setMultiSelected([])}
           onButtonAction={(_btn, buttonId, action) => {
             if (action.type === "SELECT") {
               setSelectedId(buttonId);
-            } else if (action.type === "ADD TO SELECTION") {
-              setMultiSelected((prev) =>
-                prev.includes(buttonId) ? prev : [...prev, buttonId],
-              );
-            } else if (action.type === "REMOVE FROM SELECTION") {
-              setMultiSelected((prev) => prev.filter((id) => id !== buttonId));
             } else if (action.type === "SAVE") {
               setTemplate((prev) => ({
                 ...prev,

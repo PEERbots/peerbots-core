@@ -33,13 +33,13 @@ export const Variations: Story = {
           icon="squares"
           primaryAction={{
             label: "Create Interactions",
-            variant: "primary",
+            variant: "solid",
             icon: "plus",
             onClick: () => {},
           }}
           secondaryAction={{
             label: "Browse Marketplace",
-            variant: "secondary",
+            variant: "outline",
             icon: "externalLink",
             onClick: () => {},
           }}

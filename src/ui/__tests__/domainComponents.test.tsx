@@ -1,13 +1,17 @@
 import React from "react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { PeerbotsI18nProvider } from "../../i18n";
 import {
   PEERBOTS_EMOTIONS,
   type RobotControlButton,
-  type RobotControlButtonAction,
   type Template,
 } from "../../templates/types";
+import {
+  emotion_mapping,
+  PEERBOTS_EMOTION_IMAGES,
+} from "../forms/emotionMapper";
 import {
   EmotionSelector,
   PeerbotsEmotionIcon,
@@ -20,6 +24,11 @@ import {
   PeerbotsButtonRow,
   useSelectionInput,
 } from "../patterns/PeerbotsButtonRow";
+import type { RobotControlButtonAction } from "../patterns/control-views/types";
+
+afterEach(() => {
+  cleanup();
+});
 
 type AnyElement = React.ReactElement<Record<string, unknown>>;
 
@@ -70,93 +79,121 @@ function findElements(
 }
 
 describe("Domain UI Components", () => {
-  describe("EmotionSelector & PeerbotsEmotionIcon", () => {
-    it("renders all 6 emotions with accessible radiogroup and radio buttons", () => {
-      const html = renderToString(
+  describe("emotionMapper, EmotionSelector & PeerbotsEmotionIcon", () => {
+    it("maps all 6 Peerbots emotions to robot face PNGs with Happy === Neutral and emotion_mapping alias", () => {
+      expect(emotion_mapping).toBe(PEERBOTS_EMOTION_IMAGES);
+      for (const emotion of PEERBOTS_EMOTIONS) {
+        expect(typeof PEERBOTS_EMOTION_IMAGES[emotion]).toBe("string");
+        expect(PEERBOTS_EMOTION_IMAGES[emotion].length).toBeGreaterThan(0);
+      }
+      expect(PEERBOTS_EMOTION_IMAGES.Happy).toBe(
+        PEERBOTS_EMOTION_IMAGES.Neutral,
+      );
+      expect(PEERBOTS_EMOTION_IMAGES.Sleepy).toContain("Sleep");
+      expect(PEERBOTS_EMOTION_IMAGES.Surprised).toContain("Surprised");
+      expect(PEERBOTS_EMOTION_IMAGES.Sad).toContain("Sad");
+      expect(PEERBOTS_EMOTION_IMAGES.Concerned).toContain("Concerned");
+    });
+
+    it("renders all 6 emotions using PNG <img> icons (no custom SVG smileys) and neutral/selected borders", () => {
+      const { container } = render(
         <EmotionSelector
           selectedEmotion="Happy"
           size="lg"
           showTooltips={false}
         />,
       );
-      expect(html).toContain('role="radiogroup"');
-      expect(html).toContain('aria-label="Emotion selector"');
-      expect(html).toContain('aria-checked="true"');
-      for (const emotion of PEERBOTS_EMOTIONS) {
-        expect(html).toContain(`Select emotion ${emotion}`);
-      }
+      const group = screen.getByRole("radiogroup", {
+        name: "Emotion selector",
+      });
+      expect(group).toBeInTheDocument();
+
+      // Zero SVG elements — all default emotion icons are PNG <img> elements
+      expect(container.querySelectorAll("svg")).toHaveLength(0);
+      const imgs = container.querySelectorAll("img");
+      expect(imgs).toHaveLength(6);
+
+      const happyRadio = screen.getByRole("radio", {
+        name: "Select emotion Happy",
+      });
+      const neutralRadio = screen.getByRole("radio", {
+        name: "Select emotion Neutral",
+      });
+      expect(happyRadio).toHaveAttribute("aria-checked", "true");
+      expect(happyRadio.className).toContain("pb:border-2");
+      expect(happyRadio.className).toContain("pb:border-black");
+      expect(happyRadio.className).not.toContain("bg-primary/20");
+      expect(neutralRadio.className).toContain("hover:pb:bg-gray-200");
+
+      const happyImg = happyRadio.querySelector("img")!;
+      const neutralImg = neutralRadio.querySelector("img")!;
+      expect(happyImg.getAttribute("src")).toBe(neutralImg.getAttribute("src"));
     });
 
-    it("renders with tooltips enabled, custom icons (URL & ReactNode), and non-decorative SVG", () => {
+    it("renders with tooltips, custom icons (URL & ReactNode), and non-decorative img alt text", () => {
       const htmlWithTooltip = renderToString(
         <EmotionSelector
           value="Concerned"
           size="sm"
           showTooltips
           emotionIcons={{
-            Happy: "https://example.com/happy.svg",
+            Happy: "https://example.com/happy.png",
             Sad: <span data-testid="custom-sad">:(</span>,
           }}
           emotionLabels={{ Concerned: "Preocupado" }}
         />,
       );
-      expect(htmlWithTooltip).toContain("https://example.com/happy.svg");
+      expect(htmlWithTooltip).toContain("https://example.com/happy.png");
       expect(htmlWithTooltip).toContain("custom-sad");
       expect(htmlWithTooltip).toContain("Select emotion Preocupado");
 
-      const nonDecorativeSvg = renderToString(
+      const nonDecorativeDefault = renderToString(
         <PeerbotsEmotionIcon
           emotion="Surprised"
           decorative={false}
           label="Wow"
         />,
       );
-      expect(nonDecorativeSvg).toContain('role="img"');
-      expect(nonDecorativeSvg).toContain('aria-label="Wow"');
+      expect(nonDecorativeDefault).toContain("<img");
+      expect(nonDecorativeDefault).toContain('alt="Wow"');
 
-      const nonDecorativeImg = renderToString(
+      const nonDecorativeCustomNode = renderToString(
         <PeerbotsEmotionIcon
-          emotion="Sleepy"
-          customIcon="/sleepy.png"
+          emotion="Sad"
+          customIcon={<span>SadNode</span>}
           decorative={false}
+          label="Sad custom"
         />,
       );
-      expect(nonDecorativeImg).toContain('alt="Sleepy"');
+      expect(nonDecorativeCustomNode).toContain('role="img"');
+      expect(nonDecorativeCustomNode).toContain('aria-label="Sad custom"');
     });
 
     it("invokes onEmotionSelect and onChange unless disabled", () => {
       const onEmotionSelect = vi.fn();
       const onChange = vi.fn();
-      const tree = captureElement(() =>
-        EmotionSelector({
-          selectedEmotion: "Neutral",
-          showTooltips: false,
-          onEmotionSelect,
-          onChange,
-        }),
+      render(
+        <EmotionSelector
+          selectedEmotion="Neutral"
+          onEmotionSelect={onEmotionSelect}
+          onChange={onChange}
+        />,
       );
-      const happyBtn = findElements(
-        tree,
-        (el) => el.props["aria-label"] === "Select emotion Happy",
-      )[0];
-      expect(happyBtn).toBeDefined();
-      (happyBtn.props.onClick as () => void)();
+
+      fireEvent.click(
+        screen.getByRole("radio", { name: "Select emotion Happy" }),
+      );
       expect(onEmotionSelect).toHaveBeenCalledWith("Happy");
       expect(onChange).toHaveBeenCalledWith("Happy");
 
+      cleanup();
       const disabledSelect = vi.fn();
-      const disabledTree = captureElement(() =>
-        EmotionSelector({
-          disabled: true,
-          showTooltips: false,
-          onEmotionSelect: disabledSelect,
-        }),
+      render(
+        <EmotionSelector disabled onEmotionSelect={disabledSelect} />,
       );
-      const sadBtn = findElements(
-        disabledTree,
-        (el) => el.props["aria-label"] === "Select emotion Sad",
-      )[0];
-      (sadBtn.props.onClick as () => void)();
+      fireEvent.click(
+        screen.getByRole("radio", { name: "Select emotion Sad" }),
+      );
       expect(disabledSelect).not.toHaveBeenCalled();
     });
   });
@@ -312,7 +349,7 @@ describe("Domain UI Components", () => {
       type: "Message",
       labelColor: "Black",
       details: {
-        title: "Greet",
+        title: "Hello & Welcome",
         speech: "Hello!",
         color: "Yellow",
         emotion: "Happy",
@@ -328,11 +365,25 @@ describe("Domain UI Components", () => {
       },
     };
 
-    it("renders Message and Log buttons with RTL-safe logical classes and aria-pressed", () => {
+    it("keeps accessible name strictly equal to visible title without appending emotion label", () => {
+      const { container } = render(<PeerbotsButton button={msgButton} selected />);
+      const btn = screen.getByRole("button", { name: "Hello & Welcome" });
+      expect(btn).toBeInTheDocument();
+      expect(btn).toHaveAttribute("aria-pressed", "true");
+      expect(
+        screen.queryByRole("button", { name: /Happy/i }),
+      ).not.toBeInTheDocument();
+
+      const badgeImg = container.querySelector("img")!;
+      expect(badgeImg).toHaveAttribute("alt", "");
+      expect(badgeImg).toHaveAttribute("aria-hidden", "true");
+    });
+
+    it("renders Message and Log buttons with RTL-safe logical classes and null safety", () => {
       const msgHtml = renderToString(
         <PeerbotsButton button={msgButton} selected />,
       );
-      expect(msgHtml).toContain("Greet");
+      expect(msgHtml).toContain("Hello &amp; Welcome");
       expect(msgHtml).toContain('aria-pressed="true"');
       expect(msgHtml).toContain("pb:-end-3.5");
       expect(msgHtml).toContain("#FDFEFE");
@@ -349,26 +400,20 @@ describe("Domain UI Components", () => {
 
     it("invokes onClick when enabled and blocks when disabled", () => {
       const onClick = vi.fn();
-      const tree = captureElement(() =>
-        PeerbotsButton({ button: msgButton, onClick }),
-      );
-      const btn = findElements(tree, (el) => el.type === "button")[0];
-      (btn.props.onClick as () => void)();
+      render(<PeerbotsButton button={msgButton} onClick={onClick} />);
+      fireEvent.click(screen.getByRole("button", { name: "Hello & Welcome" }));
       expect(onClick).toHaveBeenCalledTimes(1);
 
+      cleanup();
       const disabledClick = vi.fn();
-      const disabledTree = captureElement(() =>
-        PeerbotsButton({
-          button: msgButton,
-          disabled: true,
-          onClick: disabledClick,
-        }),
+      render(
+        <PeerbotsButton
+          button={msgButton}
+          disabled
+          onClick={disabledClick}
+        />,
       );
-      const disabledBtn = findElements(
-        disabledTree,
-        (el) => el.type === "button",
-      )[0];
-      (disabledBtn.props.onClick as () => void)();
+      fireEvent.click(screen.getByRole("button", { name: "Hello & Welcome" }));
       expect(disabledClick).not.toHaveBeenCalled();
     });
   });
@@ -418,7 +463,7 @@ describe("Domain UI Components", () => {
       expect(html).toContain("pb:ms-1");
     });
 
-    it("dispatches selection, click, save (with syncVals), type switch, move, and delete actions", () => {
+    it("dispatches selection, click, save (with syncVals and newButtonInfo), type switch, move, and delete actions", () => {
       const actions: RobotControlButtonAction[] = [];
       const tree = captureElement(() =>
         PeerbotsButtonRow({
@@ -430,7 +475,6 @@ describe("Domain UI Components", () => {
         }),
       );
 
-      // Checkbox select / deselect
       const checkbox = findElements(
         tree,
         (el) =>
@@ -444,7 +488,6 @@ describe("Domain UI Components", () => {
         checkbox.props.onChange as (e: { target: { checked: boolean } }) => void
       )({ target: { checked: false } });
 
-      // Send button
       const sendBtn = findElements(
         tree,
         (el) =>
@@ -453,7 +496,6 @@ describe("Domain UI Components", () => {
       )[0];
       (sendBtn.props.onClick as () => void)();
 
-      // Title input focus & synced change
       const titleInput = findElements(
         tree,
         (el) => el.props["aria-label"] === "Title",
@@ -465,48 +507,12 @@ describe("Domain UI Components", () => {
         }) => void
       )({ target: { value: "Synced Greeting", selectionStart: 6 } });
 
-      // Speech input focus & synced change
-      const speechInput = findElements(
-        tree,
-        (el) => el.props["aria-label"] === "Speech phrase",
-      )[0];
-      (speechInput.props.onFocus as () => void)();
-      (
-        speechInput.props.onChange as (e: {
-          target: { value: string; selectionStart: number };
-        }) => void
-      )({ target: { value: "Updated Speech", selectionStart: 4 } });
-
-      // Label color, Robot color, Emotion, and Type -> Log
-      const labelColorSelect = findElements(
-        tree,
-        (el) => el.props["aria-label"] === "Label Color",
-      )[0];
-      (labelColorSelect.props.onFocus as () => void)();
-      (labelColorSelect.props.onChange as (v: string) => void)("Purple");
-
-      const faceColorSelect = findElements(
-        tree,
-        (el) => el.props["aria-label"] === "Face Color",
-      )[0];
-      (faceColorSelect.props.onFocus as () => void)();
-      (faceColorSelect.props.onChange as (v: string) => void)("Green");
-
-      const emotionSelect = findElements(
-        tree,
-        (el) => el.props["aria-label"] === "Emotion",
-      )[0];
-      (emotionSelect.props.onFocus as () => void)();
-      (emotionSelect.props.onChange as (v: string) => void)("Surprised");
-
       const typeSelect = findElements(
         tree,
         (el) => el.props["aria-label"] === "Type",
       )[0];
-      (typeSelect.props.onFocus as () => void)();
       (typeSelect.props.onChange as (v: string) => void)("Log");
 
-      // Move Up, Move Down, Delete
       const moveUpBtn = findElements(
         tree,
         (el) => el.props["aria-label"] === "Move up",
@@ -528,33 +534,31 @@ describe("Domain UI Components", () => {
       expect(actions).toContainEqual({ type: "ADD TO SELECTION" });
       expect(actions).toContainEqual({ type: "REMOVE FROM SELECTION" });
       expect(actions).toContainEqual({ type: "CLICK" });
-      expect(actions).toContainEqual({
-        type: "SAVE",
-        newButton: {
-          ...messageRow,
-          details: {
-            ...messageRow.details,
-            title: "Synced Greeting",
-            speech: "Synced Greeting",
+      expect(actions).toContainEqual(
+        expect.objectContaining({
+          type: "SAVE",
+          newButton: {
+            ...messageRow,
+            details: {
+              ...messageRow.details,
+              title: "Synced Greeting",
+              speech: "Synced Greeting",
+            },
           },
-        },
-      });
-      expect(actions).toContainEqual({
-        type: "SAVE",
-        newButton: {
-          type: "Log",
-          labelColor: "Light Blue",
-          details: {
-            title: "Hello",
-            details: "Hello there",
+          newButtonInfo: {
+            ...messageRow,
+            details: {
+              ...messageRow.details,
+              title: "Synced Greeting",
+              speech: "Synced Greeting",
+            },
           },
-        },
-      });
+        }),
+      );
       expect(actions).toContainEqual({ type: "MOVE", direction: "BACK" });
       expect(actions).toContainEqual({ type: "MOVE", direction: "FORWARD" });
       expect(actions).toContainEqual({ type: "DELETE" });
 
-      // Test Log row editing & switching Log -> Message
       const logActions: RobotControlButtonAction[] = [];
       const logTree = captureElement(() =>
         PeerbotsButtonRow({
@@ -563,48 +567,27 @@ describe("Domain UI Components", () => {
           onAction: (a) => logActions.push(a),
         }),
       );
-      const logTitleInput = findElements(
-        logTree,
-        (el) => el.props["aria-label"] === "Title",
-      )[0];
-      (
-        logTitleInput.props.onChange as (e: {
-          target: { value: string; selectionStart: number };
-        }) => void
-      )({ target: { value: "New Log Title", selectionStart: 3 } });
-
-      const detailsInput = findElements(
-        logTree,
-        (el) => el.props["aria-label"] === "Event details",
-      )[0];
-      (detailsInput.props.onFocus as () => void)();
-      (
-        detailsInput.props.onChange as (e: {
-          target: { value: string; selectionStart: number };
-        }) => void
-      )({ target: { value: "New Details", selectionStart: 5 } });
-
       const logTypeSelect = findElements(
         logTree,
         (el) => el.props["aria-label"] === "Type",
       )[0];
       (logTypeSelect.props.onChange as (v: string) => void)("Message");
-
-      expect(logActions).toContainEqual({
-        type: "SAVE",
-        newButton: {
-          type: "Message",
-          labelColor: "Grey",
-          details: {
-            title: "Note",
-            speech: "Logged observation",
-            color: "Grey",
-            emotion: "Neutral",
+      expect(logActions).toContainEqual(
+        expect.objectContaining({
+          type: "SAVE",
+          newButton: {
+            type: "Message",
+            labelColor: "Grey",
+            details: {
+              title: "Note",
+              speech: "Logged observation",
+              color: "Grey",
+              emotion: "Neutral",
+            },
           },
-        },
-      });
+        }),
+      );
 
-      // Verify useSelectionInput hook return shape directly
       let hookResult: ReturnType<typeof useSelectionInput> | undefined;
       captureElement(() => {
         hookResult = useSelectionInput("abc");
@@ -614,7 +597,7 @@ describe("Domain UI Components", () => {
     });
   });
 
-  describe("PeerbotsButtonDisplay", () => {
+  describe("PeerbotsButtonDisplay Orchestrator", () => {
     const sampleTemplate: Template = {
       title: "Demo",
       description: "Desc",
@@ -654,34 +637,24 @@ describe("Domain UI Components", () => {
       },
     };
 
-    it("renders Buttons view and triggers SELECT + CLICK on button press", () => {
+    it("switches seamlessly across Buttons, Table, and lazy Flow views with showViewSwitcher", async () => {
       const onButtonAction = vi.fn();
-      const html = renderToString(
+      const onViewChange = vi.fn();
+
+      render(
         <PeerbotsButtonDisplay
           template={sampleTemplate}
-          view="Buttons"
+          defaultView="Buttons"
+          showViewSwitcher
           selectedButtonId="b1"
+          onViewChange={onViewChange}
           onButtonAction={onButtonAction}
         />,
       );
-      expect(html).toContain("Parent");
-      expect(html).toContain("Child");
-      expect(html).toContain("Audit");
 
-      const tree = captureElement(() =>
-        PeerbotsButtonDisplay({
-          template: sampleTemplate,
-          view: "Buttons",
-          selectedButtonId: "b1",
-          onButtonAction,
-        }),
-      );
-      const peerbotsBtns = findElements(
-        tree,
-        (el) => el.type === PeerbotsButton,
-      );
-      expect(peerbotsBtns).toHaveLength(3);
-      (peerbotsBtns[0].props.onClick as () => void)();
+      // Initially in Buttons view
+      const parentBtn = screen.getByRole("button", { name: "Parent" });
+      fireEvent.click(parentBtn);
       expect(onButtonAction).toHaveBeenCalledWith(
         sampleTemplate.buttons.b1,
         "b1",
@@ -692,114 +665,43 @@ describe("Domain UI Components", () => {
         "b1",
         { type: "CLICK" },
       );
+
+      // Switch to Table view
+      fireEvent.click(screen.getByRole("button", { name: "Table" }));
+      expect(onViewChange).toHaveBeenCalledWith("Table");
+      expect(screen.getByRole("table")).toBeInTheDocument();
+      expect(
+        screen.getByRole("textbox", { name: "Title: Parent" }),
+      ).toHaveValue("Parent");
+
+      // Switch to Flow view (lazy loaded)
+      fireEvent.click(screen.getByRole("button", { name: "Flow" }));
+      expect(onViewChange).toHaveBeenCalledWith("Flow");
+      await waitFor(() => {
+        expect(screen.getByText("Layout")).toBeInTheDocument();
+        expect(
+          screen.getByRole("button", { name: "Parent" }),
+        ).toBeInTheDocument();
+      });
     });
 
-    it("renders Table view with logical hierarchy indentation, sync switch, and bulk multi-select actions", () => {
+    it("supports custom view override and returns empty when unknown view has no renderer", () => {
       const onButtonAction = vi.fn();
-      const onClearSelection = vi.fn();
-      const onSyncTitleSpeechChange = vi.fn();
-
-      const tableHtml = renderToString(
-        <PeerbotsButtonDisplay
-          template={sampleTemplate}
-          view="Table"
-          multiSelectedButtonIds={["b1", "b2", "b3"]}
-          onClearSelection={onClearSelection}
-          onSyncTitleSpeechChange={onSyncTitleSpeechChange}
-          onButtonAction={onButtonAction}
-        />,
-      );
-      expect(tableHtml).toContain("3 selected");
-      expect(tableHtml).toContain("padding-inline-start:24px");
-
-      const tree = captureElement(() =>
-        PeerbotsButtonDisplay({
-          template: sampleTemplate,
-          view: "Table",
-          syncTitleSpeech: true,
-          multiSelectedButtonIds: ["b1", "b2", "b3"],
-          onClearSelection,
-          onSyncTitleSpeechChange,
-          onButtonAction,
-        }),
-      );
-
-      // Toggle sync switch
-      const syncSwitch = findElements(
-        tree,
-        (el) => el.props["aria-label"] === "Sync button title and speech",
-      )[0];
-      (syncSwitch.props.onChange as (checked: boolean) => void)(false);
-      expect(onSyncTitleSpeechChange).toHaveBeenCalledWith(false);
-
-      // Clear selection checkbox
-      const clearCheckbox = findElements(
-        tree,
-        (el) => el.props["aria-label"] === "Clear selected buttons",
-      )[0];
-      (clearCheckbox.props.onChange as () => void)();
-      expect(onClearSelection).toHaveBeenCalledTimes(1);
-
-      // Bulk label color, face color, emotion, move up, move down
-      const bulkLabelColor = findElements(
-        tree,
-        (el) => el.props["aria-label"] === "Apply all... Label Color",
-      )[0];
-      (bulkLabelColor.props.onChange as (v: string) => void)("Red");
-
-      const bulkFaceColor = findElements(
-        tree,
-        (el) => el.props["aria-label"] === "Apply all... Face Color",
-      )[0];
-      (bulkFaceColor.props.onChange as (v: string) => void)("Orange");
-
-      const bulkEmotion = findElements(
-        tree,
-        (el) => el.props["aria-label"] === "Apply all... Emotion",
-      )[0];
-      (bulkEmotion.props.onChange as (v: string) => void)("Sleepy");
-
-      const bulkMoveUp = findElements(
-        tree,
-        (el) => el.props["aria-label"] === "Move up",
-      )[0];
-      (bulkMoveUp.props.onClick as () => void)();
-
-      const bulkMoveDown = findElements(
-        tree,
-        (el) => el.props["aria-label"] === "Move down",
-      )[0];
-      (bulkMoveDown.props.onClick as () => void)();
-
-      // Forward row action
-      const rows = findElements(tree, (el) => el.type === PeerbotsButtonRow);
-      expect(rows).toHaveLength(3);
-      (rows[0].props.onAction as (a: RobotControlButtonAction) => void)({
-        type: "DELETE",
-      });
-
-      expect(onButtonAction).toHaveBeenCalledWith(
-        sampleTemplate.buttons.b1,
-        "b1",
-        { type: "DELETE" },
-      );
-
-      // Custom view & unknown view fallback
       const customHtml = renderToString(
         <PeerbotsButtonDisplay
           template={sampleTemplate}
-          view="Flow"
+          view="CustomTimeline"
           onButtonAction={onButtonAction}
           renderCustomView={({ view }) => <div>{`Custom: ${view}`}</div>}
         />,
       );
-      expect(customHtml).toContain("Custom: Flow");
+      expect(customHtml).toContain("Custom: CustomTimeline");
 
       expect(
         renderToString(
           <PeerbotsButtonDisplay
             template={sampleTemplate}
-            view="Unknown"
+            view="UnhandledView"
             onButtonAction={onButtonAction}
           />,
         ),

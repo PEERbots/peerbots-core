@@ -6,4 +6,5 @@ export * from "./useClipboard";
 export * from "./Stepper";
 export * from "./PeerbotsButton";
 export * from "./PeerbotsButtonRow";
+export * from "./control-views";
 export * from "./PeerbotsButtonDisplay";

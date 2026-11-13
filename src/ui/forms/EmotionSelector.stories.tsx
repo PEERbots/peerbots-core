@@ -33,7 +33,7 @@ export const Variations: Story = {
     <div className="pb:flex pb:flex-col pb:gap-6 pb:p-4">
       <div>
         <span className="pb:text-xs pb:font-bold pb:text-gray-700 pb:block pb:mb-2">
-          Small Size
+          Small Size (Stacked PNG + Label)
         </span>
         <InteractiveEmotionSelector size="sm" />
       </div>
@@ -51,12 +51,9 @@ export const Variations: Story = {
       </div>
       <div>
         <span className="pb:text-xs pb:font-bold pb:text-gray-700 pb:block pb:mb-2">
-          Subset of Emotions (Without Tooltips)
+          Compact Icon-Only Mode (Tooltips Enabled)
         </span>
-        <InteractiveEmotionSelector
-          emotions={["Neutral", "Happy", "Concerned"]}
-          showTooltips={false}
-        />
+        <InteractiveEmotionSelector showLabels={false} showTooltips />
       </div>
       <div>
         <span className="pb:text-xs pb:font-bold pb:text-gray-700 pb:block pb:mb-2">

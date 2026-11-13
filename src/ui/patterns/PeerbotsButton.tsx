@@ -30,7 +30,10 @@ export interface PeerbotsButtonProps {
 
 /**
  * Controlled Peerbots controller button displaying the button's label color, title,
- * and (for `"Message"` buttons) a corner badge showing the robot face color + emotion.
+ * and (for `"Message"` buttons) a decorative corner badge showing the robot face color + emotion.
+ *
+ * Note: The emotion icon inside `<button>` is marked `decorative={true}` (`alt=""` and `aria-hidden="true"`)
+ * so the button's accessible name equals its visible `title` text (satisfying WCAG 2.5.3 `label-content-name-mismatch`).
  */
 export function PeerbotsButton({
   button,
@@ -39,7 +42,6 @@ export function PeerbotsButton({
   disabled = false,
   onClick,
   emotionIcons,
-  emotionLabels,
   className,
 }: PeerbotsButtonProps) {
   const resolved = button ?? buttonInfo;
@@ -75,6 +77,7 @@ export function PeerbotsButton({
         <div className="pb:truncate">{resolved.details.title}</div>
         {resolved.type === "Message" && (
           <span
+            aria-hidden="true"
             className="pb:rounded-full pb:h-8 pb:w-8 pb:p-1 pb:flex pb:items-center pb:justify-center pb:absolute pb:-top-3.5 pb:-end-3.5 pb:z-10 pb:border-solid pb:border-gray-950 pb:border-2"
             style={{
               background:
@@ -85,11 +88,7 @@ export function PeerbotsButton({
             <PeerbotsEmotionIcon
               emotion={resolved.details.emotion}
               customIcon={emotionIcons?.[resolved.details.emotion]}
-              decorative={false}
-              label={
-                emotionLabels?.[resolved.details.emotion] ??
-                resolved.details.emotion
-              }
+              decorative={true}
             />
           </span>
         )}
