@@ -17,6 +17,7 @@ import { PeerbotsColorSelector } from "../../forms/PeerbotsColorSelector";
 import { Switch } from "../../forms/Switch";
 import { TextArea } from "../../forms/TextArea";
 import { Icon } from "../../foundations/Icon";
+import { PeerbotsButton } from "../PeerbotsButton";
 import { cn } from "../../utils";
 
 export interface SingleButtonEditPanelProps {
@@ -27,8 +28,15 @@ export interface SingleButtonEditPanelProps {
   onToggleRoot?: (isRoot: boolean) => void;
   onAddChild?: () => void;
   onDuplicate?: () => void;
+  onMove?: (direction: "BACK" | "FORWARD") => void;
   onDelete?: () => void;
   onClose?: () => void;
+  /** Layout variant: `"popover"` (default floating card) or `"panel"` (embedded side-panel form). */
+  variant?: "popover" | "panel";
+  /** Render a live `PeerbotsButton` preview above the form fields. */
+  showPreview?: boolean;
+  /** Optional callback when the preview button is clicked. */
+  onPreviewClick?: () => void;
   emotionIcons?: Partial<Record<PeerbotsEmotion, string | React.ReactNode>>;
   emotionLabels?: Partial<Record<PeerbotsEmotion, string>>;
   colorLabels?: Partial<Record<PeerbotsColor, string>>;
@@ -43,8 +51,8 @@ export interface SingleButtonEditPanelProps {
 }
 
 /**
- * Concise single-button editor used inside FlowView's NodeToolbar popover
- * and ButtonView's right-click context popover.
+ * Shared single-button editor used inside FlowView's NodeToolbar popover,
+ * ButtonView's right-click context popover, and the docked `PeerbotsButtonEditor` side panel.
  *
  * Uses the exact `ControlLabels` naming from `TableView` and `PeerbotsButtonRow`,
  * includes the `Sync Speech with Title` switch, and renders `Robot Color` and
@@ -57,8 +65,12 @@ export function SingleButtonEditPanel({
   onToggleRoot,
   onAddChild,
   onDuplicate,
+  onMove,
   onDelete,
   onClose,
+  variant = "popover",
+  showPreview = false,
+  onPreviewClick,
   emotionIcons,
   emotionLabels,
   labels,
@@ -181,13 +193,24 @@ export function SingleButtonEditPanel({
   return (
     <div
       className={cn(
-        "pb:w-[320px] pb:max-w-[calc(100vw-24px)] pb:rounded-xl pb:bg-white pb:border pb:border-gray-200 pb:shadow-xl pb:p-3 pb:flex pb:flex-col pb:gap-2.5 pb:text-left",
+        variant === "popover"
+          ? "pb:w-[320px] pb:max-w-[calc(100vw-24px)] pb:rounded-xl pb:bg-white pb:border pb:border-gray-200 pb:shadow-xl pb:p-3 pb:flex pb:flex-col pb:gap-2.5 pb:text-left"
+          : "pb:w-full pb:flex pb:flex-col pb:gap-2.5 pb:text-left",
         className,
       )}
       onKeyDown={handleContainerKeyDown}
       onClick={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
     >
+      {showPreview && (
+        <div className="pb:pb-1">
+          <PeerbotsButton
+            buttonInfo={button}
+            onClick={onPreviewClick ?? (() => {})}
+            emotionIcons={emotionIcons}
+          />
+        </div>
+      )}
       {/* Header: Type switcher + Root Entry toggle + Close */}
       <div className="pb:flex pb:items-center pb:justify-between pb:gap-2">
         <div
@@ -360,6 +383,33 @@ export function SingleButtonEditPanel({
               })
             }
           />
+        </div>
+      )}
+
+      {/* Sibling reorder controls */}
+      {onMove && (
+        <div className="pb:flex pb:flex-col pb:gap-1 pb:pt-2 pb:border-t pb:border-gray-200">
+          <span className="pb:text-[11px] pb:font-semibold pb:text-gray-600">
+            {resolvedLabels.reorderButton ?? "Reorder"}
+          </span>
+          <div className="pb:flex pb:items-center pb:gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => onMove("BACK")}
+            >
+              {resolvedLabels.moveBackwards ?? "Backwards"}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => onMove("FORWARD")}
+            >
+              {resolvedLabels.moveForwards ?? "Forwards"}
+            </Button>
+          </div>
         </div>
       )}
 
