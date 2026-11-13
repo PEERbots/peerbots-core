@@ -1,5 +1,7 @@
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import React from "react";
+import axe from "axe-core";
+import { cleanup, render, screen } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 import {
   Table,
@@ -269,5 +271,68 @@ describe("Refined Table & Table with Field Components", () => {
     expect(html).toContain("2 modified");
     expect(html).toContain("Showing 6–10 of 12");
     expect(html).toContain("Page 2 of 3");
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("renders ZERO visible <label> elements inside TableCellField when srOnlyLabel is true while injecting aria-label, and renders visible <label> when srOnlyLabel={false}", async () => {
+    const { container } = render(
+      <div>
+        <Table caption="Cue Table" columns={sampleColumns} data={sampleRows} />
+      </div>,
+    );
+
+    const tbody = container.querySelector("tbody")!;
+    // Zero <label> elements inside tbody when srOnlyLabel defaults to true!
+    expect(tbody.querySelectorAll("label")).toHaveLength(0);
+
+    // Every input and select combobox inside tbody still has its descriptive aria-label
+    expect(
+      screen.getByRole("combobox", { name: "Emotion for Greeting" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("spinbutton", { name: "Speed for Greeting" }),
+    ).toBeInTheDocument();
+
+    const axeResults = await axe.run(container, {
+      rules: { "color-contrast": { enabled: false } },
+    });
+    expect(axeResults.violations).toEqual([]);
+
+    cleanup();
+    const { container: visibleContainer } = render(
+      <TableCellField label="Explicit Visible Label" srOnlyLabel={false}>
+        <Input placeholder="Enter text" />
+      </TableCellField>,
+    );
+    const visibleLabels = visibleContainer.querySelectorAll("label");
+    expect(visibleLabels).toHaveLength(1);
+    expect(visibleLabels[0]).toHaveTextContent("Explicit Visible Label");
+  });
+
+  it("forwards style and triggerClassName onto Select trigger with currentColor chevron inheritance", () => {
+    const { container } = render(
+      <Select
+        aria-label="Colored Select"
+        options={[
+          { label: "Light Blue", value: "Light Blue" },
+          { label: "Black", value: "Black" },
+        ]}
+        value="Black"
+        style={{ backgroundColor: "#4D4D4D", color: "#FDFEFE" }}
+        triggerClassName="pb:font-semibold"
+      />,
+    );
+
+    const trigger = screen.getByRole("combobox", { name: "Colored Select" });
+    expect(trigger).toHaveStyle({
+      backgroundColor: "rgb(77, 77, 77)",
+      color: "rgb(253, 254, 254)",
+    });
+    expect(trigger.className).toContain("pb:font-semibold");
+    const iconWrapper = container.querySelector("[data-select-icon]")!;
+    expect(iconWrapper.className).toContain("pb:text-current");
   });
 });

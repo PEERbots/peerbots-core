@@ -7,11 +7,22 @@ import type {
 } from "../templates/types";
 import type { PeerbotsButtonActionHandler } from "../ui/patterns/control-views/types";
 
+/**
+ * Automatic Dagre graph layout axis for `<FlowView>`:
+ * - `"TB"`: Top-to-Bottom hierarchy
+ * - `"LR"`: Left-to-Right hierarchy
+ */
 export type FlowDirection = "TB" | "LR";
 
+/**
+ * Custom `@xyflow/react` node payload representing a single `RobotControlButton` in `<FlowView>`.
+ */
 export interface PeerbotsFlowNodeData extends Record<string, unknown> {
+  /** Resolved Peerbots button model (`"Message"` or `"Log"`). */
   button: RobotControlButton;
+  /** Key of this button in `template.buttons`. */
   buttonId: string;
+  /** Active Dagre layout direction controlling handle positions. */
   direction?: FlowDirection;
 }
 

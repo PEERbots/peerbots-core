@@ -3,17 +3,31 @@ import { Slider } from "./Slider";
 import { NumberField } from "./NumberField";
 import { cn } from "../utils";
 
+/**
+ * Props for `<SliderWithNumberField>` — synchronized range `<Slider>` paired with a precise `<NumberField>`.
+ */
 export interface SliderWithNumberFieldProps extends React.AriaAttributes {
+  /** Minimum numeric bound (@default 0). */
   min?: number;
+  /** Maximum numeric bound (@default 100). */
   max?: number;
+  /** Step increment (@default 1). */
   step?: number;
+  /** Controlled numeric value shared by both the slider and number field. */
   value?: number;
+  /** Initial numeric value in uncontrolled mode. */
   defaultValue?: number;
+  /** Disables both the slider and numeric input when `true`. */
   disabled?: boolean;
+  /** Callback invoked whenever either the slider thumb or numeric input changes. */
   onChange?: (value: number, event: Event) => void;
+  /** Additional container classes. */
   className?: string;
+  /** Optional Tailwind width utility for the numeric input wrapper (e.g. `"w-24"`). */
   inputWidth?: string;
+  /** Whether to display `-` / `+` stepper buttons on the numeric input (@default false). */
   showButtons?: boolean;
+  /** Base DOM `id` used to derive linked slider and numeric input IDs. */
   id?: string;
 }
 

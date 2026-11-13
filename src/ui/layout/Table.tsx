@@ -783,6 +783,13 @@ export const TableCellField = React.forwardRef<
       if (childProps.variant === undefined && resolvedVariant !== "default") {
         injected.variant = resolvedVariant;
       }
+      if (
+        srOnlyLabel &&
+        childProps["aria-label"] === undefined &&
+        typeof label === "string"
+      ) {
+        injected["aria-label"] = label;
+      }
       if (Object.keys(injected).length === 0) return child;
       return React.cloneElement(child, injected);
     });
@@ -790,14 +797,14 @@ export const TableCellField = React.forwardRef<
     return (
       <Field
         ref={ref}
-        label={label}
+        label={srOnlyLabel ? undefined : label}
         style={{
           ...(maxWidth ? { maxWidth } : undefined),
           ...style,
         }}
         className={cn(
           "pb:gap-0.5",
-          srOnlyLabel && "[&_label]:pb:sr-only",
+          srOnlyLabel && "pb:[&_label]:sr-only",
           className,
         )}
         {...props}

@@ -3,18 +3,33 @@ import { NumberField as BaseNumberField } from "@base-ui/react";
 import { cn } from "../utils";
 import { Icon } from "../foundations/Icon";
 
+/**
+ * Props for `<NumberField>` — accessible numeric input with optional stepper buttons and drag-scrubbing.
+ */
 export interface NumberFieldProps extends React.AriaAttributes {
+  /** Controlled numeric value (`null` represents an empty input). */
   value?: number | null;
+  /** Initial numeric value in uncontrolled mode. */
   defaultValue?: number;
+  /** Minimum permitted numeric value. */
   min?: number;
+  /** Maximum permitted numeric value. */
   max?: number;
+  /** Step increment applied by stepper buttons and keyboard arrows. */
   step?: number;
+  /** Callback invoked when the numeric value changes. */
   onChange?: (value: number | null, event: Event) => void;
+  /** Disables editing and stepper buttons when `true`. */
   disabled?: boolean;
+  /** Makes the numeric input read-only when `true`. */
   readOnly?: boolean;
+  /** Additional classes applied to the root container. */
   className?: string;
+  /** DOM `id` forwarded to the root element. */
   id?: string;
+  /** Placeholder string shown when the input is empty. */
   placeholder?: string;
+  /** Whether to render `-` / `+` stepper buttons (@default false). */
   showButtons?: boolean;
   /**
    * Size scale for height and step buttons.

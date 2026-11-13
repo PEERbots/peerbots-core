@@ -2,14 +2,31 @@ import React, { useState } from "react";
 import { cn } from "../utils";
 import { ComponentColor, ComponentRadius, ComponentSize, FillVariant } from "../types";
 
+/**
+ * Selectable chip descriptor rendered by `<ChipGroup>`.
+ */
 export interface ChipOption<T = string> {
+  /** Underlying option value passed to `onChange` / `onMultipleChange`. */
   value: T;
+  /** Visible chip label. */
   label: React.ReactNode;
+  /** Optional count or status badge rendered at the trailing edge of the chip. */
   badge?: React.ReactNode;
+  /** Prevents selecting or toggling this chip when `true`. */
   disabled?: boolean;
+  /** Optional leading icon node. */
   icon?: React.ReactNode;
 }
 
+/**
+ * Props for `<ChipGroup>` — a wrapping or horizontally scrollable pill selector for single-select
+ * (`role="radiogroup"`) or multi-select (`multiple={true}`, `role="group"`) filter facets and tags.
+ *
+ * **When to choose `<ChipGroup>` vs `<TabRadio>` vs `<TabSelection>`:**
+ * - **`<ChipGroup>`**: 3–12+ filter facets, tags, or category pills that wrap across lines or scroll horizontally, supporting both single-select and multi-select (`multiple={true}`) plus optional count badges.
+ * - **`<TabRadio>`**: 2–5 mutually exclusive compact mode/view/enum options inside a single bordered track (`"Button" | "Table" | "Flow"`, `"TB" | "LR"`).
+ * - **`<TabSelection>`**: Dynamic workspace/collection tabs where users switch active pages AND can add (`onAddClick`), rename (`onEdit`), or close (`onClose`) tabs.
+ */
 export interface ChipGroupProps<T = string> {
   /** Array of selectable chip options */
   options: ChipOption<T>[];

@@ -6,9 +6,17 @@ import { Heading, Text } from "../foundations/Typography";
 import { Label } from "../forms/Label";
 
 const meta: Meta<typeof SettingsPanel> = {
-  title: "Layout/SettingsPanel",
+  title: "Patterns/SettingsPanel",
   component: SettingsPanel,
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          "Composite settings section pattern combining `<Card>`, `<Heading>`, and optional `<Collapsible>` disclosure behavior for consistent configuration sidebars and preference pages. (Exported from `@peerbots/core` alongside layout primitives for 100% backward compatibility.)",
+      },
+    },
+  },
   argTypes: {},
 };
 

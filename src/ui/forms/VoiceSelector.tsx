@@ -10,13 +10,23 @@ import { cn } from "../utils";
 import { Field } from "./Field";
 import { Select } from "./Select";
 
+/**
+ * Localized UI labels used by `<VoiceSelector>`.
+ */
 export interface VoiceSelectorLabels {
+  /** Label for the language `<Select>` field. */
   language: string;
+  /** Label for the voice `<Select>` field. */
   voice: string;
+  /** Placeholder shown when no language is selected. */
   languagePlaceholder: string;
+  /** Placeholder shown when no voice is selected. */
   voicePlaceholder: string;
 }
 
+/**
+ * Default English labels for `<VoiceSelector>`.
+ */
 export const DEFAULT_VOICE_SELECTOR_LABELS: VoiceSelectorLabels = {
   language: "Language",
   voice: "Voice",
@@ -24,14 +34,25 @@ export const DEFAULT_VOICE_SELECTOR_LABELS: VoiceSelectorLabels = {
   voicePlaceholder: "Select voice...",
 };
 
+/**
+ * Props for `<VoiceSelector>` — paired Language + TTS Voice `<Select>` fields compatible with Web Speech API `SpeechSynthesisVoice` descriptors.
+ */
 export interface VoiceSelectorProps {
+  /** Available TTS voice descriptors (e.g. from `window.speechSynthesis.getVoices()`). */
   voices: readonly VoiceDescriptor[];
+  /** Currently selected `voiceURI` identifier. */
   selectedVoiceUri?: string | null;
+  /** Currently selected human-readable language filter (e.g. `"English"`). */
   selectedLanguage?: string | null;
+  /** Callback invoked when the user picks a voice `voiceURI`. */
   onVoiceChange: (voiceUri: string) => void;
+  /** Optional callback invoked when the language filter changes. */
   onLanguageChange?: (language: string) => void;
+  /** Disables both dropdowns when `true`. */
   disabled?: boolean;
+  /** Optional localized label overrides. */
   labels?: Partial<VoiceSelectorLabels>;
+  /** Additional wrapper classes. */
   className?: string;
 }
 

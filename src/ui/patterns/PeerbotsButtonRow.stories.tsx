@@ -4,8 +4,17 @@ import type { RobotControlButton } from "../../templates/types";
 import { PeerbotsButtonRow } from "./PeerbotsButtonRow";
 
 const meta: Meta<typeof PeerbotsButtonRow> = {
-  title: "Patterns/PeerbotsButtonRow",
+  title: "Patterns/Deprecated/PeerbotsButtonRow",
   component: PeerbotsButtonRow,
+  tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          "> **Deprecated:** Prefer `<TableView>` (under `Patterns/Template Views/TableView`) or `<PeerbotsButtonDisplay view=\"Table\">`. `<TableView>` renders semantic `<Table>` rows with sticky column headers, zero duplicate row labels, WCAG AA colored button/robot pills, 28×28 robot face expression preview tiles, Shift+Click multi-selection, bulk actions, and column Apply-All popovers.\n\n`PeerbotsButtonRow` is retained solely for backward compatibility with legacy 11-column CSS grid layouts.",
+      },
+    },
+  },
 };
 
 export default meta;
@@ -71,7 +80,7 @@ export const Variations: Story = {
       <div className="pb:flex pb:flex-col pb:gap-4 pb:min-w-[820px] pb:p-4">
         <div>
           <span className="pb:text-xs pb:font-bold pb:text-gray-600 pb:block pb:mb-1">
-            Message Row (Synced Title & Speech, Selected)
+            Message Row (Synced Title &amp; Speech, Selected)
           </span>
           <PeerbotsButtonRow
             button={msgBtn}

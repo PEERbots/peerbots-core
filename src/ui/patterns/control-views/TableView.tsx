@@ -25,6 +25,7 @@ import {
 import { Input } from "../../forms/Input";
 import {
   PEERBOTS_COLOR_MAP,
+  PEERBOTS_FONT_COLOR_MAP,
   PeerbotsColorSelector,
 } from "../../forms/PeerbotsColorSelector";
 import { Select } from "../../forms/Select";
@@ -104,63 +105,100 @@ function flattenTemplateForTable(
   return result;
 }
 
+/**
+ * Entry emitted to {@link TableViewProps.onBatchSave} during column-level Apply-All updates.
+ */
 export interface TableViewBatchSaveEntry {
+  /** Target button identifier in `template.buttons`. */
   buttonId: string;
+  /** Updated button value to persist. */
   button: RobotControlButton;
 }
 
+/**
+ * Props for {@link TableView}, the semantic Peerbots template table editor built on
+ * the `@peerbots/core` `Table` suite.
+ */
 export interface TableViewProps {
-  /** Canonical template containing `buttons` dictionary and `hierarchy` */
+  /** Canonical template containing `buttons` dictionary and `hierarchy`. */
   template: Template;
-  /** Action handler invoked for button clicks, selection, edits, moves, and deletes */
+  /** Action handler invoked for button clicks, selection, edits, moves, and deletes. */
   onButtonAction: PeerbotsButtonActionHandler;
-  /** Disables row editing, bulk actions, and button triggers */
+  /** Disables row editing, bulk actions, and button triggers when `true`. */
   disabled?: boolean;
 
   /* --- Selection (Controlled or Uncontrolled) --- */
-  /** Controlled multi-selected button IDs */
+  /** Primary active/last-triggered button ID highlighted with subtle row emphasis. */
+  selectedButtonId?: string | null;
+  /** Controlled multi-selected button IDs. */
   selectedButtonIds?: readonly string[];
-  /** Alias for `selectedButtonIds` (backward-compatible with `app.peerbots.org`) */
+  /** Alias for `selectedButtonIds` (backward-compatible with `app.peerbots.org`). */
   multiSelectedButtonIds?: readonly string[];
-  /** Initial selected button IDs when uncontrolled */
+  /** Initial selected button IDs when uncontrolled. */
   defaultSelectedButtonIds?: readonly string[];
-  /** Callback fired whenever the selected button IDs change */
+  /** Callback fired whenever the multi-selected button IDs change. */
   onSelectedButtonIdsChange?: (selectedIds: string[]) => void;
-  /** Callback invoked when clearing multi-selection */
+  /** Callback invoked when clearing multi-selection. */
   onClearSelection?: () => void;
 
   /* --- Sync Speech with Title (Controlled or Uncontrolled) --- */
-  /** Controlled Sync Speech with Title toggle */
+  /** Controlled Sync Speech with Title toggle. */
   syncSpeech?: boolean;
-  /** Alias for `syncSpeech` */
+  /** Alias for `syncSpeech`. */
   syncTitleSpeech?: boolean;
-  /** Initial Sync Speech with Title state when uncontrolled (@default true) */
+  /**
+   * Initial Sync Speech with Title state when uncontrolled.
+   * @default true
+   */
   defaultSyncSpeech?: boolean;
-  /** Alias for `defaultSyncSpeech` */
+  /** Alias for `defaultSyncSpeech`. */
   defaultSyncTitleSpeech?: boolean;
-  /** Callback invoked when the Sync Speech with Title toggle changes */
+  /** Callback invoked when the Sync Speech with Title toggle changes. */
   onSyncSpeechChange?: (sync: boolean) => void;
-  /** Alias for `onSyncSpeechChange` */
+  /** Alias for `onSyncSpeechChange`. */
   onSyncTitleSpeechChange?: (sync: boolean) => void;
 
-  /** Optional batch callback invoked alongside `SAVE` actions during column Apply-All */
+  /** Optional batch callback invoked alongside `SAVE` actions during column Apply-All. */
   onBatchSave?: (updates: TableViewBatchSaveEntry[]) => void;
 
   /* --- Presentation & Localization --- */
+  /**
+   * Row vertical padding density preset.
+   * @default "compact"
+   */
   density?: TableDensity;
+  /**
+   * Responsive overflow behavior on narrow viewports.
+   * @default "scroll"
+   */
   responsiveMode?: TableResponsiveMode;
+  /** Optional custom emotion icon overrides per `PeerbotsEmotion`. */
   emotionIcons?: Partial<Record<PeerbotsEmotion, string | React.ReactNode>>;
+  /** Optional localized display names per `PeerbotsEmotion`. */
   emotionLabels?: Partial<Record<PeerbotsEmotion, string>>;
+  /** Optional localized display names per `PeerbotsColor`. */
   colorLabels?: Partial<Record<PeerbotsColor, string>>;
+  /** Optional localized control view UI strings. */
   labels?: Partial<ControlLabels>;
+  /** Optional localized table primitive strings (bulk bar, apply-all popovers). */
   tableLabels?: Partial<TableLabels>;
+  /** Optional additional CSS classes applied to `<Table.Container>`. */
   className?: string;
 }
 
+/**
+ * Semantic tabular editor and live controller view for Peerbots templates.
+ *
+ * Renders sticky column headers, color-tinted controller button pills and color
+ * select triggers (WCAG 2.1 AA contrast via `PEERBOTS_COLOR_MAP` + `PEERBOTS_FONT_COLOR_MAP`),
+ * robot face expression preview tiles, Shift+Click multi-row selection, bulk
+ * reordering/deletion, and column-wide Apply-All popovers.
+ */
 export function TableView({
   template,
   onButtonAction,
   disabled = false,
+  selectedButtonId = null,
   selectedButtonIds,
   multiSelectedButtonIds,
   defaultSelectedButtonIds = [],
@@ -530,7 +568,7 @@ export function TableView({
         stickyRowHeader={false}
         responsiveMode={responsiveMode}
         columnLabels={columnLabels}
-        className="pb:min-w-[820px]"
+        className="pb:min-w-[840px]"
       >
         <TableHeader>
           <tr>
@@ -552,7 +590,7 @@ export function TableView({
             </TableHead>
 
             {/* Title Column */}
-            <TableHead density={density} className="pb:min-w-[220px]">
+            <TableHead density={density} className="pb:min-w-[230px]">
               {resolvedLabels.buttonTitle}
             </TableHead>
 
@@ -667,7 +705,7 @@ export function TableView({
             {/* Emotion Column + Apply All PNG Emotion Popover */}
             <TableHead
               density={density}
-              className="pb:w-[176px]"
+              className="pb:w-[180px]"
               headerAction={
                 !disabled && messageEntries.length > 0 ? (
                   <TableColumnApplyAllPopover<
@@ -754,15 +792,34 @@ export function TableView({
                 isLastSibling,
               } = entry;
               const isSelected = selectedSet.has(buttonId);
+              const isActiveRow = selectedButtonId === buttonId;
               const rowName = button.details.title || buttonId;
               const labelColorHex =
                 PEERBOTS_COLOR_MAP[button.labelColor] ?? button.labelColor;
+              const labelFontColorHex =
+                PEERBOTS_FONT_COLOR_MAP[button.labelColor] ?? "#020307";
+
+              const robotColorHex =
+                button.type === "Message"
+                  ? (PEERBOTS_COLOR_MAP[button.details.color] ??
+                    button.details.color)
+                  : undefined;
+              const robotFontColorHex =
+                button.type === "Message"
+                  ? (PEERBOTS_FONT_COLOR_MAP[button.details.color] ?? "#020307")
+                  : undefined;
 
               return (
                 <TableRow
                   key={buttonId}
                   selected={isSelected}
                   disabled={disabled}
+                  data-active={isActiveRow ? "true" : undefined}
+                  className={cn(
+                    isActiveRow &&
+                      !isSelected &&
+                      "pb:bg-peerbots-teal/10 pb:hover:bg-peerbots-teal/15",
+                  )}
                 >
                   {/* 1. Row Selection Checkbox */}
                   <TableCell
@@ -790,8 +847,17 @@ export function TableView({
                     </div>
                   </TableCell>
 
-                  {/* 2. Depth-Indented Title + Play Trigger */}
-                  <TableCell density={density}>
+                  {/* 2. Row Left Color Accent + Play Trigger + Button-Colored Title Pill */}
+                  <TableCell density={density} className="pb:relative pb:ps-3.5">
+                    <span
+                      aria-hidden="true"
+                      data-row-accent={buttonId}
+                      className="pb:absolute pb:inset-y-1 pb:start-0 pb:w-1 pb:rounded-e-sm"
+                      style={{
+                        width: "4px",
+                        backgroundColor: labelColorHex,
+                      }}
+                    />
                     <div
                       className="pb:flex pb:items-center pb:gap-1.5 pb:min-w-0"
                       style={
@@ -810,7 +876,7 @@ export function TableView({
                       )}
                       <Button
                         size="xs"
-                        variant="ghost"
+                        variant="soft"
                         color="teal"
                         isIconOnly
                         disabled={disabled}
@@ -818,19 +884,13 @@ export function TableView({
                         aria-label={`${resolvedLabels.sendMessage}: ${rowName}`}
                         onClick={() => {
                           if (disabled) return;
-                          onButtonAction(button, buttonId, { type: "CLICK" });
                           onButtonAction(button, buttonId, { type: "SELECT" });
+                          onButtonAction(button, buttonId, { type: "CLICK" });
                         }}
                         className="pb:shrink-0"
                       >
                         <Icon name="play" size="sm" aria-hidden="true" />
                       </Button>
-
-                      <span
-                        aria-hidden="true"
-                        className="pb:w-2.5 pb:h-2.5 pb:rounded-full pb:border pb:border-black/20 pb:shrink-0"
-                        style={{ backgroundColor: labelColorHex }}
-                      />
 
                       <div className="pb:flex-1 pb:min-w-0">
                         <TableCellField
@@ -843,6 +903,11 @@ export function TableView({
                             disabled={disabled}
                             placeholder={resolvedLabels.buttonTitle}
                             value={button.details.title}
+                            style={{
+                              backgroundColor: labelColorHex,
+                              color: labelFontColorHex,
+                            }}
+                            className="pb:font-semibold pb:ring-black/20 placeholder:pb:text-current/60"
                             onFocus={() => {
                               if (!disabled) {
                                 onButtonAction(button, buttonId, {
@@ -1017,114 +1082,106 @@ export function TableView({
                     )}
                   </TableCell>
 
-                  {/* 5. Label Color */}
+                  {/* 5. Label Color (Color-Filled Select Pill) */}
                   <TableCell density={density}>
-                    <div className="pb:flex pb:items-center pb:gap-1.5">
-                      <span
-                        aria-hidden="true"
-                        className="pb:w-3.5 pb:h-3.5 pb:rounded-full pb:border pb:border-black/20 pb:shrink-0"
-                        style={{ backgroundColor: labelColorHex }}
+                    <TableCellField
+                      cellVariant="compact"
+                      label={`${resolvedLabels.labelColor}: ${rowName}`}
+                    >
+                      <Select
+                        size="sm"
+                        variant="compact"
+                        disabled={disabled}
+                        aria-label={`${resolvedLabels.labelColor}: ${rowName}`}
+                        value={button.labelColor}
+                        options={colorOptions}
+                        style={{
+                          backgroundColor: labelColorHex,
+                          color: labelFontColorHex,
+                        }}
+                        className="pb:font-semibold pb:ring-black/20"
+                        onChange={(val) => {
+                          if (!val || disabled) return;
+                          onButtonAction(
+                            button,
+                            buttonId,
+                            createSaveAction({
+                              ...button,
+                              labelColor: val as PeerbotsColor,
+                            }),
+                          );
+                        }}
                       />
-                      <div className="pb:flex-1 pb:min-w-0">
-                        <TableCellField
-                          cellVariant="compact"
-                          label={`${resolvedLabels.labelColor} (${rowName})`}
-                        >
-                          <Select
-                            size="sm"
-                            variant="compact"
-                            disabled={disabled}
-                            aria-label={`${resolvedLabels.labelColor}: ${rowName}`}
-                            value={button.labelColor}
-                            options={colorOptions}
-                            onChange={(val) => {
-                              if (!val || disabled) return;
-                              onButtonAction(
-                                button,
-                                buttonId,
-                                createSaveAction({
-                                  ...button,
-                                  labelColor: val as PeerbotsColor,
-                                }),
-                              );
-                            }}
-                          />
-                        </TableCellField>
-                      </div>
-                    </div>
+                    </TableCellField>
                   </TableCell>
 
-                  {/* 6. Robot Color (Message rows only) */}
+                  {/* 6. Robot Color (Color-Filled Select Pill for Message rows) */}
                   <TableCell density={density}>
                     {button.type === "Message" ? (
-                      <div className="pb:flex pb:items-center pb:gap-1.5">
-                        <span
-                          aria-hidden="true"
-                          className="pb:w-3.5 pb:h-3.5 pb:rounded-full pb:border pb:border-black/20 pb:shrink-0"
+                      <TableCellField
+                        cellVariant="compact"
+                        label={`${resolvedLabels.robotColor}: ${rowName}`}
+                      >
+                        <Select
+                          size="sm"
+                          variant="compact"
+                          disabled={disabled}
+                          aria-label={`${resolvedLabels.robotColor}: ${rowName}`}
+                          value={button.details.color}
+                          options={colorOptions}
                           style={{
-                            backgroundColor:
-                              PEERBOTS_COLOR_MAP[button.details.color] ??
-                              button.details.color,
+                            backgroundColor: robotColorHex,
+                            color: robotFontColorHex,
+                          }}
+                          className="pb:font-semibold pb:ring-black/20"
+                          onChange={(val) => {
+                            if (!val || disabled) return;
+                            onButtonAction(
+                              button,
+                              buttonId,
+                              createSaveAction({
+                                ...button,
+                                details: {
+                                  ...button.details,
+                                  color: val as PeerbotsColor,
+                                },
+                              }),
+                            );
                           }}
                         />
-                        <div className="pb:flex-1 pb:min-w-0">
-                          <TableCellField
-                            cellVariant="compact"
-                            label={`${resolvedLabels.robotColor} (${rowName})`}
-                          >
-                            <Select
-                              size="sm"
-                              variant="compact"
-                              disabled={disabled}
-                              aria-label={`${resolvedLabels.robotColor}: ${rowName}`}
-                              value={button.details.color}
-                              options={colorOptions}
-                              onChange={(val) => {
-                                if (!val || disabled) return;
-                                onButtonAction(
-                                  button,
-                                  buttonId,
-                                  createSaveAction({
-                                    ...button,
-                                    details: {
-                                      ...button.details,
-                                      color: val as PeerbotsColor,
-                                    },
-                                  }),
-                                );
-                              }}
-                            />
-                          </TableCellField>
-                        </div>
-                      </div>
+                      </TableCellField>
                     ) : (
                       <span className="pb:text-xs pb:text-gray-400">—</span>
                     )}
                   </TableCell>
 
-                  {/* 7. Emotion with Real PNG Icon (Message rows only) */}
+                  {/* 7. Emotion with 28x28 Robot Face Expression Preview Tile (Message rows) */}
                   <TableCell density={density}>
                     {button.type === "Message" ? (
                       <div className="pb:flex pb:items-center pb:gap-1.5">
                         <span
                           aria-hidden="true"
-                          className="pb:rounded-full pb:h-6 pb:w-6 pb:p-0.5 pb:border pb:border-black/20 pb:shrink-0 pb:flex pb:items-center pb:justify-center"
+                          data-emotion-tile={buttonId}
+                          className="pb:h-7 pb:w-7 pb:p-1 pb:rounded-lg pb:border pb:border-black/20 pb:shadow-2xs pb:shrink-0 pb:flex pb:items-center pb:justify-center"
                           style={{
-                            backgroundColor:
-                              PEERBOTS_COLOR_MAP[button.details.color] ??
-                              button.details.color,
+                            backgroundColor: robotColorHex,
                           }}
                         >
                           <PeerbotsEmotionIcon
                             emotion={button.details.emotion}
                             customIcon={emotionIcons?.[button.details.emotion]}
                             decorative
+                            className={
+                              button.details.color === "Black"
+                                ? "pb:invert"
+                                : undefined
+                            }
                           />
                         </span>
                         <div className="pb:flex-1 pb:min-w-0">
                           <TableCellField
                             cellVariant="compact"
-                            label={`${resolvedLabels.emotion} (${rowName})`}
+                            label={`${resolvedLabels.emotion}: ${rowName}`}
                           >
                             <Select
                               size="sm"
@@ -1232,4 +1289,5 @@ export function TableView({
   );
 }
 
+/** Alias for {@link TableView}. */
 export const PeerbotsTableView = TableView;

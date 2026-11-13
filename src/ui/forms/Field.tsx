@@ -3,16 +3,27 @@ import React from "react";
 import { cn } from "../utils";
 import { Label } from "./Label";
 
+/**
+ * Props for `<Field>` — accessible form-control wrapper providing label, description, tooltip, and validation error wiring.
+ */
 export interface FieldProps extends BaseField.Root.Props {
+  /** Visible field label associated with the child control. */
   label?: string;
+  /** Secondary helper text rendered below the control. */
   description?: string;
+  /** Validation error message; marks the field `invalid` when truthy. */
   error?: string;
+  /** Optional helper tooltip string displayed next to the label. */
   tooltip?: string;
+  /** Form control element (`<Input>`, `<Select>`, `<Switch>`, etc.). */
   children: React.ReactNode;
+  /** Optional leading icon rendered inside the label. */
   icon?: React.ReactNode;
+  /** Placement of the label relative to the form control (@default "top"). */
   labelPlacement?: "top" | "left" | "right" | "start" | "end";
+  /** Font weight of the label (@default "bold"). */
   labelWeight?: "bold" | "normal";
-  /** Whether the field container should size to its content (`pb:w-auto`) instead of stretching to 100% width (default: false) */
+  /** Whether the field container should size to its content (`pb:w-auto`) instead of stretching to 100% width (@default false). */
   inline?: boolean;
 }
 

@@ -3,11 +3,16 @@ import React, { ComponentPropsWithoutRef } from "react";
 import { cn } from "../utils";
 import { Icon } from "../foundations/Icon";
 
+/**
+ * Props for `<Checkbox>` — an accessible boolean or mixed-state checkbox backed by `@base-ui/react`.
+ */
 export interface CheckboxProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange"> {
-  /** Whether the checkbox is in a mixed/indeterminate state */
+  /** Whether the checkbox displays a mixed/indeterminate dash indicator (e.g. partial table row selection). */
   indeterminate?: boolean;
+  /** Legacy synthetic change handler compatible with native `<input type="checkbox">` consumers. */
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  /** Preferred callback invoked with the resolved boolean checked state when toggled. */
   onCheckedChange?: (checked: boolean) => void;
 }
 

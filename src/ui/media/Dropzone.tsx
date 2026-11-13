@@ -3,6 +3,7 @@ import { Button } from "../forms/Button";
 import { Icon } from "../foundations/Icon";
 import { cn } from "../utils";
 
+/** Props for {@link Dropzone}, a drag-and-drop media/file upload surface with inline preview. */
 export interface DropzoneProps {
   /** Accepted MIME types or extensions (e.g. `"image/*"`, `"video/*"`, `".zip"`). */
   accept?: string;

@@ -1,5 +1,9 @@
 import type { TemplateHierarchy } from "./types";
 
+/**
+ * Direction for reordering buttons within a sibling array (`"BACK"` moves toward
+ * index `0` / up; `"FORWARD"` moves toward `length - 1` / down).
+ */
 export type ReorderDirection = "BACK" | "FORWARD";
 
 function toSelectedSet(
@@ -120,4 +124,40 @@ export function reorderHierarchySiblings(
   }
 
   return nextHierarchy;
+}
+
+/**
+ * Immutably moves a single `buttonId` one step `"up"` (`"BACK"`) or `"down"` (`"FORWARD"`)
+ * within whichever sibling array(s) contain it in `hierarchy`.
+ * Returns `hierarchy` unchanged when `buttonId` is already at the boundary or absent.
+ */
+export function moveButtonInHierarchy(
+  hierarchy: TemplateHierarchy,
+  buttonId: string,
+  direction: "up" | "down" | ReorderDirection,
+): TemplateHierarchy {
+  if (!buttonId || !hierarchy) {
+    return hierarchy;
+  }
+  const normalized: ReorderDirection =
+    direction === "up" || direction === "BACK" ? "BACK" : "FORWARD";
+  const next = reorderHierarchySiblings(hierarchy, buttonId, normalized);
+
+  const sameArray = (
+    a: readonly string[] | undefined,
+    b: readonly string[] | undefined,
+  ): boolean => {
+    if (!a || !b || a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  };
+
+  for (const key of Object.keys(next)) {
+    if (!sameArray(hierarchy[key], next[key])) {
+      return next;
+    }
+  }
+  return hierarchy;
 }

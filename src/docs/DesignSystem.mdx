@@ -223,7 +223,7 @@ Both components provide smooth, hardware-accelerated expanding and collapsing an
     </p>
     <div className="pb:text-xs pb:text-gray-800 pb:space-y-1 pb:border-t pb:border-gray-100 pb:pt-2">
       <div>• <strong>Arbitrary Children</strong>: Wrap custom form fields, debug logs, or configuration inputs (<code>&lt;Collapsible title="..."&gt;...&lt;/Collapsible&gt;</code>).</div>
-      <div>• <strong>Composable</strong>: Embedded inside <code>SettingsPanel</code> or cards.</div>
+      <div>• <strong>Composable &amp; Scaled</strong>: Supports <code>size=&quot;sm&quot; | &quot;md&quot; | &quot;lg&quot;</code> inside <code>SettingsPanel</code> sidebars or standalone cards.</div>
     </div>
   </div>
 </div>
@@ -232,7 +232,36 @@ Both components provide smooth, hardware-accelerated expanding and collapsing an
 
 ---
 
-## 7. Do's and Don'ts
+## 7. Selection Controls &amp; Taxonomy Quick Reference
+
+See the dedicated **Component Selection Guide** page in Storybook for interactive recipes and full decision matrices:
+
+<div className="pb:grid pb:grid-cols-1 md:pb:grid-cols-3 pb:gap-4 pb:my-6">
+  <div className="pb:p-4 pb:rounded-xl pb:border pb:border-gray-200 pb:bg-white pb:shadow-xs">
+    <div className="pb:text-xs pb:font-bold pb:text-peerbots-darkteal pb:uppercase pb:mb-1">TabRadio</div>
+    <p className="pb:text-xs pb:text-gray-600 pb:m-0">
+      2–5 static, mutually exclusive mode/enum segments in a compact track (<code>Forms/Selection Controls/TabRadio</code>).
+    </p>
+  </div>
+  <div className="pb:p-4 pb:rounded-xl pb:border pb:border-gray-200 pb:bg-white pb:shadow-xs">
+    <div className="pb:text-xs pb:font-bold pb:text-rose-800 pb:uppercase pb:mb-1">ChipGroup</div>
+    <p className="pb:text-xs pb:text-gray-600 pb:m-0">
+      3–12+ wrapping or scrolling filter pills supporting single-select or multi-select (<code>multiple</code>) plus badges (<code>Forms/Selection Controls/ChipGroup</code>).
+    </p>
+  </div>
+  <div className="pb:p-4 pb:rounded-xl pb:border pb:border-gray-200 pb:bg-white pb:shadow-xs">
+    <div className="pb:text-xs pb:font-bold pb:text-peerbots-darkblue pb:uppercase pb:mb-1">TabSelection</div>
+    <p className="pb:text-xs pb:text-gray-600 pb:m-0">
+      Dynamic <code>tablist</code>/<code>tab</code> workspace strip with sibling Rename (<code>onEdit</code>), Close (<code>onClose</code>), and Add (<code>onAddClick</code>) buttons (<code>Forms/Selection Controls/TabSelection</code>).
+    </p>
+  </div>
+</div>
+
+- **Layout vs. Forms vs. Patterns Boundary**: Structural containers &amp; HTML primitives live under `Layout/*` (`Card`, `Table.*`, `Disclosures/*`); single/multi-value inputs &amp; selection bars live under `Forms/*` (`Input`, `SearchInput`, `Selection Controls/*`); multi-primitive workflows live under `Patterns/*` (`SettingsPanel`, `CopyButton`, `Template Views/*`).
+
+---
+
+## 8. Do's and Don'ts
 
 <div className="pb:grid pb:grid-cols-1 md:pb:grid-cols-2 pb:gap-4 pb:my-6">
   <div className="pb:p-4 pb:rounded-xl pb:border pb:border-emerald-200 pb:bg-emerald-50/60">

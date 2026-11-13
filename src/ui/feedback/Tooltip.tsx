@@ -3,10 +3,17 @@ import { Tooltip as BaseTooltip } from "@base-ui/react";
 import { cn } from "../utils";
 import { Icon } from "../foundations/Icon";
 
+/**
+ * Props for `<Tooltip>` — an accessible hover/focus tooltip backed by `@base-ui/react`.
+ */
 export interface TooltipProps {
+  /** Explanatory text or React node displayed inside the tooltip popup. */
   content: React.ReactNode;
+  /** Trigger element that reveals the tooltip on hover or keyboard focus. */
   children: React.ReactNode;
+  /** Additional classes applied to the tooltip popup. */
   className?: string;
+  /** Hover open delay preset: `"normal"` (immediate) or `"slow"` (`1000ms`). */
   delay?: "normal" | "slow";
 }
 
@@ -41,8 +48,13 @@ export function Tooltip({
     </BaseTooltip.Provider>
   );
 }
+/**
+ * Props for `<HelperTooltip>` — an inline question-mark icon trigger wrapped in `<Tooltip>`.
+ */
 export interface HelperTooltipProps {
+  /** Explanatory help content displayed when hovering or focusing the question-mark icon. */
   content: React.ReactNode;
+  /** Additional classes applied to the tooltip popup. */
   className?: string;
 }
 

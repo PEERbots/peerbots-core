@@ -2,17 +2,31 @@ import React from "react";
 import { Slider as BaseSlider } from "@base-ui/react";
 import { cn } from "../utils";
 
+/**
+ * Props for `<Slider>` — horizontal range slider backed by `@base-ui/react`.
+ */
 export interface SliderProps extends React.AriaAttributes {
+  /** Minimum track value (@default 0). */
   min?: number;
+  /** Maximum track value (@default 100). */
   max?: number;
+  /** Step increment (@default 1). */
   step?: number;
+  /** Controlled slider value. */
   value?: number;
+  /** Initial slider value in uncontrolled mode. */
   defaultValue?: number;
+  /** Disables dragging and keyboard adjustments when `true`. */
   disabled?: boolean;
+  /** Callback invoked when the thumb value changes. */
   onChange?: (value: number | number[], event: Event) => void;
+  /** Additional classes applied to the slider container. */
   className?: string;
+  /** Optional form input `name` (renders a hidden `<input>` when set). */
   name?: string;
+  /** Optional leading icon rendered beside the slider track. */
   icon?: React.ReactNode;
+  /** DOM `id` forwarded to the slider root. */
   id?: string;
 }
 

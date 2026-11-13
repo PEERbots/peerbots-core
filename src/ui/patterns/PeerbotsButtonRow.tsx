@@ -75,6 +75,11 @@ export type PeerbotsButtonRowLabels = Pick<
   | "deleteButton"
 >;
 
+/**
+ * Props for {@link PeerbotsButtonRow}.
+ *
+ * @deprecated Prefer `<TableView>` (or `<PeerbotsButtonDisplay view="Table">`), which renders semantic `<Table>` rows with sticky column headers, row color pills, bulk selection, and column Apply-All. Retained for legacy 11-column CSS grid compatibility.
+ */
 export interface PeerbotsButtonRowProps {
   /** Controlled button model */
   button?: RobotControlButton;
@@ -101,6 +106,11 @@ export interface PeerbotsButtonRowProps {
   className?: string;
 }
 
+/**
+ * Legacy 11-column CSS grid row editor for a single `RobotControlButton`.
+ *
+ * @deprecated Prefer `<TableView>` (or `<PeerbotsButtonDisplay view="Table">`), which renders semantic `<Table>` rows with sticky column headers, row color pills, bulk selection, and column Apply-All. Retained for legacy 11-column CSS grid compatibility.
+ */
 export function PeerbotsButtonRow({
   button,
   buttonInfo,

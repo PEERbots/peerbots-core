@@ -29,6 +29,12 @@ const meta: Meta<typeof DataTable> = {
   tags: ["autodocs"],
   parameters: {
     layout: "padded",
+    docs: {
+      description: {
+        component:
+          "**Three-Layer Table Architecture in `@peerbots/core`:**\n\n1. **Layout Layer (`Table.*` primitives — `Table`, `TableHead`, `TableBody`, `TableRow`, `TableHeaderCell`, `TableCell`, `TableCellField`)**: Composable semantic HTML `<table>` building blocks with sticky headers, pinned columns, density scales, and accessible cell-field label injection.\n2. **Generic Data-Grid Pattern Layer (`DataTable` + `TableToolbar` + `TableBulkActionBar` + `TableColumnApplyAllPopover` + `useTableState`)**: Declarative column-driven data grid with sorting, search filtering, pagination, Shift+Click multi-selection, and batch column Apply-All.\n3. **Domain Pattern Layer (`Patterns/Template Views/TableView`)**: Specialized Peerbots template editor built on `Table.*` with colored button/robot pills, emotion preview tiles, and `PeerbotsControlAction` dispatch.",
+      },
+    },
   },
 };
 
