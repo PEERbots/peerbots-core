@@ -18,6 +18,7 @@ import {
   PeerbotsEmotionIcon,
 } from "../forms/EmotionSelector";
 import { LanguageSelector } from "../forms/LanguageSelector";
+import { SearchInput } from "../forms";
 import { VoiceSelector } from "../forms/VoiceSelector";
 import { PeerbotsButton } from "../patterns/PeerbotsButton";
 import { PeerbotsButtonDisplay } from "../patterns/PeerbotsButtonDisplay";
@@ -717,6 +718,36 @@ describe("Domain UI Components", () => {
           />,
         ),
       ).toBe("");
+    });
+  });
+
+  describe("SearchInput (ui/forms)", () => {
+    it("submits on Enter while ignoring IME composition keydowns and clears on Escape or clear button", () => {
+      const onSearch = vi.fn();
+      const onClear = vi.fn();
+      render(
+        <SearchInput
+          defaultValue="robot"
+          aria-label="Search templates"
+          onSearch={onSearch}
+          onClear={onClear}
+        />,
+      );
+      const input = screen.getByRole("textbox", { name: "Search templates" });
+
+      // IME composition Enter (isComposing or Safari keyCode 229) must not submit prematurely
+      fireEvent.keyDown(input, { key: "Enter", isComposing: true });
+      fireEvent.keyDown(input, { key: "Enter", keyCode: 229 });
+      expect(onSearch).not.toHaveBeenCalled();
+
+      // Standard Enter triggers onSearch
+      fireEvent.keyDown(input, { key: "Enter" });
+      expect(onSearch).toHaveBeenCalledWith("robot");
+
+      // Clear button resets value and triggers onClear + onSearch("")
+      fireEvent.click(screen.getByRole("button", { name: "Clear search" }));
+      expect(onClear).toHaveBeenCalledTimes(1);
+      expect(onSearch).toHaveBeenLastCalledWith("");
     });
   });
 });

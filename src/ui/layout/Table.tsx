@@ -13,7 +13,7 @@ import { Text } from "../foundations/Typography";
 import { Popover } from "../feedback/Popover";
 import { EmptyState } from "../feedback/EmptyState";
 import { Skeleton } from "../feedback/Skeleton";
-import { SearchInput } from "../patterns/SearchInput";
+import { SearchInput } from "../forms/SearchInput";
 import {
   DEFAULT_TABLE_LABELS,
   TableLabels,

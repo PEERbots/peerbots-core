@@ -1,11 +1,11 @@
 import React, { useRef, useImperativeHandle } from "react";
 import { Icon } from "../foundations/Icon";
-import { Input, InputProps } from "../forms/Input";
+import { Input, InputProps } from "./Input";
 import { cn } from "../utils";
 
 /**
  * Props for `<SearchInput>` — single-field search input primitive combining `<Input>`, a leading magnifying-glass icon,
- * Enter-to-search, and Escape / clear-button reset behavior.
+ * IME-safe Enter-to-search, and Escape / clear-button reset behavior.
  */
 export interface SearchInputProps
   extends Omit<InputProps, "leftIcon" | "rightIcon"> {
@@ -51,8 +51,17 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter" && onSearch) {
+        if (e.nativeEvent.isComposing || e.keyCode === 229) {
+          onKeyDown?.(e);
+          return;
+        }
+        e.preventDefault();
         onSearch(internalRef.current?.value ?? "");
       } else if (e.key === "Escape") {
+        if (e.nativeEvent.isComposing || e.keyCode === 229) {
+          onKeyDown?.(e);
+          return;
+        }
         handleClear();
       }
       if (onKeyDown) {
