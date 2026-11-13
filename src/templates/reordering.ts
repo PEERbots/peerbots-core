@@ -1,5 +1,10 @@
 import type { TemplateHierarchy } from "./types";
 
+/**
+ * Direction in which to shift selected sibling buttons within an ordered list:
+ * - `"BACK"`: Moves one slot earlier (toward index `0`).
+ * - `"FORWARD"`: Moves one slot later (toward `length - 1`).
+ */
 export type ReorderDirection = "BACK" | "FORWARD";
 
 function toSelectedSet(
@@ -52,19 +57,19 @@ function reorderSiblingArray(
 }
 
 /**
- * Reorders one or more button IDs within an ordered sibling array by one position
- * (`"BACK"` toward index `0`, or `"FORWARD"` toward `length - 1`), preserving
- * relative order among multi-selected items and pinning contiguous blocks at boundaries.
- *
- * Supports both:
- * - Single-button `app.peerbots.org` signature: `(buttonID, direction, initialOrder)`
- * - Batch multi-selection signature: `(currentOrder, selectedIds, direction)`
+ * Moves a single `buttonID` one position `"BACK"` (toward index `0`) or `"FORWARD"`
+ * (toward `length - 1`) within `initialOrder` (`app.peerbots.org`-compatible signature).
  */
 export function figureOutNewOrder(
   buttonID: string,
   direction: ReorderDirection,
   initialOrder: readonly string[],
 ): string[];
+/**
+ * Moves one or more `selectedIds` by one position `"BACK"` or `"FORWARD"` within
+ * `currentOrder`, preserving relative order among multi-selected items and pinning
+ * contiguous selected blocks when they reach list boundaries.
+ */
 export function figureOutNewOrder(
   currentOrder: readonly string[],
   selectedIds: ReadonlySet<string> | readonly string[],
@@ -97,8 +102,8 @@ export function figureOutNewOrder(
 }
 
 /**
- * Immutably reorders any selected button IDs within their respective sibling lists
- * (`root` and every parent's child array) in a `TemplateHierarchy`.
+ * Immutably reorders any `selectedIds` within their respective sibling lists
+ * (`root` and every parent button's child array) in a {@link TemplateHierarchy}.
  */
 export function reorderHierarchySiblings(
   hierarchy: TemplateHierarchy,

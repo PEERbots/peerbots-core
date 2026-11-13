@@ -14,8 +14,15 @@ import {
   type TemplateHierarchy,
 } from "./types";
 
+/**
+ * Maximum file size in bytes (`2 MB`) accepted by {@link parseTemplateFile} when importing `.json` or `.csv` templates.
+ */
 export const MAX_TEMPLATE_FILE_BYTES = 2 * 1024 * 1024; // 2 MB
 
+/**
+ * Column header sequence used by modern Peerbots {@link Palette} CSV files
+ * (`title,color,emotion,speech,goal,subgoal,proficiency`).
+ */
 export const MODERN_PALETTE_CSV_HEADERS = [
   "title",
   "color",
@@ -26,6 +33,10 @@ export const MODERN_PALETTE_CSV_HEADERS = [
   "proficiency",
 ] as const;
 
+/**
+ * Column header sequence used by legacy Peerbots CSV spreadsheets with numeric `0-7` color and emotion indices
+ * (`TITLE(text),COLOR(0-7),EMOTION(0-7),SPEECH(text),GOAL(text),SUBGOAL(text),PROFICIENCY(text)`).
+ */
 export const LEGACY_PALETTE_CSV_HEADERS = [
   "TITLE(text)",
   "COLOR(0-7)",
@@ -81,6 +92,11 @@ const EMOTION_TO_LEGACY_INDEX_MAP: Record<PeerbotsEmotion, number> = {
   Sleepy: 5,
 };
 
+/**
+ * Normalizes a color name, common spelling/separator alias (`"gray"`, `"lightblue"`, `"light-blue"`, `"light_blue"`),
+ * or legacy numeric code (`0-10`, as an integer or digit string) into a canonical {@link PeerbotsColor}.
+ * Defaults to `"Light Blue"` when omitted, empty, or unrecognized.
+ */
 export function normalizePeerbotsColor(
   input?: string | number | null,
 ): PeerbotsColor {
@@ -115,8 +131,16 @@ export function normalizePeerbotsColor(
   return matched ?? "Light Blue";
 }
 
+/**
+ * Alias for {@link normalizePeerbotsColor}.
+ */
 export const normalizeColorName = normalizePeerbotsColor;
 
+/**
+ * Normalizes an emotion name, common variant (`"sleep"`, `"sleeping"`), or legacy numeric code
+ * (`0-7`, as an integer or digit string) into a canonical {@link PeerbotsEmotion}.
+ * Defaults to `"Neutral"` when omitted, empty, or unrecognized.
+ */
 export function normalizeEmotion(
   input?: string | number | null,
 ): PeerbotsEmotion {
@@ -278,10 +302,22 @@ export function detectCsvFormat(
   return "generic";
 }
 
+/**
+ * Options controlling CSV schema formatting in {@link convertPaletteToCSV}.
+ */
 export interface SerializePaletteCsvOptions {
+  /**
+   * Target CSV dialect:
+   * - `"modern"` (default): Human-readable color/emotion names with {@link MODERN_PALETTE_CSV_HEADERS}.
+   * - `"legacy"`: Numeric `0-7` color/emotion codes with {@link LEGACY_PALETTE_CSV_HEADERS}.
+   */
   format?: "modern" | "legacy";
 }
 
+/**
+ * Serializes a {@link Palette} into an RFC-4180 CSV string using either modern named columns
+ * (default) or legacy `0-7` indexed columns (`options.format === "legacy"`).
+ */
 export function convertPaletteToCSV(
   palette: Palette,
   options?: SerializePaletteCsvOptions,
@@ -304,8 +340,16 @@ export function convertPaletteToCSV(
   return serializeCsvRows(headers, dataRows);
 }
 
+/**
+ * Alias for {@link convertPaletteToCSV}.
+ */
 export const serializePaletteCsv = convertPaletteToCSV;
 
+/**
+ * Converts a flat {@link PaletteButton} row into a canonical `"Message"` {@link RobotControlButton},
+ * using the normalized `color` for both `labelColor` (controller button) and `details.color` (robot face)
+ * and storing `goal`, `subgoal`, and `proficiency` in `details.metadata`.
+ */
 export function convertPaletteButtonToRobotControlButton(
   paletteButton: PaletteButton,
 ): RobotControlButton {
@@ -328,6 +372,11 @@ export function convertPaletteButtonToRobotControlButton(
   };
 }
 
+/**
+ * Converts a {@link RobotControlButton} into a flat {@link PaletteButton} row for CSV export.
+ * `"Message"` buttons retain speech, face color, emotion, and curriculum metadata;
+ * `"Log"` buttons export `details.title`, `details.details` as `speech`, `"Light Blue"`, and `"Neutral"`.
+ */
 export function convertRobotControlButtonToPaletteButton(
   robotControlButton: RobotControlButton,
 ): PaletteButton {
@@ -361,6 +410,10 @@ export function convertRobotControlButtonToPaletteButton(
   }
 }
 
+/**
+ * Converts a flat {@link Palette} into a canonical {@link Template} with sequential string keys
+ * (`"0"`, `"1"`, ...) in `buttons` and `hierarchy.root`.
+ */
 export function convertPaletteToTemplate(palette: Palette): Template {
   return {
     title: palette.title,
@@ -379,8 +432,8 @@ export function convertPaletteToTemplate(palette: Palette): Template {
 }
 
 /**
- * Converts a canonical `Template` into a flat `Palette`, traversing the entire
- * hierarchy via `flattenHierarchy` (cycle-safe and duplicate-safe across nested children).
+ * Converts a canonical {@link Template} into a flat {@link Palette}, traversing the entire
+ * hierarchy via {@link flattenHierarchy} (cycle-safe and duplicate-safe across nested children).
  */
 export function convertTemplateToPalette<TRef>(
   template: Template<TRef>,
@@ -400,9 +453,23 @@ export function convertTemplateToPalette<TRef>(
   };
 }
 
+/**
+ * Options controlling title fallback, persistence metadata stripping, and ID synthesis
+ * when importing JSON or CSV templates via {@link parseTemplateJson}, {@link parseTemplateCsv},
+ * {@link parseTemplateText}, or {@link parseTemplateFile}.
+ */
 export interface ParseTemplateOptions {
+  /** Fallback `Template.title` used when the imported payload omits an explicit title (overrides filename-derived title). */
   fallbackTitle?: string;
+  /**
+   * When `true`, omits persistence/catalog identifiers (`id`, `contentID`, `contentName`)
+   * so imported templates can be persisted as fresh user-owned copies.
+   */
   stripDatabaseMetadata?: boolean;
+  /**
+   * When `true` (and `stripDatabaseMetadata` is not `true`), generates deterministic slug IDs
+   * for imported templates that omit `id`.
+   */
   generateMissingIds?: boolean;
 }
 
