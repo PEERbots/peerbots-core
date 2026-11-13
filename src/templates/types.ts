@@ -1,6 +1,15 @@
-import type { PeerbotsColor } from "../ui/forms/PeerbotsColorSelector";
-
-export type { PeerbotsColor };
+export type PeerbotsColor =
+  | "Light Blue"
+  | "Blue"
+  | "Green"
+  | "Red"
+  | "Purple"
+  | "Pink"
+  | "Yellow"
+  | "Orange"
+  | "Grey"
+  | "Black"
+  | "White";
 
 /**
  * Alias for backward compatibility with `app.peerbots.org` Message types.
@@ -107,15 +116,6 @@ export type RobotControlButton =
       labelColor: PeerbotsColor;
       details: LoggedEvent;
     };
-
-export type RobotControlButtonAction =
-  | { type: "CLICK" }
-  | { type: "SELECT" }
-  | { type: "ADD TO SELECTION" }
-  | { type: "REMOVE FROM SELECTION" }
-  | { type: "DELETE" }
-  | { type: "SAVE"; newButton: RobotControlButton }
-  | { type: "MOVE"; direction: "FORWARD" | "BACK" };
 
 export const blankMessageButton: RobotControlButton = {
   type: "Message",
