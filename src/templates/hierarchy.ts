@@ -100,6 +100,56 @@ export function getDirectChildIds(
   return unique;
 }
 
+/**
+ * Builds a cycle-safe, first-seen-wins parent lookup dictionary mapping each
+ * reachable `buttonId` in the hierarchy to its parent `buttonId` (or `null` for root-level buttons).
+ */
+export function getParentMap(
+  hierarchy: TemplateHierarchy,
+): Record<string, string | null> {
+  const parentMap: Record<string, string | null> = {};
+  const seen = new Set<string>();
+
+  function walk(
+    ids: string[],
+    parentId: string | null,
+    ancestors: Set<string>,
+  ) {
+    for (const id of ids) {
+      if (seen.has(id)) continue;
+      if (ancestors.has(id)) continue;
+
+      seen.add(id);
+      parentMap[id] = parentId;
+
+      const children = hierarchy[id];
+      if (children && children.length > 0) {
+        const nextAncestors = new Set(ancestors);
+        nextAncestors.add(id);
+        walk(children, id, nextAncestors);
+      }
+    }
+  }
+
+  const rootIds = Array.isArray(hierarchy?.root) ? hierarchy.root : [];
+  walk(rootIds, null, new Set());
+  return parentMap;
+}
+
+/**
+ * Returns `true` if `buttonId` is resolved as a root-level button in `hierarchy`
+ * (`depth === 0` in `flattenHierarchy`), and `false` otherwise.
+ */
+export function isRootButton(
+  hierarchy: TemplateHierarchy,
+  buttonId: string,
+): boolean {
+  if (!buttonId || !Array.isArray(hierarchy?.root)) {
+    return false;
+  }
+  return getParentMap(hierarchy)[buttonId] === null;
+}
+
 function resolveIsFallback(details: Message): boolean {
   if (details.isFallback === true) {
     return true;

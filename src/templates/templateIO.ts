@@ -50,6 +50,17 @@ const LEGACY_COLOR_INDEX_MAP: Record<number, PeerbotsColor> = {
   10: "White",
 };
 
+const COLOR_TO_LEGACY_INDEX_MAP: Partial<Record<PeerbotsColor, number>> = {
+  "Light Blue": 0,
+  Blue: 1,
+  Green: 2,
+  Red: 3,
+  Purple: 4,
+  Pink: 5,
+  Yellow: 6,
+  Orange: 7,
+};
+
 const LEGACY_EMOTION_INDEX_MAP: Record<number, PeerbotsEmotion> = {
   0: "Neutral",
   1: "Surprised",
@@ -61,6 +72,15 @@ const LEGACY_EMOTION_INDEX_MAP: Record<number, PeerbotsEmotion> = {
   7: "Neutral",
 };
 
+const EMOTION_TO_LEGACY_INDEX_MAP: Record<PeerbotsEmotion, number> = {
+  Neutral: 0,
+  Surprised: 1,
+  Happy: 2,
+  Sad: 3,
+  Concerned: 4,
+  Sleepy: 5,
+};
+
 export function normalizePeerbotsColor(
   input?: string | number | null,
 ): PeerbotsColor {
@@ -68,7 +88,9 @@ export function normalizePeerbotsColor(
     return "Light Blue";
   }
   if (typeof input === "number") {
-    return LEGACY_COLOR_INDEX_MAP[input] ?? "Light Blue";
+    return Number.isInteger(input)
+      ? (LEGACY_COLOR_INDEX_MAP[input] ?? "Light Blue")
+      : "Light Blue";
   }
   const trimmed = input.trim();
   if (!trimmed) {
@@ -82,9 +104,18 @@ export function normalizePeerbotsColor(
   if (lower === "gray") {
     return "Grey";
   }
+  if (
+    lower === "lightblue" ||
+    lower === "light-blue" ||
+    lower === "light_blue"
+  ) {
+    return "Light Blue";
+  }
   const matched = PEERBOTS_COLORS.find((c) => c.toLowerCase() === lower);
   return matched ?? "Light Blue";
 }
+
+export const normalizeColorName = normalizePeerbotsColor;
 
 export function normalizeEmotion(
   input?: string | number | null,
@@ -93,7 +124,9 @@ export function normalizeEmotion(
     return "Neutral";
   }
   if (typeof input === "number") {
-    return LEGACY_EMOTION_INDEX_MAP[input] ?? "Neutral";
+    return Number.isInteger(input)
+      ? (LEGACY_EMOTION_INDEX_MAP[input] ?? "Neutral")
+      : "Neutral";
   }
   const trimmed = input.trim();
   if (!trimmed) {
@@ -104,11 +137,33 @@ export function normalizeEmotion(
     return LEGACY_EMOTION_INDEX_MAP[idx] ?? "Neutral";
   }
   const lower = trimmed.toLowerCase();
-  if (lower === "sleep") {
+  if (lower === "sleep" || lower === "sleeping") {
     return "Sleepy";
   }
   const matched = PEERBOTS_EMOTIONS.find((e) => e.toLowerCase() === lower);
   return matched ?? "Neutral";
+}
+
+/**
+ * Maps a Peerbots color name or numeric code to its legacy `0-7` CSV index.
+ * Newer colors outside `0-7` (`"Grey"`, `"Black"`, `"White"`) and unknown values default to `0` (`"Light Blue"`).
+ */
+export function colorToLegacyIndex(
+  color: string | number | null | undefined,
+): number {
+  const normalized = normalizePeerbotsColor(color);
+  return COLOR_TO_LEGACY_INDEX_MAP[normalized] ?? 0;
+}
+
+/**
+ * Maps a Peerbots emotion name or numeric code to its legacy `0-7` CSV index (`0-5`).
+ * Unknown or out-of-range values default to `0` (`"Neutral"`).
+ */
+export function emotionToLegacyIndex(
+  emotion: string | number | null | undefined,
+): number {
+  const normalized = normalizeEmotion(emotion);
+  return EMOTION_TO_LEGACY_INDEX_MAP[normalized] ?? 0;
 }
 
 /**
@@ -173,7 +228,9 @@ export function parseCsvRows(csvText: string): string[][] {
   return rows;
 }
 
-function escapeCsvCell(value: string | number | boolean | null | undefined): string {
+function escapeCsvCell(
+  value: string | number | boolean | null | undefined,
+): string {
   const str = value === undefined || value === null ? "" : String(value);
   if (/[",\r\n]/.test(str)) {
     return `"${str.replace(/"/g, '""')}"`;
@@ -195,6 +252,32 @@ export function serializeCsvRows(
   return lines.join("\r\n");
 }
 
+/**
+ * Detects whether a CSV string uses the modern Palette header schema,
+ * the legacy Peerbots `0-7` header schema, or a generic CSV layout.
+ */
+export function detectCsvFormat(
+  csvText: string,
+): "modern" | "legacy" | "generic" {
+  const rows = parseCsvRows(csvText);
+  if (rows.length === 0) {
+    return "generic";
+  }
+  const headerSet = new Set(rows[0].map((h) => h.trim().toLowerCase()));
+  if (
+    headerSet.has("title(text)") ||
+    headerSet.has("color(0-7)") ||
+    headerSet.has("emotion(0-7)") ||
+    headerSet.has("speech(text)")
+  ) {
+    return "legacy";
+  }
+  if (MODERN_PALETTE_CSV_HEADERS.every((h) => headerSet.has(h))) {
+    return "modern";
+  }
+  return "generic";
+}
+
 export interface SerializePaletteCsvOptions {
   format?: "modern" | "legacy";
 }
@@ -203,15 +286,15 @@ export function convertPaletteToCSV(
   palette: Palette,
   options?: SerializePaletteCsvOptions,
 ): string {
-  const headers =
-    options?.format === "legacy"
-      ? LEGACY_PALETTE_CSV_HEADERS
-      : MODERN_PALETTE_CSV_HEADERS;
+  const isLegacy = options?.format === "legacy";
+  const headers = isLegacy
+    ? LEGACY_PALETTE_CSV_HEADERS
+    : MODERN_PALETTE_CSV_HEADERS;
 
   const dataRows = palette.buttons.map((row) => [
     row.title,
-    row.color,
-    row.emotion,
+    isLegacy ? String(colorToLegacyIndex(row.color)) : row.color,
+    isLegacy ? String(emotionToLegacyIndex(row.emotion)) : row.emotion,
     row.speech,
     row.goal,
     row.subgoal,
@@ -317,6 +400,46 @@ export function convertTemplateToPalette<TRef>(
   };
 }
 
+export interface ParseTemplateOptions {
+  fallbackTitle?: string;
+  stripDatabaseMetadata?: boolean;
+  generateMissingIds?: boolean;
+}
+
+interface ResolvedParseContext {
+  fileName: string;
+  fallbackTitle: string;
+  stripDatabaseMetadata: boolean;
+  generateMissingIds: boolean;
+}
+
+function resolveParseContext(
+  defaultFileName: string,
+  defaultTitleFallback: string,
+  fileNameOrOptions?: string | ParseTemplateOptions,
+  options?: ParseTemplateOptions,
+): ResolvedParseContext {
+  const fileName =
+    typeof fileNameOrOptions === "string"
+      ? fileNameOrOptions
+      : defaultFileName;
+  const opts =
+    typeof fileNameOrOptions === "object" && fileNameOrOptions !== null
+      ? fileNameOrOptions
+      : (options ?? {});
+
+  const derivedTitle =
+    fileName.replace(/\.(json|csv)$/i, "").trim() || defaultTitleFallback;
+  const fallbackTitle = opts.fallbackTitle?.trim() || derivedTitle;
+
+  return {
+    fileName,
+    fallbackTitle,
+    stripDatabaseMetadata: opts.stripDatabaseMetadata === true,
+    generateMissingIds: opts.generateMissingIds === true,
+  };
+}
+
 function slugify(value: string): string {
   return (
     value
@@ -325,6 +448,17 @@ function slugify(value: string): string {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "") || "template"
   );
+}
+
+function firstNonEmptyString(...candidates: unknown[]): string {
+  for (const candidate of candidates) {
+    if (candidate === undefined || candidate === null) continue;
+    const trimmed = String(candidate).trim();
+    if (trimmed.length > 0) {
+      return trimmed;
+    }
+  }
+  return "";
 }
 
 function normalizeKeywords(raw: unknown): string[] | undefined {
@@ -378,12 +512,10 @@ function normalizeFlatButtonItem(
     return normalizeCanonicalButton(raw);
   }
 
-  const speech = String(
-    raw.speech ?? raw.text ?? raw.message ?? "",
-  ).trim();
-  const title = String(
-    raw.title ?? raw.name ?? raw.label ?? speech,
-  ).trim();
+  const rawSpeech = firstNonEmptyString(raw.speech, raw.text, raw.message);
+  const rawTitle = firstNonEmptyString(raw.title, raw.name, raw.label);
+  const title = rawTitle || rawSpeech;
+  const speech = rawSpeech || rawTitle;
 
   if (!title || !speech) {
     return null;
@@ -398,22 +530,22 @@ function normalizeFlatButtonItem(
   const emotion = normalizeEmotion(
     raw.emotion as string | number | undefined,
   );
-  const category =
-    typeof raw.category === "string" && raw.category.trim()
-      ? raw.category.trim()
-      : undefined;
+  const category = firstNonEmptyString(raw.category) || undefined;
   const keywords = normalizeKeywords(raw.keywords);
   const isFallback = parseBooleanLike(raw.isFallback);
 
   const existingMeta = normalizeMetadata(raw.metadata) ?? {};
-  if (typeof raw.goal === "string" && raw.goal.trim()) {
-    existingMeta.goal = raw.goal.trim();
+  const goal = firstNonEmptyString(raw.goal);
+  const subgoal = firstNonEmptyString(raw.subgoal);
+  const proficiency = firstNonEmptyString(raw.proficiency);
+  if (goal) {
+    existingMeta.goal = goal;
   }
-  if (typeof raw.subgoal === "string" && raw.subgoal.trim()) {
-    existingMeta.subgoal = raw.subgoal.trim();
+  if (subgoal) {
+    existingMeta.subgoal = subgoal;
   }
-  if (typeof raw.proficiency === "string" && raw.proficiency.trim()) {
-    existingMeta.proficiency = raw.proficiency.trim();
+  if (proficiency) {
+    existingMeta.proficiency = proficiency;
   }
   const metadata =
     Object.keys(existingMeta).length > 0 ? existingMeta : undefined;
@@ -449,7 +581,7 @@ function normalizeCanonicalButton(
   );
 
   if (raw.type === "Log") {
-    const title = String(detailsObj.title ?? "").trim();
+    const title = firstNonEmptyString(detailsObj.title);
     if (!title) {
       return null;
     }
@@ -468,12 +600,19 @@ function normalizeCanonicalButton(
     };
   }
 
-  const speech = String(
-    detailsObj.speech ?? detailsObj.text ?? detailsObj.message ?? "",
-  ).trim();
-  const title = String(
-    detailsObj.title ?? detailsObj.name ?? detailsObj.label ?? speech,
-  ).trim();
+  const rawSpeech = firstNonEmptyString(
+    detailsObj.speech,
+    detailsObj.text,
+    detailsObj.message,
+  );
+  const rawTitle = firstNonEmptyString(
+    detailsObj.title,
+    detailsObj.name,
+    detailsObj.label,
+  );
+  const title = rawTitle || rawSpeech;
+  const speech = rawSpeech || rawTitle;
+
   if (!title || !speech) {
     return null;
   }
@@ -485,10 +624,7 @@ function normalizeCanonicalButton(
     detailsObj.emotion as string | number | undefined,
   );
   const metadata = normalizeMetadata(detailsObj.metadata);
-  const category =
-    typeof detailsObj.category === "string" && detailsObj.category.trim()
-      ? detailsObj.category.trim()
-      : undefined;
+  const category = firstNonEmptyString(detailsObj.category) || undefined;
   const keywords = normalizeKeywords(detailsObj.keywords);
   const isFallback =
     parseBooleanLike(detailsObj.isFallback) ||
@@ -545,21 +681,22 @@ function normalizeHierarchy(
 
 function normalizeSingleTemplateObject(
   rawTemplate: Record<string, unknown>,
-  fallbackTitle: string,
+  context: ResolvedParseContext,
   templateIndex: number,
 ): Template | null {
-  const title = String(
-    rawTemplate.title ?? rawTemplate.name ?? fallbackTitle,
-  ).trim() || fallbackTitle;
-  const explicitId =
-    typeof rawTemplate.id === "string" && rawTemplate.id.trim()
-      ? rawTemplate.id.trim()
-      : `${slugify(title)}${templateIndex > 0 ? `-${templateIndex + 1}` : ""}`;
-  const description =
-    typeof rawTemplate.description === "string" &&
-    rawTemplate.description.trim()
-      ? rawTemplate.description.trim()
-      : undefined;
+  const title =
+    firstNonEmptyString(rawTemplate.title, rawTemplate.name) ||
+    context.fallbackTitle;
+
+  const rawId = firstNonEmptyString(rawTemplate.id);
+  const resolvedId = context.stripDatabaseMetadata
+    ? undefined
+    : rawId ||
+      (context.generateMissingIds
+        ? `${slugify(title)}${templateIndex > 0 ? `-${templateIndex + 1}` : ""}`
+        : undefined);
+
+  const description = firstNonEmptyString(rawTemplate.description) || undefined;
 
   const buttons: { [key: string]: RobotControlButton } = {};
   let hierarchy: TemplateHierarchy;
@@ -598,10 +735,7 @@ function normalizeSingleTemplateObject(
       const normalized = normalizeFlatButtonItem(record);
       if (!normalized) return;
 
-      const baseKey =
-        typeof record.id === "string" && record.id.trim()
-          ? record.id.trim()
-          : idx.toString();
+      const baseKey = firstNonEmptyString(record.id) || idx.toString();
       let uniqueKey = baseKey;
       let suffix = 2;
       while (uniqueKey in buttons) {
@@ -623,13 +757,15 @@ function normalizeSingleTemplateObject(
   }
 
   return {
-    id: explicitId,
+    ...(resolvedId !== undefined ? { id: resolvedId } : {}),
     title,
     ...(description ? { description } : {}),
-    ...(typeof rawTemplate.contentID === "string"
+    ...(!context.stripDatabaseMetadata &&
+    typeof rawTemplate.contentID === "string"
       ? { contentID: rawTemplate.contentID }
       : {}),
-    ...(typeof rawTemplate.contentName === "string"
+    ...(!context.stripDatabaseMetadata &&
+    typeof rawTemplate.contentName === "string"
       ? { contentName: rawTemplate.contentName }
       : {}),
     ...(typeof rawTemplate.sourceContentId === "string"
@@ -647,18 +783,28 @@ function normalizeSingleTemplateObject(
  */
 export function parseTemplateJson(
   jsonText: string,
-  fileName = "uploaded-template.json",
+  fileNameOrOptions?: string | ParseTemplateOptions,
+  options?: ParseTemplateOptions,
 ): Template[] {
+  const context = resolveParseContext(
+    "uploaded-template.json",
+    "Imported Template",
+    fileNameOrOptions,
+    options,
+  );
+
   let parsed: unknown;
   try {
-    parsed = JSON.parse(jsonText);
+    const cleanedJson = jsonText.startsWith("\uFEFF")
+      ? jsonText.slice(1)
+      : jsonText;
+    parsed = JSON.parse(cleanedJson);
   } catch (err) {
     throw new Error(
-      `Invalid JSON in "${fileName}": ${err instanceof Error ? err.message : String(err)}`,
+      `Invalid JSON in "${context.fileName}": ${err instanceof Error ? err.message : String(err)}`,
     );
   }
 
-  const baseTitle = fileName.replace(/\.(json|csv)$/i, "") || "Imported Template";
   const rawTemplateObjects: Record<string, unknown>[] = [];
 
   if (Array.isArray(parsed)) {
@@ -677,8 +823,7 @@ export function parseTemplateJson(
       }
     } else {
       rawTemplateObjects.push({
-        id: slugify(baseTitle),
-        title: baseTitle,
+        title: context.fallbackTitle,
         buttons: parsed,
       });
     }
@@ -717,7 +862,7 @@ export function parseTemplateJson(
   rawTemplateObjects.forEach((rawTemplate, idx) => {
     const normalized = normalizeSingleTemplateObject(
       rawTemplate,
-      baseTitle,
+      context,
       idx,
     );
     if (normalized) {
@@ -727,7 +872,7 @@ export function parseTemplateJson(
 
   if (templates.length === 0) {
     throw new Error(
-      `No valid template buttons found in "${fileName}".`,
+      `No valid template buttons found in "${context.fileName}".`,
     );
   }
 
@@ -785,24 +930,26 @@ export function parsePaletteCsv(
       rowRecord[header] = (values[idx] ?? "").trim();
     });
 
-    const rawSpeech =
+    const rawSpeech = firstNonEmptyString(
       getCaseInsensitiveField(rowRecord, [
         "speech",
         "SPEECH(text)",
         "text",
         "message",
-      ]) ?? "";
-    const rawTitle =
+      ]),
+    );
+    const rawTitle = firstNonEmptyString(
       getCaseInsensitiveField(rowRecord, [
         "title",
         "TITLE(text)",
         "name",
         "label",
-      ]) ?? rawSpeech;
+      ]),
+    );
 
-    const trimmedTitle = rawTitle.trim();
-    const trimmedSpeech = rawSpeech.trim();
-    if (!trimmedTitle && !trimmedSpeech) {
+    const resolvedTitle = rawTitle || rawSpeech;
+    const resolvedSpeech = rawSpeech || rawTitle;
+    if (!resolvedTitle || !resolvedSpeech) {
       continue;
     }
 
@@ -825,8 +972,8 @@ export function parsePaletteCsv(
     ]);
 
     buttons.push({
-      title: trimmedTitle || trimmedSpeech,
-      speech: trimmedSpeech || trimmedTitle,
+      title: resolvedTitle,
+      speech: resolvedSpeech,
       color: normalizePeerbotsColor(rawColor),
       emotion: normalizeEmotion(rawEmotion),
       goal: rawGoal?.trim() || "None",
@@ -846,21 +993,48 @@ export function parsePaletteCsv(
 }
 
 /**
+ * Parses a modern Palette CSV string directly into a canonical `Template`.
+ */
+export function parsePaletteCsvToTemplate(
+  csvText: string,
+  fallbackTitle = "Imported Palette",
+): Template {
+  return convertPaletteToTemplate(parsePaletteCsv(csvText, fallbackTitle));
+}
+
+/**
+ * Parses a legacy `0-7` Peerbots CSV string directly into a canonical `Template`.
+ */
+export function parseLegacyCsvToTemplate(
+  csvText: string,
+  fallbackTitle = "Imported Palette",
+): Template {
+  return convertPaletteToTemplate(parsePaletteCsv(csvText, fallbackTitle));
+}
+
+/**
  * Parses a modern Palette CSV, legacy Peerbots CSV, or extended agent CSV
  * (including optional `id`, `category`, `keywords`, `isFallback` columns) into canonical `Template[]`.
  */
 export function parseTemplateCsv(
   csvText: string,
-  fileName = "uploaded-template.csv",
+  fileNameOrOptions?: string | ParseTemplateOptions,
+  options?: ParseTemplateOptions,
 ): Template[] {
+  const context = resolveParseContext(
+    "uploaded-template.csv",
+    "Imported Palette",
+    fileNameOrOptions,
+    options,
+  );
+
   const rows = parseCsvRows(csvText);
   if (rows.length < 2) {
     throw new Error(
-      `CSV file "${fileName}" must include a header row and at least one button row.`,
+      `CSV file "${context.fileName}" must include a header row and at least one button row.`,
     );
   }
 
-  const baseTitle = fileName.replace(/\.(json|csv)$/i, "") || "Imported Palette";
   const headers = rows[0].map((h) => h.trim());
   const rawButtons: Record<string, unknown>[] = [];
 
@@ -904,21 +1078,69 @@ export function parseTemplateCsv(
 
   const normalized = normalizeSingleTemplateObject(
     {
-      id: slugify(baseTitle),
-      title: baseTitle,
+      title: context.fallbackTitle,
       buttons: rawButtons,
     },
-    baseTitle,
+    context,
     0,
   );
 
   if (!normalized) {
     throw new Error(
-      `No valid template buttons found in CSV "${fileName}".`,
+      `No valid template buttons found in CSV "${context.fileName}".`,
     );
   }
 
   return [normalized];
+}
+
+/**
+ * Auto-detects JSON vs. CSV template text (using `fileNameHint` and leading token inspection)
+ * and parses it into canonical `Template[]`.
+ */
+export function parseTemplateText(
+  text: string,
+  fileNameHintOrOptions?: string | ParseTemplateOptions,
+  options?: ParseTemplateOptions,
+): Template[] {
+  const fileNameHint =
+    typeof fileNameHintOrOptions === "string"
+      ? fileNameHintOrOptions
+      : undefined;
+  const resolvedOpts =
+    typeof fileNameHintOrOptions === "object" && fileNameHintOrOptions !== null
+      ? fileNameHintOrOptions
+      : options;
+
+  const withoutBom = text.startsWith("\uFEFF") ? text.slice(1) : text;
+  const trimmed = withoutBom.trim();
+  if (!trimmed) {
+    throw new Error(
+      `Template content in "${fileNameHint ?? "uploaded-template"}" is empty.`,
+    );
+  }
+
+  const lowerHint = fileNameHint?.toLowerCase() ?? "";
+  const looksLikeJson = trimmed.startsWith("{") || trimmed.startsWith("[");
+
+  if (lowerHint.endsWith(".json")) {
+    return parseTemplateJson(text, fileNameHint, resolvedOpts);
+  }
+  if (lowerHint.endsWith(".csv") && !looksLikeJson) {
+    return parseTemplateCsv(text, fileNameHint, resolvedOpts);
+  }
+  if (looksLikeJson) {
+    return parseTemplateJson(
+      text,
+      fileNameHint ?? "uploaded-template.json",
+      resolvedOpts,
+    );
+  }
+  return parseTemplateCsv(
+    text,
+    fileNameHint ?? "uploaded-template.csv",
+    resolvedOpts,
+  );
 }
 
 async function readFileAsText(file: File): Promise<string> {
@@ -938,15 +1160,15 @@ async function readFileAsText(file: File): Promise<string> {
  * Validates size (`<= MAX_TEMPLATE_FILE_BYTES`) and parses an uploaded `.json` or `.csv`
  * `File` into canonical `Template[]`.
  */
-export async function parseTemplateFile(file: File): Promise<Template[]> {
+export async function parseTemplateFile(
+  file: File,
+  options?: ParseTemplateOptions,
+): Promise<Template[]> {
   if (file.size > MAX_TEMPLATE_FILE_BYTES) {
     throw new Error(
       `Template file "${file.name}" exceeds the 2 MB maximum allowed size.`,
     );
   }
   const content = await readFileAsText(file);
-  if (file.name.toLowerCase().endsWith(".csv")) {
-    return parseTemplateCsv(content, file.name);
-  }
-  return parseTemplateJson(content, file.name);
+  return parseTemplateText(content, file.name, options);
 }
