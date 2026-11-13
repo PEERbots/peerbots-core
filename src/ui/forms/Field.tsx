@@ -47,6 +47,7 @@ export const Field = React.forwardRef<HTMLDivElement, FieldProps>(
     return (
       <BaseField.Root
         ref={ref}
+        invalid={Boolean(error)}
         className={cn(
           "pb:flex",
           inline ? "pb:w-auto" : "pb:w-full",
@@ -99,6 +100,7 @@ export const Field = React.forwardRef<HTMLDivElement, FieldProps>(
 
         {error && (
           <BaseField.Error
+            match={true}
             className={cn(
               "pb:text-xs pb:text-red-600 pb:font-medium",
               labelOnEnd && "pb:ms-7",

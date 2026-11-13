@@ -56,6 +56,70 @@ export const DEFAULT_AUTH_FORM_LABELS: AuthFormLabels = {
   signUpWithGoogle: "Sign up with Google",
 };
 
+export interface TableLabels {
+  selectAll: string;
+  selectRow: string;
+  selectedCount: string;
+  clearSelection: string;
+  selectAllRows: string;
+  applyAll: string;
+  applyToAllRows: string;
+  applyToSelectedRows: string;
+  apply: string;
+  cancel: string;
+  copyCellToColumn: string;
+  sortAscending: string;
+  sortDescending: string;
+  clearSort: string;
+  emptyTitle: string;
+  emptyDescription: string;
+  searchPlaceholder: string;
+  rowsPerPage: string;
+  pageOf: string;
+  showingRange: string;
+  previousPage: string;
+  nextPage: string;
+  expandRow: string;
+  collapseRow: string;
+  modified: string;
+  densityCompact: string;
+  densityComfortable: string;
+  densitySpacious: string;
+  mobileActionsLabel: string;
+}
+
+export const DEFAULT_TABLE_LABELS: TableLabels = {
+  selectAll: "Select all rows",
+  selectRow: "Select row",
+  selectedCount: "{count} selected",
+  clearSelection: "Clear selection",
+  selectAllRows: "Select all {count} rows",
+  applyAll: "Apply all",
+  applyToAllRows: "All rows ({count})",
+  applyToSelectedRows: "Selected rows ({count})",
+  apply: "Apply",
+  cancel: "Cancel",
+  copyCellToColumn: "Apply this value to column",
+  sortAscending: "Sort ascending",
+  sortDescending: "Sort descending",
+  clearSort: "Clear sort",
+  emptyTitle: "No rows to display",
+  emptyDescription: "There are no matching records for the current view.",
+  searchPlaceholder: "Search rows...",
+  rowsPerPage: "Rows per page:",
+  pageOf: "Page {page} of {totalPages}",
+  showingRange: "Showing {start}–{end} of {total}",
+  previousPage: "Previous page",
+  nextPage: "Next page",
+  expandRow: "Expand row details",
+  collapseRow: "Collapse row details",
+  modified: "Modified",
+  densityCompact: "Compact",
+  densityComfortable: "Comfortable",
+  densitySpacious: "Spacious",
+  mobileActionsLabel: "Table controls",
+};
+
 export interface VoiceLabels {
   language: string;
   voice: string;
@@ -76,6 +140,7 @@ export interface ControlLabels {
   sendMessage: string;
   buttonTitle: string;
   sync: string;
+  syncSpeechWithTitle: string;
   syncTitleSpeechAria: string;
   labelColor: string;
   buttonType: string;
@@ -86,19 +151,30 @@ export interface ControlLabels {
   speechDetails: string;
   robotColor: string;
   emotion: string;
+  actions: string;
   moveUp: string;
   moveDown: string;
   deleteButton: string;
   applyAll: string;
+  flowLayout: string;
+  topBottom: string;
+  leftRight: string;
+  selectView: string;
+  buttonsView: string;
+  tableView: string;
+  flowView: string;
+  emptyTemplateTitle: string;
+  emptyTemplateDescription: string;
 }
 
 export const DEFAULT_CONTROL_LABELS: ControlLabels = {
   selectButton: "Select button",
-  selectAll: "Clear selected buttons",
+  selectAll: "Select all buttons",
   selectedCount: "{count} selected",
   sendMessage: "Send message",
   buttonTitle: "Title",
   sync: "Sync",
+  syncSpeechWithTitle: "Sync Speech with Title",
   syncTitleSpeechAria: "Sync button title and speech",
   labelColor: "Label Color",
   buttonType: "Type",
@@ -107,17 +183,28 @@ export const DEFAULT_CONTROL_LABELS: ControlLabels = {
   details: "Event details",
   speech: "Speech phrase",
   speechDetails: "Speech / Details",
-  robotColor: "Face Color",
+  robotColor: "Robot Color",
   emotion: "Emotion",
+  actions: "Actions",
   moveUp: "Move up",
   moveDown: "Move down",
   deleteButton: "Delete button",
-  applyAll: "Apply all...",
+  applyAll: "Apply all",
+  flowLayout: "Layout",
+  topBottom: "↓ Top-Bottom",
+  leftRight: "→ Left-Right",
+  selectView: "Select view",
+  buttonsView: "Buttons",
+  tableView: "Table",
+  flowView: "Flow",
+  emptyTemplateTitle: "No buttons in template",
+  emptyTemplateDescription: "Add buttons to this template to preview and edit them.",
 };
 
 export interface PeerbotsLabels {
   common?: Partial<CommonLabels>;
   auth?: Partial<AuthFormLabels>;
+  table?: Partial<TableLabels>;
   voice?: Partial<VoiceLabels>;
   language?: Partial<LanguageLabels>;
   control?: Partial<ControlLabels>;
