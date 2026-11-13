@@ -83,7 +83,7 @@ export const ExportActionsPopover: Story = {
           className="pb:flex pb:items-center pb:gap-2.5 pb:p-2 pb:rounded-xl pb:hover:bg-gray-100 pb:text-start pb:cursor-pointer pb:transition-colors"
         >
           <div className="pb:w-7 pb:h-7 pb:rounded-lg pb:bg-peerbots-pink/15 pb:text-peerbots-pink pb:flex pb:items-center pb:justify-center">
-            <Icon name="cube" className="pb:w-4 pb:h-4" />
+            <Icon name="squares" className="pb:w-4 pb:h-4" />
           </div>
           <div>
             <div className="pb:text-xs pb:font-bold pb:text-gray-900">Export 3MF / STL</div>

@@ -8,6 +8,7 @@ export interface CommonLabels {
   delete: string;
   save: string;
   cancel: string;
+  applyAll?: string;
 }
 
 export const DEFAULT_COMMON_LABELS: CommonLabels = {
@@ -18,6 +19,7 @@ export const DEFAULT_COMMON_LABELS: CommonLabels = {
   delete: "Delete",
   save: "Save",
   cancel: "Cancel",
+  applyAll: "Apply to selected...",
 };
 
 export interface AuthFormLabels {
@@ -118,11 +120,95 @@ export const DEFAULT_TABLE_LABELS: TableLabels = {
   mobileActionsLabel: "Table controls",
 };
 
+export interface VoiceLabels {
+  language: string;
+  voice: string;
+  languagePlaceholder: string;
+  voicePlaceholder: string;
+}
+
+export interface LanguageLabels {
+  language: string;
+  beta: string;
+  new: string;
+}
+
+export interface ControlLabels {
+  selectButton: string;
+  selectAll: string;
+  selectedCount: string;
+  sendMessage: string;
+  buttonTitle: string;
+  sync: string;
+  syncSpeechWithTitle: string;
+  syncTitleSpeechAria: string;
+  labelColor: string;
+  buttonType: string;
+  message: string;
+  log: string;
+  details: string;
+  speech: string;
+  speechDetails: string;
+  robotColor: string;
+  emotion: string;
+  actions: string;
+  moveUp: string;
+  moveDown: string;
+  deleteButton: string;
+  applyAll: string;
+  flowLayout: string;
+  topBottom: string;
+  leftRight: string;
+  selectView: string;
+  buttonsView: string;
+  tableView: string;
+  flowView: string;
+  emptyTemplateTitle: string;
+  emptyTemplateDescription: string;
+}
+
+export const DEFAULT_CONTROL_LABELS: ControlLabels = {
+  selectButton: "Select button",
+  selectAll: "Select all buttons",
+  selectedCount: "{count} selected",
+  sendMessage: "Send message",
+  buttonTitle: "Title",
+  sync: "Sync",
+  syncSpeechWithTitle: "Sync Speech with Title",
+  syncTitleSpeechAria: "Sync button title and speech",
+  labelColor: "Label Color",
+  buttonType: "Type",
+  message: "Message",
+  log: "Log",
+  details: "Event details",
+  speech: "Speech phrase",
+  speechDetails: "Speech / Details",
+  robotColor: "Robot Color",
+  emotion: "Emotion",
+  actions: "Actions",
+  moveUp: "Move up",
+  moveDown: "Move down",
+  deleteButton: "Delete button",
+  applyAll: "Apply all",
+  flowLayout: "Layout",
+  topBottom: "↓ Top-Bottom",
+  leftRight: "→ Left-Right",
+  selectView: "Select view",
+  buttonsView: "Buttons",
+  tableView: "Table",
+  flowView: "Flow",
+  emptyTemplateTitle: "No buttons in template",
+  emptyTemplateDescription: "Add buttons to this template to preview and edit them.",
+};
+
 export interface PeerbotsLabels {
   common?: Partial<CommonLabels>;
   auth?: Partial<AuthFormLabels>;
   table?: Partial<TableLabels>;
-  [key: string]: Record<string, string> | undefined;
+  voice?: Partial<VoiceLabels>;
+  language?: Partial<LanguageLabels>;
+  control?: Partial<ControlLabels>;
+  [key: string]: Record<string, string | undefined> | undefined;
 }
 
 export interface PeerbotsI18nContextValue {

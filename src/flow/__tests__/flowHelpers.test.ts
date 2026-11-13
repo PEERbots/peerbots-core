@@ -1,0 +1,283 @@
+import { describe, expect, it } from "vitest";
+import type { RobotControlButton, Template } from "../../templates/types";
+import { templateToFlowElements } from "../flowHelpers";
+
+const makeButton = (title: string): RobotControlButton => ({
+  type: "Message",
+  labelColor: "Light Blue",
+  details: {
+    title,
+    speech: title,
+    color: "Light Blue",
+    emotion: "Neutral",
+  },
+});
+
+describe("templateToFlowElements", () => {
+  it("returns empty arrays for a template with no buttons", () => {
+    const template: Template = {
+      title: "Empty",
+      buttons: {},
+      hierarchy: { root: [] },
+    };
+    const { nodes, edges } = templateToFlowElements(template);
+    expect(nodes).toHaveLength(0);
+    expect(edges).toHaveLength(0);
+  });
+
+  it("creates nodes but no edges for a flat root-only hierarchy", () => {
+    const template: Template = {
+      title: "Flat",
+      buttons: {
+        a: makeButton("A"),
+        b: makeButton("B"),
+        c: makeButton("C"),
+      },
+      hierarchy: { root: ["a", "b", "c"] },
+    };
+    const { nodes, edges } = templateToFlowElements(template);
+
+    expect(nodes).toHaveLength(3);
+    expect(nodes[0].id).toBe("a");
+    expect(nodes[1].id).toBe("b");
+    expect(nodes[2].id).toBe("c");
+    expect(edges).toHaveLength(0);
+  });
+
+  it("creates edges only from hierarchy sub-keys", () => {
+    const template: Template = {
+      title: "Nested",
+      buttons: {
+        root1: makeButton("Root 1"),
+        child1: makeButton("Child 1"),
+        child2: makeButton("Child 2"),
+      },
+      hierarchy: {
+        root: ["root1"],
+        root1: ["child1", "child2"],
+      },
+    };
+    const { nodes, edges } = templateToFlowElements(template);
+
+    expect(nodes).toHaveLength(3);
+    expect(edges).toHaveLength(2);
+    expect(edges).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ source: "root1", target: "child1" }),
+        expect.objectContaining({ source: "root1", target: "child2" }),
+      ]),
+    );
+  });
+
+  it("uses peerbotsButton node type for all nodes", () => {
+    const template: Template = {
+      title: "Types",
+      buttons: { x: makeButton("X") },
+      hierarchy: { root: ["x"] },
+    };
+    const { nodes } = templateToFlowElements(template);
+    expect(nodes[0].type).toBe("peerbotsButton");
+  });
+
+  it("uses straight edge type with arrow markers", () => {
+    const template: Template = {
+      title: "EdgeType",
+      buttons: {
+        a: makeButton("A"),
+        b: makeButton("B"),
+      },
+      hierarchy: { root: ["a"], a: ["b"] },
+    };
+    const { edges } = templateToFlowElements(template);
+    expect(edges).toHaveLength(1);
+    expect(edges[0].type).toBe("straight");
+    expect(edges[0].markerEnd).toBeDefined();
+  });
+
+  describe("TB direction (default)", () => {
+    it("positions parent above children", () => {
+      const template: Template = {
+        title: "TB-children",
+        buttons: {
+          p: makeButton("Parent"),
+          c1: makeButton("Child 1"),
+          c2: makeButton("Child 2"),
+        },
+        hierarchy: { root: ["p"], p: ["c1", "c2"] },
+      };
+      const { nodes } = templateToFlowElements(template, "TB");
+      const parent = nodes.find((n) => n.id === "p")!;
+      const child1 = nodes.find((n) => n.id === "c1")!;
+      const child2 = nodes.find((n) => n.id === "c2")!;
+
+      expect(parent.position.y).toBeLessThan(child1.position.y);
+      expect(parent.position.y).toBeLessThan(child2.position.y);
+    });
+  });
+
+  describe("LR direction", () => {
+    it("positions parent to the left of children", () => {
+      const template: Template = {
+        title: "LR-children",
+        buttons: {
+          p: makeButton("Parent"),
+          c1: makeButton("Child 1"),
+          c2: makeButton("Child 2"),
+        },
+        hierarchy: { root: ["p"], p: ["c1", "c2"] },
+      };
+      const { nodes } = templateToFlowElements(template, "LR");
+      const parent = nodes.find((n) => n.id === "p")!;
+      const child1 = nodes.find((n) => n.id === "c1")!;
+      const child2 = nodes.find((n) => n.id === "c2")!;
+
+      expect(parent.position.x).toBeLessThan(child1.position.x);
+      expect(parent.position.x).toBeLessThan(child2.position.x);
+    });
+  });
+
+  it("does not create duplicate nodes", () => {
+    const template: Template = {
+      title: "Dedup",
+      buttons: {
+        a: makeButton("A"),
+        b: makeButton("B"),
+      },
+      hierarchy: {
+        root: ["a", "b"],
+        a: ["b"],
+      },
+    };
+    const { nodes } = templateToFlowElements(template);
+    const ids = nodes.map((n) => n.id);
+    expect(ids).toEqual([...new Set(ids)]);
+    expect(nodes).toHaveLength(2);
+  });
+
+  it("does not produce duplicate edge IDs", () => {
+    const template: Template = {
+      title: "NoDupEdges",
+      buttons: {
+        a: makeButton("A"),
+        b: makeButton("B"),
+        c: makeButton("C"),
+      },
+      hierarchy: {
+        root: ["a", "b", "c"],
+        a: ["b", "b"],
+      },
+    };
+    const { edges } = templateToFlowElements(template);
+    const edgeIds = edges.map((e) => e.id);
+    expect(edgeIds).toEqual([...new Set(edgeIds)]);
+    expect(edges).toHaveLength(1);
+    expect(edges[0]).toMatchObject({ source: "a", target: "b" });
+  });
+
+  it("assigns valid positions to all nodes", () => {
+    const template: Template = {
+      title: "Positions",
+      buttons: {
+        a: makeButton("A"),
+        b: makeButton("B"),
+        c: makeButton("C"),
+      },
+      hierarchy: {
+        root: ["a"],
+        a: ["b", "c"],
+      },
+    };
+    const { nodes } = templateToFlowElements(template);
+    for (const node of nodes) {
+      expect(typeof node.position.x).toBe("number");
+      expect(typeof node.position.y).toBe("number");
+      expect(Number.isFinite(node.position.x)).toBe(true);
+      expect(Number.isFinite(node.position.y)).toBe(true);
+    }
+  });
+
+  it("handles deep chains correctly", () => {
+    const template: Template = {
+      title: "DeepChain",
+      buttons: {
+        a: makeButton("A"),
+        b: makeButton("B"),
+        c: makeButton("C"),
+        d: makeButton("D"),
+      },
+      hierarchy: {
+        root: ["a"],
+        a: ["b"],
+        b: ["c"],
+        c: ["d"],
+      },
+    };
+    const { nodes, edges } = templateToFlowElements(template, "TB");
+
+    expect(nodes).toHaveLength(4);
+    expect(edges).toHaveLength(3);
+
+    const a = nodes.find((n) => n.id === "a")!;
+    const b = nodes.find((n) => n.id === "b")!;
+    const c = nodes.find((n) => n.id === "c")!;
+    const d = nodes.find((n) => n.id === "d")!;
+
+    expect(a.position.y).toBeLessThan(b.position.y);
+    expect(b.position.y).toBeLessThan(c.position.y);
+    expect(c.position.y).toBeLessThan(d.position.y);
+  });
+
+  describe("orphan and incomplete button map guards", () => {
+    it("skips edges when parentId or childId is missing from template.buttons without crashing Dagre", () => {
+      const template: Template = {
+        title: "OrphanEdges",
+        buttons: {
+          validRoot: makeButton("Valid Root"),
+          validChild: makeButton("Valid Child"),
+        },
+        hierarchy: {
+          root: ["validRoot", "missingRoot"],
+          validRoot: ["validChild", "missingChild"],
+          missingParent: ["validChild", "missingChild"],
+        },
+      };
+
+      const { nodes, edges } = templateToFlowElements(template, "TB");
+      expect(nodes.map((n) => n.id)).toEqual(["validRoot", "validChild"]);
+      expect(edges).toHaveLength(1);
+      expect(edges[0]).toMatchObject({
+        id: "e-validRoot-validChild",
+        source: "validRoot",
+        target: "validChild",
+      });
+      for (const node of nodes) {
+        expect(Number.isFinite(node.position.x)).toBe(true);
+        expect(Number.isFinite(node.position.y)).toBe(true);
+      }
+    });
+
+    it("handles hierarchy sub-keys visited in reverse order or unrooted parent nodes", () => {
+      const template: Template = {
+        title: "OutOfOrderSubKeys",
+        buttons: {
+          a: makeButton("A"),
+          b: makeButton("B"),
+          c: makeButton("C"),
+        },
+        hierarchy: {
+          root: ["a"],
+          b: ["c"],
+          a: ["b"],
+        },
+      };
+
+      const { nodes, edges } = templateToFlowElements(template, "TB");
+      expect(nodes).toHaveLength(3);
+      expect(edges).toHaveLength(2);
+      for (const node of nodes) {
+        expect(Number.isFinite(node.position.x)).toBe(true);
+        expect(Number.isFinite(node.position.y)).toBe(true);
+      }
+    });
+  });
+});

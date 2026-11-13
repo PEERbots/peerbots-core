@@ -69,7 +69,7 @@ export const MultiSelectFilter: Story = {
           variant="soft"
           options={[
             { value: "audio", label: "Audio Output", icon: <Icon name="speakerWave" className="pb:w-3.5 pb:h-3.5 pb:me-1" /> },
-            { value: "video", label: "Camera Vision", icon: <Icon name="camera" className="pb:w-3.5 pb:h-3.5 pb:me-1" /> },
+            { value: "video", label: "Camera Vision", icon: <Icon name="face" className="pb:w-3.5 pb:h-3.5 pb:me-1" /> },
             { value: "motors", label: "Servos & Motors" },
             { value: "leds", label: "RGB Matrix" },
             { value: "imu", label: "Gyro/IMU", disabled: true, badge: "Experimental" },
