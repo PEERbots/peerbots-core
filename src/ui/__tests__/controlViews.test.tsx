@@ -717,6 +717,14 @@ describe("Control Views Suite (ButtonView, TableView, FlowView)", () => {
         { type: "CLICK" },
       );
 
+      // Selection toolbar shows Edit and + Add, without a Delete button
+      expect(
+        screen.getByRole("button", { name: /Edit/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /delete/i }),
+      ).not.toBeInTheDocument();
+
       // Toggle layout direction from TB to LR via TabRadio
       const lrToggle = screen.getByRole("button", { name: /Left-Right/i });
       fireEvent.click(lrToggle);
@@ -809,6 +817,11 @@ describe("Control Views Suite (ButtonView, TableView, FlowView)", () => {
       if (syncedBtn.type === "Message") {
         expect(syncedBtn.details.speech).toBe("Hello");
       }
+
+      const deleteBtn = screen.getByRole("button", { name: "Delete button" });
+      expect(deleteBtn).toHaveTextContent("Delete");
+      expect(deleteBtn.className).toContain("pb:bg-red-50");
+      expect(deleteBtn.className).toContain("pb:text-red-800");
 
       fireEvent.click(
         screen.getByRole("button", { name: "Close edit popover" }),

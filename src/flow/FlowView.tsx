@@ -170,14 +170,6 @@ const PeerbotsButtonNode = memo(function PeerbotsButtonNode({
           >
             + Add
           </button>
-          <button
-            type="button"
-            onClick={() => onDeleteNode(buttonId)}
-            aria-label={`Delete ${button.details.title}`}
-            className="pb:px-1.5 pb:py-0.5 pb:text-[11px] pb:font-semibold pb:rounded pb:text-red-700 hover:pb:bg-red-50 pb:cursor-pointer"
-          >
-            Delete
-          </button>
         </div>
       </NodeToolbar>
 

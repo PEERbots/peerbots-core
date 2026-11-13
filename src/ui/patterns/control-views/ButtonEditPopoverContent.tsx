@@ -1,5 +1,6 @@
 import React, { useId, useState } from "react";
 import {
+  DEFAULT_COMMON_LABELS,
   DEFAULT_CONTROL_LABELS,
   usePeerbotsI18n,
   type ControlLabels,
@@ -72,6 +73,8 @@ export function SingleButtonEditPanel({
     ...contextLabels?.control,
     ...labels,
   };
+  const deleteLabel =
+    contextLabels?.common?.delete ?? DEFAULT_COMMON_LABELS.delete;
 
   const syncSwitchId = useId();
   const [uncontrolledSync, setUncontrolledSync] = useState<boolean>(() => {
@@ -362,7 +365,7 @@ export function SingleButtonEditPanel({
 
       {/* Footer actions */}
       {(onAddChild || onDuplicate || onDelete) && (
-        <div className="pb:flex pb:items-center pb:justify-between pb:gap-1.5 pb:pt-1.5 pb:border-t pb:border-gray-100">
+        <div className="pb:flex pb:items-center pb:justify-between pb:gap-2 pb:pt-2 pb:border-t pb:border-gray-200">
           <div className="pb:flex pb:items-center pb:gap-1">
             {onAddChild && (
               <Button
@@ -389,13 +392,15 @@ export function SingleButtonEditPanel({
           {onDelete && (
             <Button
               type="button"
-              variant="ghost"
+              variant="soft"
+              color="danger"
               size="sm"
               onClick={onDelete}
               aria-label={resolvedLabels.deleteButton}
-              className="pb:text-red-600 pb:hover:text-red-700 pb:hover:bg-red-50"
+              className="pb:border pb:border-red-200 pb:gap-1"
             >
               <Icon name="close" size="sm" aria-hidden="true" />
+              {deleteLabel}
             </Button>
           )}
         </div>
