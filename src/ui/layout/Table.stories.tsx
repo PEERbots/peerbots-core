@@ -222,6 +222,72 @@ export const Default: Story = {
  * 1.5 Variations Story — Interactive Guide to All Subcomponents & Configurations
  * ========================================================================== */
 
+interface ExpressionCueRow {
+  id: string;
+  cueName: string;
+  phrase: string;
+  emotion: string;
+  ledColor: string;
+  speed: number;
+  autoPlay: boolean;
+}
+
+const emotionOptions = [
+  { label: "Happy", value: "happy" },
+  { label: "Calm", value: "calm" },
+  { label: "Curious", value: "curious" },
+  { label: "Surprised", value: "surprised" },
+  { label: "Empathetic", value: "empathetic" },
+];
+
+const initialCueRows: ExpressionCueRow[] = [
+  {
+    id: "cue-1",
+    cueName: "Greeting Wave",
+    phrase: "Hello friend! Ready to learn together?",
+    emotion: "happy",
+    ledColor: "teal",
+    speed: 1.0,
+    autoPlay: true,
+  },
+  {
+    id: "cue-2",
+    cueName: "Active Listening",
+    phrase: "I'm listening, tell me more about that.",
+    emotion: "empathetic",
+    ledColor: "cyan",
+    speed: 0.9,
+    autoPlay: true,
+  },
+  {
+    id: "cue-3",
+    cueName: "Celebration",
+    phrase: "Awesome job solving that puzzle!",
+    emotion: "surprised",
+    ledColor: "pink",
+    speed: 1.2,
+    autoPlay: false,
+  },
+  {
+    id: "cue-4",
+    cueName: "Deep Breath Prompt",
+    phrase: "Let's take a slow, calm breath together.",
+    emotion: "calm",
+    ledColor: "teal",
+    speed: 0.8,
+    autoPlay: true,
+  },
+  {
+    id: "cue-5",
+    cueName: "Question Prompt",
+    phrase: "What do you think happens next?",
+    emotion: "curious",
+    ledColor: "amber",
+    speed: 1.0,
+    autoPlay: false,
+  },
+];
+
 export const Variations: Story = {
   render: () => {
     const [demoSearch, setDemoSearch] = useState("");
