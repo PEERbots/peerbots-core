@@ -11,6 +11,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { FlowView } from "../../flow/FlowView";
 import { moveButtonInHierarchy } from "../../templates/reordering";
 import type { Template } from "../../templates/types";
+import { BatchButtonEditPanel } from "../patterns/control-views/ButtonEditPopoverContent";
 import { ButtonView } from "../patterns/control-views/ButtonView";
 import { TableView } from "../patterns/control-views/TableView";
 import { applyControlActionToTemplate } from "../patterns/control-views/applyControlAction";
@@ -720,6 +721,111 @@ describe("Control Views Suite (ButtonView, TableView, FlowView)", () => {
       const lrToggle = screen.getByRole("button", { name: /Left-Right/i });
       fireEvent.click(lrToggle);
       expect(onDirectionChange).toHaveBeenCalledWith("LR");
+    });
+
+    it("renders modeless Select/Pan drag toggle, + Message / + Log / Auto-Layout toolbar, and creates new root nodes", () => {
+      const onTemplateChange = vi.fn();
+      const template = makeRichTemplate();
+
+      render(
+        <FlowView
+          template={template}
+          onTemplateChange={onTemplateChange}
+          onButtonAction={() => undefined}
+        />,
+      );
+
+      // Option 1 Log button uses dashed border and zap badge SVG
+      const logBtn = screen.getByRole("button", { name: "Session Marker" });
+      expect(logBtn.className).toContain("pb:border-dashed");
+      expect(logBtn.querySelector("svg")).not.toBeNull();
+
+      // Modeless drag toggle (↖ Select / ✋ Pan)
+      const selectBtn = screen.getByRole("button", { name: /Select/i });
+      const panBtn = screen.getByRole("button", { name: /Pan/i });
+      expect(selectBtn).toHaveAttribute("aria-pressed", "true");
+      fireEvent.click(panBtn);
+      expect(panBtn).toHaveAttribute("aria-pressed", "true");
+
+      // + Message creates a new root Message button in template
+      fireEvent.click(screen.getByRole("button", { name: "+ Message" }));
+      expect(onTemplateChange).toHaveBeenCalledTimes(1);
+      const nextTemplate = onTemplateChange.mock.calls[0][0] as Template;
+      expect(Object.keys(nextTemplate.buttons).length).toBe(
+        Object.keys(template.buttons).length + 1,
+      );
+      expect(nextTemplate.hierarchy.root.length).toBe(
+        template.hierarchy.root.length + 1,
+      );
+    });
+  });
+
+  describe("ButtonView Right-Click Edit Popover & BatchButtonEditPanel", () => {
+    it("opens the concise Edit Popover on right-click in ButtonView and saves title/emotion edits", () => {
+      const onButtonAction = vi.fn();
+      const onTemplateChange = vi.fn();
+      const template = makeRichTemplate();
+
+      render(
+        <ButtonView
+          template={template}
+          onTemplateChange={onTemplateChange}
+          onButtonAction={onButtonAction}
+        />,
+      );
+
+      const helloBtn = screen.getByRole("button", { name: "Hello" });
+      fireEvent.contextMenu(helloBtn);
+
+      const titleInput = screen.getByRole("textbox", { name: "Title" });
+      expect(titleInput).toHaveValue("Hello");
+      fireEvent.change(titleInput, { target: { value: "Warm Hello" } });
+
+      expect(onTemplateChange).toHaveBeenCalledTimes(1);
+      const updated = onTemplateChange.mock.calls[0][0] as Template;
+      expect(updated.buttons["btn-1"].details.title).toBe("Warm Hello");
+
+      fireEvent.click(screen.getByRole("button", { name: "Close editor" }));
+      expect(
+        screen.queryByRole("textbox", { name: "Title" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("shows scoped controls in BatchButtonEditPanel for mixed Message + Log selection", () => {
+      const template = makeRichTemplate();
+      const onApplyLabelColor = vi.fn();
+      const onApplyFaceColor = vi.fn();
+      const onApplyEmotion = vi.fn();
+      const onClearSelection = vi.fn();
+
+      render(
+        <BatchButtonEditPanel
+          selectedButtons={[
+            { buttonId: "btn-1", button: template.buttons["btn-1"] },
+            { buttonId: "btn-log", button: template.buttons["btn-log"] },
+          ]}
+          onApplyLabelColor={onApplyLabelColor}
+          onApplyFaceColor={onApplyFaceColor}
+          onApplyEmotion={onApplyEmotion}
+          onClearSelection={onClearSelection}
+        />,
+      );
+
+      expect(screen.getByText("1 Message · 1 Log")).toBeInTheDocument();
+      expect(screen.getByText("(All 2)")).toBeInTheDocument();
+      expect(screen.getByText("(1 Message)")).toBeInTheDocument();
+
+      fireEvent.click(
+        screen.getByRole("radio", { name: "Batch button label color Orange" }),
+      );
+      expect(onApplyLabelColor).toHaveBeenCalledWith("Orange");
+
+      fireEvent.click(
+        within(
+          screen.getByRole("radiogroup", { name: "Batch robot emotion" }),
+        ).getByRole("radio", { name: "Select emotion Surprised" }),
+      );
+      expect(onApplyEmotion).toHaveBeenCalledWith("Surprised");
     });
   });
 });
