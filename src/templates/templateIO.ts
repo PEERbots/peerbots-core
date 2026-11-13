@@ -1,457 +1,61 @@
-import { flattenHierarchy } from "./hierarchy";
 import {
-  PEERBOTS_COLORS,
-  PEERBOTS_EMOTIONS,
-  type LoggedEvent,
-  type Message,
-  type MetaData,
-  type Palette,
-  type PaletteButton,
-  type PeerbotsColor,
-  type PeerbotsEmotion,
-  type RobotControlButton,
-  type Template,
-  type TemplateHierarchy,
+  detectCsvFormat,
+  LEGACY_PALETTE_CSV_HEADERS,
+  MODERN_PALETTE_CSV_HEADERS,
+  parseCsvRows,
+  serializeCsvRows,
+} from "./csv";
+import {
+  colorToLegacyIndex,
+  emotionToLegacyIndex,
+  normalizeColorName,
+  normalizeEmotion,
+  normalizePeerbotsColor,
+} from "./normalization";
+import {
+  convertPaletteButtonToRobotControlButton,
+  convertPaletteToCSV,
+  convertPaletteToTemplate,
+  convertRobotControlButtonToPaletteButton,
+  convertTemplateToPalette,
+  serializePaletteCsv,
+  type SerializePaletteCsvOptions,
+} from "./paletteConverters";
+import type {
+  LoggedEvent,
+  Message,
+  MetaData,
+  Palette,
+  PaletteButton,
+  RobotControlButton,
+  Template,
+  TemplateHierarchy,
 } from "./types";
+
+export {
+  colorToLegacyIndex,
+  convertPaletteButtonToRobotControlButton,
+  convertPaletteToCSV,
+  convertPaletteToTemplate,
+  convertRobotControlButtonToPaletteButton,
+  convertTemplateToPalette,
+  detectCsvFormat,
+  emotionToLegacyIndex,
+  LEGACY_PALETTE_CSV_HEADERS,
+  MODERN_PALETTE_CSV_HEADERS,
+  normalizeColorName,
+  normalizeEmotion,
+  normalizePeerbotsColor,
+  parseCsvRows,
+  serializeCsvRows,
+  serializePaletteCsv,
+  type SerializePaletteCsvOptions,
+};
 
 /**
  * Maximum file size in bytes (`2 MB`) accepted by {@link parseTemplateFile} when importing `.json` or `.csv` templates.
  */
 export const MAX_TEMPLATE_FILE_BYTES = 2 * 1024 * 1024; // 2 MB
-
-/**
- * Column header sequence used by modern Peerbots {@link Palette} CSV files
- * (`title,color,emotion,speech,goal,subgoal,proficiency`).
- */
-export const MODERN_PALETTE_CSV_HEADERS = [
-  "title",
-  "color",
-  "emotion",
-  "speech",
-  "goal",
-  "subgoal",
-  "proficiency",
-] as const;
-
-/**
- * Column header sequence used by legacy Peerbots CSV spreadsheets with numeric `0-7` color and emotion indices
- * (`TITLE(text),COLOR(0-7),EMOTION(0-7),SPEECH(text),GOAL(text),SUBGOAL(text),PROFICIENCY(text)`).
- */
-export const LEGACY_PALETTE_CSV_HEADERS = [
-  "TITLE(text)",
-  "COLOR(0-7)",
-  "EMOTION(0-7)",
-  "SPEECH(text)",
-  "GOAL(text)",
-  "SUBGOAL(text)",
-  "PROFICIENCY(text)",
-] as const;
-
-const LEGACY_COLOR_INDEX_MAP: Record<number, PeerbotsColor> = {
-  0: "Light Blue",
-  1: "Blue",
-  2: "Green",
-  3: "Red",
-  4: "Purple",
-  5: "Pink",
-  6: "Yellow",
-  7: "Orange",
-  8: "Grey",
-  9: "Black",
-  10: "White",
-};
-
-const COLOR_TO_LEGACY_INDEX_MAP: Partial<Record<PeerbotsColor, number>> = {
-  "Light Blue": 0,
-  Blue: 1,
-  Green: 2,
-  Red: 3,
-  Purple: 4,
-  Pink: 5,
-  Yellow: 6,
-  Orange: 7,
-};
-
-const LEGACY_EMOTION_INDEX_MAP: Record<number, PeerbotsEmotion> = {
-  0: "Neutral",
-  1: "Surprised",
-  2: "Happy",
-  3: "Sad",
-  4: "Concerned",
-  5: "Sleepy",
-  6: "Neutral",
-  7: "Neutral",
-};
-
-const EMOTION_TO_LEGACY_INDEX_MAP: Record<PeerbotsEmotion, number> = {
-  Neutral: 0,
-  Surprised: 1,
-  Happy: 2,
-  Sad: 3,
-  Concerned: 4,
-  Sleepy: 5,
-};
-
-/**
- * Normalizes a color name, common spelling/separator alias (`"gray"`, `"lightblue"`, `"light-blue"`, `"light_blue"`),
- * or legacy numeric code (`0-10`, as an integer or digit string) into a canonical {@link PeerbotsColor}.
- * Defaults to `"Light Blue"` when omitted, empty, or unrecognized.
- */
-export function normalizePeerbotsColor(
-  input?: string | number | null,
-): PeerbotsColor {
-  if (input === undefined || input === null) {
-    return "Light Blue";
-  }
-  if (typeof input === "number") {
-    return Number.isInteger(input)
-      ? (LEGACY_COLOR_INDEX_MAP[input] ?? "Light Blue")
-      : "Light Blue";
-  }
-  const trimmed = input.trim();
-  if (!trimmed) {
-    return "Light Blue";
-  }
-  if (/^\d+$/.test(trimmed)) {
-    const idx = Number.parseInt(trimmed, 10);
-    return LEGACY_COLOR_INDEX_MAP[idx] ?? "Light Blue";
-  }
-  const lower = trimmed.toLowerCase();
-  if (lower === "gray") {
-    return "Grey";
-  }
-  if (
-    lower === "lightblue" ||
-    lower === "light-blue" ||
-    lower === "light_blue"
-  ) {
-    return "Light Blue";
-  }
-  const matched = PEERBOTS_COLORS.find((c) => c.toLowerCase() === lower);
-  return matched ?? "Light Blue";
-}
-
-/**
- * Alias for {@link normalizePeerbotsColor}.
- */
-export const normalizeColorName = normalizePeerbotsColor;
-
-/**
- * Normalizes an emotion name, common variant (`"sleep"`, `"sleeping"`), or legacy numeric code
- * (`0-7`, as an integer or digit string) into a canonical {@link PeerbotsEmotion}.
- * Defaults to `"Neutral"` when omitted, empty, or unrecognized.
- */
-export function normalizeEmotion(
-  input?: string | number | null,
-): PeerbotsEmotion {
-  if (input === undefined || input === null) {
-    return "Neutral";
-  }
-  if (typeof input === "number") {
-    return Number.isInteger(input)
-      ? (LEGACY_EMOTION_INDEX_MAP[input] ?? "Neutral")
-      : "Neutral";
-  }
-  const trimmed = input.trim();
-  if (!trimmed) {
-    return "Neutral";
-  }
-  if (/^\d+$/.test(trimmed)) {
-    const idx = Number.parseInt(trimmed, 10);
-    return LEGACY_EMOTION_INDEX_MAP[idx] ?? "Neutral";
-  }
-  const lower = trimmed.toLowerCase();
-  if (lower === "sleep" || lower === "sleeping") {
-    return "Sleepy";
-  }
-  const matched = PEERBOTS_EMOTIONS.find((e) => e.toLowerCase() === lower);
-  return matched ?? "Neutral";
-}
-
-/**
- * Maps a Peerbots color name or numeric code to its legacy `0-7` CSV index.
- * Newer colors outside `0-7` (`"Grey"`, `"Black"`, `"White"`) and unknown values default to `0` (`"Light Blue"`).
- */
-export function colorToLegacyIndex(
-  color: string | number | null | undefined,
-): number {
-  const normalized = normalizePeerbotsColor(color);
-  return COLOR_TO_LEGACY_INDEX_MAP[normalized] ?? 0;
-}
-
-/**
- * Maps a Peerbots emotion name or numeric code to its legacy `0-7` CSV index (`0-5`).
- * Unknown or out-of-range values default to `0` (`"Neutral"`).
- */
-export function emotionToLegacyIndex(
-  emotion: string | number | null | undefined,
-): number {
-  const normalized = normalizeEmotion(emotion);
-  return EMOTION_TO_LEGACY_INDEX_MAP[normalized] ?? 0;
-}
-
-/**
- * Parses an RFC-4180 compliant CSV string into a 2D array of string cells,
- * handling quoted fields, escaped quotes (`""`), embedded newlines, and UTF-8 BOM.
- */
-export function parseCsvRows(csvText: string): string[][] {
-  const cleaned = csvText.startsWith("\uFEFF") ? csvText.slice(1) : csvText;
-  const rows: string[][] = [];
-  let currentRow: string[] = [];
-  let currentCell = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < cleaned.length; i++) {
-    const ch = cleaned[i];
-
-    if (inQuotes) {
-      if (ch === '"') {
-        if (cleaned[i + 1] === '"') {
-          currentCell += '"';
-          i++;
-        } else {
-          inQuotes = false;
-        }
-      } else {
-        currentCell += ch;
-      }
-      continue;
-    }
-
-    if (ch === '"') {
-      inQuotes = true;
-    } else if (ch === ",") {
-      currentRow.push(currentCell);
-      currentCell = "";
-    } else if (ch === "\r" || ch === "\n") {
-      if (ch === "\r" && cleaned[i + 1] === "\n") {
-        i++;
-      }
-      currentRow.push(currentCell);
-      currentCell = "";
-      if (currentRow.some((cell) => cell.trim().length > 0)) {
-        rows.push(currentRow);
-      }
-      currentRow = [];
-    } else {
-      currentCell += ch;
-    }
-  }
-
-  if (inQuotes) {
-    throw new Error("Malformed CSV: unterminated quoted field.");
-  }
-
-  if (currentCell.length > 0 || currentRow.length > 0) {
-    currentRow.push(currentCell);
-    if (currentRow.some((cell) => cell.trim().length > 0)) {
-      rows.push(currentRow);
-    }
-  }
-
-  return rows;
-}
-
-function escapeCsvCell(
-  value: string | number | boolean | null | undefined,
-): string {
-  const str = value === undefined || value === null ? "" : String(value);
-  if (/[",\r\n]/.test(str)) {
-    return `"${str.replace(/"/g, '""')}"`;
-  }
-  return str;
-}
-
-/**
- * Serializes headers and data rows into an RFC-4180 CSV string (`\r\n` line endings).
- */
-export function serializeCsvRows(
-  headers: readonly string[],
-  rows: readonly (readonly (string | number | boolean | null | undefined)[])[],
-): string {
-  const lines = [
-    headers.map((h) => escapeCsvCell(h)).join(","),
-    ...rows.map((row) => row.map((cell) => escapeCsvCell(cell)).join(",")),
-  ];
-  return lines.join("\r\n");
-}
-
-/**
- * Detects whether a CSV string uses the modern Palette header schema,
- * the legacy Peerbots `0-7` header schema, or a generic CSV layout.
- */
-export function detectCsvFormat(
-  csvText: string,
-): "modern" | "legacy" | "generic" {
-  const rows = parseCsvRows(csvText);
-  if (rows.length === 0) {
-    return "generic";
-  }
-  const headerSet = new Set(rows[0].map((h) => h.trim().toLowerCase()));
-  if (
-    headerSet.has("title(text)") ||
-    headerSet.has("color(0-7)") ||
-    headerSet.has("emotion(0-7)") ||
-    headerSet.has("speech(text)")
-  ) {
-    return "legacy";
-  }
-  if (MODERN_PALETTE_CSV_HEADERS.every((h) => headerSet.has(h))) {
-    return "modern";
-  }
-  return "generic";
-}
-
-/**
- * Options controlling CSV schema formatting in {@link convertPaletteToCSV}.
- */
-export interface SerializePaletteCsvOptions {
-  /**
-   * Target CSV dialect:
-   * - `"modern"` (default): Human-readable color/emotion names with {@link MODERN_PALETTE_CSV_HEADERS}.
-   * - `"legacy"`: Numeric `0-7` color/emotion codes with {@link LEGACY_PALETTE_CSV_HEADERS}.
-   */
-  format?: "modern" | "legacy";
-}
-
-/**
- * Serializes a {@link Palette} into an RFC-4180 CSV string using either modern named columns
- * (default) or legacy `0-7` indexed columns (`options.format === "legacy"`).
- */
-export function convertPaletteToCSV(
-  palette: Palette,
-  options?: SerializePaletteCsvOptions,
-): string {
-  const isLegacy = options?.format === "legacy";
-  const headers = isLegacy
-    ? LEGACY_PALETTE_CSV_HEADERS
-    : MODERN_PALETTE_CSV_HEADERS;
-
-  const dataRows = palette.buttons.map((row) => [
-    row.title,
-    isLegacy ? String(colorToLegacyIndex(row.color)) : row.color,
-    isLegacy ? String(emotionToLegacyIndex(row.emotion)) : row.emotion,
-    row.speech,
-    row.goal,
-    row.subgoal,
-    row.proficiency,
-  ]);
-
-  return serializeCsvRows(headers, dataRows);
-}
-
-/**
- * Alias for {@link convertPaletteToCSV}.
- */
-export const serializePaletteCsv = convertPaletteToCSV;
-
-/**
- * Converts a flat {@link PaletteButton} row into a canonical `"Message"` {@link RobotControlButton},
- * using the normalized `color` for both `labelColor` (controller button) and `details.color` (robot face)
- * and storing `goal`, `subgoal`, and `proficiency` in `details.metadata`.
- */
-export function convertPaletteButtonToRobotControlButton(
-  paletteButton: PaletteButton,
-): RobotControlButton {
-  const color = normalizePeerbotsColor(paletteButton.color);
-  const emotion = normalizeEmotion(paletteButton.emotion);
-  return {
-    type: "Message",
-    labelColor: color,
-    details: {
-      title: paletteButton.title,
-      color,
-      speech: paletteButton.speech,
-      emotion,
-      metadata: {
-        goal: paletteButton.goal || "None",
-        subgoal: paletteButton.subgoal || "None",
-        proficiency: paletteButton.proficiency || "None",
-      },
-    },
-  };
-}
-
-/**
- * Converts a {@link RobotControlButton} into a flat {@link PaletteButton} row for CSV export.
- * `"Message"` buttons retain speech, face color, emotion, and curriculum metadata;
- * `"Log"` buttons export `details.title`, `details.details` as `speech`, `"Light Blue"`, and `"Neutral"`.
- */
-export function convertRobotControlButtonToPaletteButton(
-  robotControlButton: RobotControlButton,
-): PaletteButton {
-  switch (robotControlButton.type) {
-    case "Message":
-      return {
-        title: robotControlButton.details.title,
-        speech: robotControlButton.details.speech,
-        color: normalizePeerbotsColor(robotControlButton.details.color),
-        emotion: normalizeEmotion(robotControlButton.details.emotion),
-        goal: robotControlButton.details.metadata?.goal
-          ? String(robotControlButton.details.metadata.goal)
-          : "None",
-        subgoal: robotControlButton.details.metadata?.subgoal
-          ? String(robotControlButton.details.metadata.subgoal)
-          : "None",
-        proficiency: robotControlButton.details.metadata?.proficiency
-          ? String(robotControlButton.details.metadata.proficiency)
-          : "None",
-      };
-    case "Log":
-      return {
-        title: robotControlButton.details.title,
-        speech: robotControlButton.details.details ?? "",
-        color: "Light Blue",
-        emotion: "Neutral",
-        goal: "None",
-        subgoal: "None",
-        proficiency: "None",
-      };
-  }
-}
-
-/**
- * Converts a flat {@link Palette} into a canonical {@link Template} with sequential string keys
- * (`"0"`, `"1"`, ...) in `buttons` and `hierarchy.root`.
- */
-export function convertPaletteToTemplate(palette: Palette): Template {
-  return {
-    title: palette.title,
-    buttons: Object.fromEntries(
-      palette.buttons.map((button, index) => [
-        index.toString(),
-        convertPaletteButtonToRobotControlButton(button),
-      ]),
-    ),
-    hierarchy: {
-      root: Array.from({ length: palette.buttons.length }, (_, i) =>
-        i.toString(),
-      ),
-    },
-  };
-}
-
-/**
- * Converts a canonical {@link Template} into a flat {@link Palette}, traversing the entire
- * hierarchy via {@link flattenHierarchy} (cycle-safe and duplicate-safe across nested children).
- */
-export function convertTemplateToPalette<TRef>(
-  template: Template<TRef>,
-): Palette {
-  const flattened = flattenHierarchy(template.hierarchy);
-  const buttons: PaletteButton[] = [];
-
-  for (const { buttonId } of flattened) {
-    const button = template.buttons[buttonId];
-    if (!button) continue;
-    buttons.push(convertRobotControlButtonToPaletteButton(button));
-  }
-
-  return {
-    title: template.title,
-    buttons,
-  };
-}
 
 /**
  * Options controlling title fallback, persistence metadata stripping, and ID synthesis

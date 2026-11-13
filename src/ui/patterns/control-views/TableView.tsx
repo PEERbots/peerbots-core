@@ -1,4 +1,4 @@
-import React, { useId, useMemo, useRef, useState } from "react";
+import React, { useId, useMemo } from "react";
 import {
   DEFAULT_CONTROL_LABELS,
   DEFAULT_TABLE_LABELS,
@@ -11,109 +11,35 @@ import {
   PEERBOTS_EMOTIONS,
   type PeerbotsColor,
   type PeerbotsEmotion,
-  type RobotControlButton,
   type Template,
-  type TemplateHierarchy,
 } from "../../../templates/types";
 import { EmptyState } from "../../feedback/EmptyState";
 import { Button } from "../../forms/Button";
 import { Checkbox } from "../../forms/Checkbox";
-import {
-  EmotionSelector,
-  PeerbotsEmotionIcon,
-} from "../../forms/EmotionSelector";
-import { Input } from "../../forms/Input";
-import {
-  PEERBOTS_COLOR_MAP,
-  PEERBOTS_FONT_COLOR_MAP,
-  PeerbotsColorSelector,
-} from "../../forms/PeerbotsColorSelector";
-import { Select } from "../../forms/Select";
+import { EmotionSelector } from "../../forms/EmotionSelector";
+import { PeerbotsColorSelector } from "../../forms/PeerbotsColorSelector";
 import { Switch } from "../../forms/Switch";
 import { Icon } from "../../foundations/Icon";
 import {
   Table,
   TableBody,
   TableBulkActionBar,
-  TableCell,
-  TableCellField,
   TableColumnApplyAllPopover,
   TableHead,
   TableHeader,
-  TableRow,
   type TableResponsiveMode,
 } from "../../layout/Table";
 import type { TableDensity } from "../../layout/useTableState";
-import { cn } from "../../utils";
 import {
-  createSaveAction,
-  type PeerbotsButtonActionHandler,
-} from "./types";
+  flattenTemplateForTable,
+  type FlattenedTableEntry,
+  type TableViewBatchSaveEntry,
+} from "./tableViewHelpers";
+import { TableViewRow } from "./TableViewRow";
+import type { PeerbotsButtonActionHandler } from "./types";
+import { useTemplateControlState } from "./useTemplateControlState";
 
-interface FlattenedTableEntry {
-  buttonId: string;
-  button: RobotControlButton;
-  depth: number;
-  isFirstSibling: boolean;
-  isLastSibling: boolean;
-}
-
-/**
- * Flattens a template hierarchy while tracking sibling boundaries so
- * `Move Back` and `Move Forward` actions are accurately enabled/disabled.
- */
-function flattenTemplateForTable(
-  hierarchy: TemplateHierarchy,
-  buttons: Record<string, RobotControlButton>,
-): FlattenedTableEntry[] {
-  const result: FlattenedTableEntry[] = [];
-  const seen = new Set<string>();
-
-  function walk(ids: string[], depth: number, ancestors: Set<string>) {
-    const validSiblingIds: string[] = [];
-    const localSeen = new Set<string>();
-    for (const id of ids) {
-      if (seen.has(id) || localSeen.has(id) || ancestors.has(id)) continue;
-      if (!buttons[id]) continue;
-      localSeen.add(id);
-      validSiblingIds.push(id);
-    }
-
-    validSiblingIds.forEach((id, siblingIdx) => {
-      if (seen.has(id)) return;
-      seen.add(id);
-
-      result.push({
-        buttonId: id,
-        button: buttons[id],
-        depth,
-        isFirstSibling: siblingIdx === 0,
-        isLastSibling: siblingIdx === validSiblingIds.length - 1,
-      });
-
-      const children = hierarchy[id];
-      if (Array.isArray(children) && children.length > 0) {
-        const nextAncestors = new Set(ancestors);
-        nextAncestors.add(id);
-        walk(children, depth + 1, nextAncestors);
-      }
-    });
-  }
-
-  const rootIds = Array.isArray(hierarchy?.root) ? hierarchy.root : [];
-  walk(rootIds, 0, new Set());
-  return result;
-}
-
-/**
- * Entry emitted to {@link TableViewProps.onBatchSave} during column-level Apply-All updates.
- */
-export interface TableViewBatchSaveEntry {
-  /** Target button identifier in `template.buttons`. */
-  buttonId: string;
-  /** Updated button value to persist. */
-  button: RobotControlButton;
-}
+export type { TableViewBatchSaveEntry } from "./tableViewHelpers";
 
 /**
  * Props for {@link TableView}, the semantic Peerbots template table editor built on
@@ -222,47 +148,6 @@ export function TableView({
 }: TableViewProps) {
   const { labels: contextLabels } = usePeerbotsI18n();
   const syncSwitchId = useId();
-  const lastClickedRowIndexRef = useRef<number | null>(null);
-  const shiftKeyRef = useRef<boolean>(false);
-
-  // Sync Speech with Title state (controlled or uncontrolled; defaults to true)
-  const controlledSync = syncSpeech ?? syncTitleSpeech;
-  const initialSync = defaultSyncSpeech ?? defaultSyncTitleSpeech ?? true;
-  const [uncontrolledSync, setUncontrolledSync] = useState<boolean>(initialSync);
-  const isSyncControlled = controlledSync !== undefined;
-  const syncActive = isSyncControlled ? controlledSync : uncontrolledSync;
-
-  const handleToggleSync = (nextValue: boolean) => {
-    if (disabled) return;
-    if (!isSyncControlled) {
-      setUncontrolledSync(nextValue);
-    }
-    onSyncSpeechChange?.(nextValue);
-    onSyncTitleSpeechChange?.(nextValue);
-  };
-
-  // Selection state (controlled or uncontrolled)
-  const controlledSelection = selectedButtonIds ?? multiSelectedButtonIds;
-  const [uncontrolledSelection, setUncontrolledSelection] = useState<string[]>(
-    () => [...defaultSelectedButtonIds],
-  );
-  const isSelectionControlled = controlledSelection !== undefined;
-  const activeSelectedIds = useMemo(
-    () =>
-      isSelectionControlled ? [...controlledSelection] : uncontrolledSelection,
-    [isSelectionControlled, controlledSelection, uncontrolledSelection],
-  );
-  const selectedSet = useMemo(
-    () => new Set(activeSelectedIds),
-    [activeSelectedIds],
-  );
-
-  const updateSelectionState = (nextIds: string[]) => {
-    if (!isSelectionControlled) {
-      setUncontrolledSelection(nextIds);
-    }
-    onSelectedButtonIdsChange?.(nextIds);
-  };
 
   // Labels resolution
   const resolvedLabels: ControlLabels = {
@@ -283,14 +168,38 @@ export function TableView({
     [template.hierarchy, template.buttons],
   );
 
+  const {
+    syncActive,
+    handleToggleSync,
+    selectedSet,
+    selectedEntries,
+    handleToggleAll,
+    handleClearSelection,
+    handleToggleRow,
+    removeFromSelection,
+    dispatchBatchUpdates,
+  } = useTemplateControlState({
+    template,
+    visibleEntries: visibleRows,
+    onButtonAction,
+    disabled,
+    selectedButtonIds,
+    multiSelectedButtonIds,
+    defaultSelectedButtonIds,
+    onSelectedButtonIdsChange,
+    onClearSelection,
+    syncSpeech,
+    syncTitleSpeech,
+    defaultSyncSpeech,
+    defaultSyncTitleSpeech,
+    onSyncSpeechChange,
+    onSyncTitleSpeechChange,
+    onBatchSave,
+  });
+
   const allRowIds = useMemo(
     () => visibleRows.map((r) => r.buttonId),
     [visibleRows],
-  );
-
-  const selectedEntries = useMemo(
-    () => visibleRows.filter((r) => selectedSet.has(r.buttonId)),
-    [visibleRows, selectedSet],
   );
 
   const selectedRowIdsInView = useMemo(
@@ -307,8 +216,11 @@ export function TableView({
     [messageEntries],
   );
   const selectedMessageEntries = useMemo(
-    () => selectedEntries.filter((r) => r.button.type === "Message"),
-    [selectedEntries],
+    () =>
+      visibleRows.filter(
+        (r) => selectedSet.has(r.buttonId) && r.button.type === "Message",
+      ),
+    [visibleRows, selectedSet],
   );
   const selectedMessageRowIds = useMemo(
     () => selectedMessageEntries.map((r) => r.buttonId),
@@ -337,107 +249,6 @@ export function TableView({
       })),
     [emotionLabels],
   );
-
-  const handleToggleAll = (checked: boolean) => {
-    if (disabled) return;
-    if (checked) {
-      const nextSet = new Set(selectedSet);
-      for (const entry of visibleRows) {
-        if (!nextSet.has(entry.buttonId)) {
-          nextSet.add(entry.buttonId);
-          onButtonAction(entry.button, entry.buttonId, {
-            type: "ADD TO SELECTION",
-          });
-        }
-      }
-      updateSelectionState(Array.from(nextSet));
-    } else {
-      for (const entry of selectedEntries) {
-        onButtonAction(entry.button, entry.buttonId, {
-          type: "REMOVE FROM SELECTION",
-        });
-      }
-      updateSelectionState([]);
-      onClearSelection?.();
-    }
-  };
-
-  const handleClearSelection = () => {
-    if (disabled) return;
-    for (const entry of selectedEntries) {
-      onButtonAction(entry.button, entry.buttonId, {
-        type: "REMOVE FROM SELECTION",
-      });
-    }
-    updateSelectionState([]);
-    onClearSelection?.();
-  };
-
-  const handleToggleRow = (
-    entry: FlattenedTableEntry,
-    rowIndex: number,
-    checked: boolean,
-    shiftKey = false,
-  ) => {
-    if (disabled) return;
-
-    if (
-      shiftKey &&
-      lastClickedRowIndexRef.current !== null &&
-      lastClickedRowIndexRef.current !== rowIndex
-    ) {
-      const start = Math.min(lastClickedRowIndexRef.current, rowIndex);
-      const end = Math.max(lastClickedRowIndexRef.current, rowIndex);
-      const nextSet = new Set(selectedSet);
-
-      for (let i = start; i <= end; i++) {
-        const rangeEntry = visibleRows[i];
-        if (!rangeEntry) continue;
-        const wasSelected = nextSet.has(rangeEntry.buttonId);
-        if (checked && !wasSelected) {
-          nextSet.add(rangeEntry.buttonId);
-          onButtonAction(rangeEntry.button, rangeEntry.buttonId, {
-            type: "ADD TO SELECTION",
-          });
-        } else if (!checked && wasSelected) {
-          nextSet.delete(rangeEntry.buttonId);
-          onButtonAction(rangeEntry.button, rangeEntry.buttonId, {
-            type: "REMOVE FROM SELECTION",
-          });
-        }
-      }
-
-      lastClickedRowIndexRef.current = rowIndex;
-      updateSelectionState(Array.from(nextSet));
-      return;
-    }
-
-    lastClickedRowIndexRef.current = rowIndex;
-    const nextSet = new Set(selectedSet);
-    if (checked) {
-      nextSet.add(entry.buttonId);
-      onButtonAction(entry.button, entry.buttonId, {
-        type: "ADD TO SELECTION",
-      });
-    } else {
-      nextSet.delete(entry.buttonId);
-      onButtonAction(entry.button, entry.buttonId, {
-        type: "REMOVE FROM SELECTION",
-      });
-    }
-    updateSelectionState(Array.from(nextSet));
-  };
-
-  const dispatchBatchUpdates = (updates: TableViewBatchSaveEntry[]) => {
-    if (disabled || updates.length === 0) return;
-    for (const { buttonId, button: updated } of updates) {
-      const original = template.buttons[buttonId];
-      if (original) {
-        onButtonAction(original, buttonId, createSaveAction(updated));
-      }
-    }
-    onBatchSave?.(updates);
-  };
 
   const columnLabels = useMemo(
     () => [
@@ -548,14 +359,7 @@ export function TableView({
                   type: "DELETE",
                 });
               });
-              if (!isSelectionControlled) {
-                setUncontrolledSelection((prev) =>
-                  prev.filter((id) => !deletedIds.has(id)),
-                );
-              }
-              onSelectedButtonIdsChange?.(
-                activeSelectedIds.filter((id) => !deletedIds.has(id)),
-              );
+              removeFromSelection(deletedIds);
             }}
           >
             Delete
@@ -614,7 +418,7 @@ export function TableView({
                     columnTitle={resolvedLabels.labelColor}
                     allRows={visibleRows}
                     allRowIds={allRowIds}
-                    selectedRows={selectedEntries}
+                    selectedRows={selectedEntries as FlattenedTableEntry[]}
                     selectedRowIds={selectedRowIdsInView}
                     labels={resolvedTableLabels}
                     config={{
@@ -783,505 +587,25 @@ export function TableView({
               </td>
             </tr>
           ) : (
-            visibleRows.map((entry, rowIndex) => {
-              const {
-                buttonId,
-                button,
-                depth,
-                isFirstSibling,
-                isLastSibling,
-              } = entry;
-              const isSelected = selectedSet.has(buttonId);
-              const isActiveRow = selectedButtonId === buttonId;
-              const rowName = button.details.title || buttonId;
-              const labelColorHex =
-                PEERBOTS_COLOR_MAP[button.labelColor] ?? button.labelColor;
-              const labelFontColorHex =
-                PEERBOTS_FONT_COLOR_MAP[button.labelColor] ?? "#020307";
-
-              const robotColorHex =
-                button.type === "Message"
-                  ? (PEERBOTS_COLOR_MAP[button.details.color] ??
-                    button.details.color)
-                  : undefined;
-              const robotFontColorHex =
-                button.type === "Message"
-                  ? (PEERBOTS_FONT_COLOR_MAP[button.details.color] ?? "#020307")
-                  : undefined;
-
-              return (
-                <TableRow
-                  key={buttonId}
-                  selected={isSelected}
-                  disabled={disabled}
-                  data-active={isActiveRow ? "true" : undefined}
-                  className={cn(
-                    isActiveRow &&
-                      !isSelected &&
-                      "pb:bg-peerbots-teal/10 pb:hover:bg-peerbots-teal/15",
-                  )}
-                >
-                  {/* 1. Row Selection Checkbox */}
-                  <TableCell
-                    density={density}
-                    hasLabel={false}
-                    align="center"
-                    className="pb:w-11 pb:px-3"
-                  >
-                    <div
-                      className="pb:flex pb:items-center pb:justify-center"
-                      onClickCapture={(e) => {
-                        shiftKeyRef.current = e.shiftKey;
-                      }}
-                    >
-                      <Checkbox
-                        aria-label={`${resolvedLabels.selectButton}: ${rowName}`}
-                        checked={isSelected}
-                        disabled={disabled}
-                        onCheckedChange={(checked) => {
-                          const isShift = shiftKeyRef.current;
-                          shiftKeyRef.current = false;
-                          handleToggleRow(entry, rowIndex, checked, isShift);
-                        }}
-                      />
-                    </div>
-                  </TableCell>
-
-                  {/* 2. Row Left Color Accent + Play Trigger + Button-Colored Title Pill */}
-                  <TableCell density={density} className="pb:relative pb:ps-3.5">
-                    <span
-                      aria-hidden="true"
-                      data-row-accent={buttonId}
-                      className="pb:absolute pb:inset-y-1 pb:start-0 pb:w-1 pb:rounded-e-sm"
-                      style={{
-                        width: "4px",
-                        backgroundColor: labelColorHex,
-                      }}
-                    />
-                    <div
-                      className="pb:flex pb:items-center pb:gap-1.5 pb:min-w-0"
-                      style={
-                        depth > 0
-                          ? { paddingInlineStart: `${depth * 20}px` }
-                          : undefined
-                      }
-                    >
-                      {depth > 0 && (
-                        <span
-                          aria-hidden="true"
-                          className="pb:text-gray-400 pb:text-xs pb:select-none pb:shrink-0"
-                        >
-                          ↳
-                        </span>
-                      )}
-                      <Button
-                        size="xs"
-                        variant="soft"
-                        color="teal"
-                        isIconOnly
-                        disabled={disabled}
-                        title={resolvedLabels.sendMessage}
-                        aria-label={`${resolvedLabels.sendMessage}: ${rowName}`}
-                        onClick={() => {
-                          if (disabled) return;
-                          onButtonAction(button, buttonId, { type: "SELECT" });
-                          onButtonAction(button, buttonId, { type: "CLICK" });
-                        }}
-                        className="pb:shrink-0"
-                      >
-                        <Icon name="play" size="sm" aria-hidden="true" />
-                      </Button>
-
-                      <div className="pb:flex-1 pb:min-w-0">
-                        <TableCellField
-                          cellVariant="compact"
-                          label={`${resolvedLabels.buttonTitle}: ${rowName}`}
-                        >
-                          <Input
-                            size="sm"
-                            variant="compact"
-                            disabled={disabled}
-                            placeholder={resolvedLabels.buttonTitle}
-                            value={button.details.title}
-                            style={{
-                              backgroundColor: labelColorHex,
-                              color: labelFontColorHex,
-                            }}
-                            className="pb:font-semibold pb:ring-black/20 placeholder:pb:text-current/60"
-                            onFocus={() => {
-                              if (!disabled) {
-                                onButtonAction(button, buttonId, {
-                                  type: "SELECT",
-                                });
-                              }
-                            }}
-                            onChange={(e) => {
-                              if (disabled) return;
-                              const nextTitle = e.target.value;
-                              if (button.type === "Log") {
-                                onButtonAction(
-                                  button,
-                                  buttonId,
-                                  createSaveAction({
-                                    ...button,
-                                    details: {
-                                      ...button.details,
-                                      title: nextTitle,
-                                      ...(syncActive && { details: nextTitle }),
-                                    },
-                                  }),
-                                );
-                              } else {
-                                onButtonAction(
-                                  button,
-                                  buttonId,
-                                  createSaveAction({
-                                    ...button,
-                                    details: {
-                                      ...button.details,
-                                      title: nextTitle,
-                                      ...(syncActive && { speech: nextTitle }),
-                                    },
-                                  }),
-                                );
-                              }
-                            }}
-                          />
-                        </TableCellField>
-                      </div>
-                    </div>
-                  </TableCell>
-
-                  {/* 3. Button Type (Message vs Log) */}
-                  <TableCell density={density}>
-                    <TableCellField
-                      cellVariant="compact"
-                      label={`${resolvedLabels.buttonType}: ${rowName}`}
-                    >
-                      <Select
-                        size="sm"
-                        variant="compact"
-                        disabled={disabled}
-                        aria-label={`${resolvedLabels.buttonType}: ${rowName}`}
-                        value={button.type}
-                        options={[
-                          { label: resolvedLabels.message, value: "Message" },
-                          { label: resolvedLabels.log, value: "Log" },
-                        ]}
-                        onChange={(val) => {
-                          if (disabled || !val) return;
-                          if (button.type === "Message" && val === "Log") {
-                            onButtonAction(
-                              button,
-                              buttonId,
-                              createSaveAction({
-                                type: "Log",
-                                labelColor: button.labelColor,
-                                details: {
-                                  title: button.details.title,
-                                  details: button.details.speech,
-                                },
-                              }),
-                            );
-                          } else if (
-                            button.type === "Log" &&
-                            val === "Message"
-                          ) {
-                            onButtonAction(
-                              button,
-                              buttonId,
-                              createSaveAction({
-                                type: "Message",
-                                labelColor: button.labelColor,
-                                details: {
-                                  title: button.details.title,
-                                  speech:
-                                    button.details.details ||
-                                    button.details.title,
-                                  color: button.labelColor,
-                                  emotion: "Neutral",
-                                },
-                              }),
-                            );
-                          }
-                        }}
-                      />
-                    </TableCellField>
-                  </TableCell>
-
-                  {/* 4. Speech / Details (Disabled when Sync Speech with Title is ON) */}
-                  <TableCell density={density}>
-                    {button.type === "Message" ? (
-                      <TableCellField
-                        cellVariant="compact"
-                        label={`${resolvedLabels.speech}: ${rowName}`}
-                      >
-                        <Input
-                          size="sm"
-                          variant="compact"
-                          disabled={disabled || syncActive}
-                          placeholder={resolvedLabels.speech}
-                          value={button.details.speech}
-                          onFocus={() => {
-                            if (!disabled) {
-                              onButtonAction(button, buttonId, {
-                                type: "SELECT",
-                              });
-                            }
-                          }}
-                          onChange={(e) => {
-                            if (disabled || syncActive) return;
-                            onButtonAction(
-                              button,
-                              buttonId,
-                              createSaveAction({
-                                ...button,
-                                details: {
-                                  ...button.details,
-                                  speech: e.target.value,
-                                },
-                              }),
-                            );
-                          }}
-                        />
-                      </TableCellField>
-                    ) : (
-                      <TableCellField
-                        cellVariant="compact"
-                        label={`${resolvedLabels.details}: ${rowName}`}
-                      >
-                        <Input
-                          size="sm"
-                          variant="compact"
-                          disabled={disabled || syncActive}
-                          placeholder={resolvedLabels.details}
-                          value={button.details.details ?? ""}
-                          onFocus={() => {
-                            if (!disabled) {
-                              onButtonAction(button, buttonId, {
-                                type: "SELECT",
-                              });
-                            }
-                          }}
-                          onChange={(e) => {
-                            if (disabled || syncActive) return;
-                            onButtonAction(
-                              button,
-                              buttonId,
-                              createSaveAction({
-                                ...button,
-                                details: {
-                                  ...button.details,
-                                  details: e.target.value,
-                                },
-                              }),
-                            );
-                          }}
-                        />
-                      </TableCellField>
-                    )}
-                  </TableCell>
-
-                  {/* 5. Label Color (Color-Filled Select Pill) */}
-                  <TableCell density={density}>
-                    <TableCellField
-                      cellVariant="compact"
-                      label={`${resolvedLabels.labelColor}: ${rowName}`}
-                    >
-                      <Select
-                        size="sm"
-                        variant="compact"
-                        disabled={disabled}
-                        aria-label={`${resolvedLabels.labelColor}: ${rowName}`}
-                        value={button.labelColor}
-                        options={colorOptions}
-                        style={{
-                          backgroundColor: labelColorHex,
-                          color: labelFontColorHex,
-                        }}
-                        className="pb:font-semibold pb:ring-black/20"
-                        onChange={(val) => {
-                          if (!val || disabled) return;
-                          onButtonAction(
-                            button,
-                            buttonId,
-                            createSaveAction({
-                              ...button,
-                              labelColor: val as PeerbotsColor,
-                            }),
-                          );
-                        }}
-                      />
-                    </TableCellField>
-                  </TableCell>
-
-                  {/* 6. Robot Color (Color-Filled Select Pill for Message rows) */}
-                  <TableCell density={density}>
-                    {button.type === "Message" ? (
-                      <TableCellField
-                        cellVariant="compact"
-                        label={`${resolvedLabels.robotColor}: ${rowName}`}
-                      >
-                        <Select
-                          size="sm"
-                          variant="compact"
-                          disabled={disabled}
-                          aria-label={`${resolvedLabels.robotColor}: ${rowName}`}
-                          value={button.details.color}
-                          options={colorOptions}
-                          style={{
-                            backgroundColor: robotColorHex,
-                            color: robotFontColorHex,
-                          }}
-                          className="pb:font-semibold pb:ring-black/20"
-                          onChange={(val) => {
-                            if (!val || disabled) return;
-                            onButtonAction(
-                              button,
-                              buttonId,
-                              createSaveAction({
-                                ...button,
-                                details: {
-                                  ...button.details,
-                                  color: val as PeerbotsColor,
-                                },
-                              }),
-                            );
-                          }}
-                        />
-                      </TableCellField>
-                    ) : (
-                      <span className="pb:text-xs pb:text-gray-400">—</span>
-                    )}
-                  </TableCell>
-
-                  {/* 7. Emotion with 28x28 Robot Face Expression Preview Tile (Message rows) */}
-                  <TableCell density={density}>
-                    {button.type === "Message" ? (
-                      <div className="pb:flex pb:items-center pb:gap-1.5">
-                        <span
-                          aria-hidden="true"
-                          data-emotion-tile={buttonId}
-                          className="pb:h-7 pb:w-7 pb:p-1 pb:rounded-lg pb:border pb:border-black/20 pb:shadow-2xs pb:shrink-0 pb:flex pb:items-center pb:justify-center"
-                          style={{
-                            backgroundColor: robotColorHex,
-                          }}
-                        >
-                          <PeerbotsEmotionIcon
-                            emotion={button.details.emotion}
-                            customIcon={emotionIcons?.[button.details.emotion]}
-                            decorative
-                            className={
-                              button.details.color === "Black"
-                                ? "pb:invert"
-                                : undefined
-                            }
-                          />
-                        </span>
-                        <div className="pb:flex-1 pb:min-w-0">
-                          <TableCellField
-                            cellVariant="compact"
-                            label={`${resolvedLabels.emotion}: ${rowName}`}
-                          >
-                            <Select
-                              size="sm"
-                              variant="compact"
-                              disabled={disabled}
-                              aria-label={`${resolvedLabels.emotion}: ${rowName}`}
-                              value={button.details.emotion}
-                              options={emotionOptions}
-                              onChange={(val) => {
-                                if (!val || disabled) return;
-                                onButtonAction(
-                                  button,
-                                  buttonId,
-                                  createSaveAction({
-                                    ...button,
-                                    details: {
-                                      ...button.details,
-                                      emotion: val as PeerbotsEmotion,
-                                    },
-                                  }),
-                                );
-                              }}
-                            />
-                          </TableCellField>
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="pb:text-xs pb:text-gray-400">—</span>
-                    )}
-                  </TableCell>
-
-                  {/* 8. Row Actions (Move Back, Move Forward, Delete) */}
-                  <TableCell density={density} align="end">
-                    <div className="pb:inline-flex pb:items-center pb:gap-0.5">
-                      <Button
-                        size="xs"
-                        variant="ghost"
-                        color="neutral"
-                        isIconOnly
-                        disabled={disabled || isFirstSibling}
-                        aria-label={`${resolvedLabels.moveUp}: ${rowName}`}
-                        title={resolvedLabels.moveUp}
-                        onClick={() => {
-                          if (disabled || isFirstSibling) return;
-                          onButtonAction(button, buttonId, { type: "SELECT" });
-                          onButtonAction(button, buttonId, {
-                            type: "MOVE",
-                            direction: "BACK",
-                          });
-                        }}
-                      >
-                        <Icon name="arrowUp" size="sm" aria-hidden="true" />
-                      </Button>
-
-                      <Button
-                        size="xs"
-                        variant="ghost"
-                        color="neutral"
-                        isIconOnly
-                        disabled={disabled || isLastSibling}
-                        aria-label={`${resolvedLabels.moveDown}: ${rowName}`}
-                        title={resolvedLabels.moveDown}
-                        onClick={() => {
-                          if (disabled || isLastSibling) return;
-                          onButtonAction(button, buttonId, { type: "SELECT" });
-                          onButtonAction(button, buttonId, {
-                            type: "MOVE",
-                            direction: "FORWARD",
-                          });
-                        }}
-                      >
-                        <Icon name="arrowDown" size="sm" aria-hidden="true" />
-                      </Button>
-
-                      <Button
-                        size="xs"
-                        variant="ghost"
-                        color="danger"
-                        isIconOnly
-                        disabled={disabled}
-                        aria-label={`${resolvedLabels.deleteButton}: ${rowName}`}
-                        title={resolvedLabels.deleteButton}
-                        onClick={() => {
-                          if (disabled) return;
-                          onButtonAction(button, buttonId, { type: "DELETE" });
-                          if (selectedSet.has(buttonId)) {
-                            const nextIds = activeSelectedIds.filter(
-                              (id) => id !== buttonId,
-                            );
-                            updateSelectionState(nextIds);
-                          }
-                        }}
-                      >
-                        <Icon name="close" size="sm" aria-hidden="true" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              );
-            })
+            visibleRows.map((entry, rowIndex) => (
+              <TableViewRow
+                key={entry.buttonId}
+                entry={entry}
+                rowIndex={rowIndex}
+                density={density}
+                disabled={disabled}
+                syncActive={syncActive}
+                isSelected={selectedSet.has(entry.buttonId)}
+                isActiveRow={selectedButtonId === entry.buttonId}
+                colorOptions={colorOptions}
+                emotionOptions={emotionOptions}
+                emotionIcons={emotionIcons}
+                resolvedLabels={resolvedLabels}
+                onButtonAction={onButtonAction}
+                onToggleRow={handleToggleRow}
+                onDeleteRow={(id) => removeFromSelection(new Set([id]))}
+              />
+            ))
           )}
         </TableBody>
       </Table.Root>
