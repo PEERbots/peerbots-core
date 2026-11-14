@@ -230,6 +230,10 @@ export function CodeView({
   const [autocompleteDismissedAt, setAutocompleteDismissedAt] = useState<
     number | null
   >(null);
+  const [editorScroll, setEditorScroll] = useState<{
+    top: number;
+    left: number;
+  }>({ top: 0, left: 0 });
   const highlightPreRef = useRef<HTMLPreElement | null>(null);
   const lineGutterRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -514,6 +518,24 @@ export function CodeView({
   const clampedAutocompleteIndex = autocompleteContext
     ? Math.min(autocompleteIndex, autocompleteContext.suggestions.length - 1)
     : 0;
+
+  const autocompletePosition = useMemo(() => {
+    const lineStart =
+      draftCode.lastIndexOf("\n", Math.max(0, editorSelectionStart - 1)) + 1;
+    const cursorCol = Math.max(0, editorSelectionStart - lineStart);
+    const cursorRow = Math.max(0, editorCursorLine - 1);
+    const lineHeightPx = 24;
+    const paddingTopPx = 12;
+    const lineTop = paddingTopPx + cursorRow * lineHeightPx - editorScroll.top;
+    const lineBottom = lineTop + lineHeightPx;
+    const flipAbove = lineBottom > 190;
+
+    return {
+      top: flipAbove ? undefined : Math.max(4, lineBottom + 4),
+      bottom: flipAbove ? `calc(100% - ${Math.max(4, lineTop)}px + 4px)` : undefined,
+      left: `clamp(8px, calc(16px + ${cursorCol}ch - ${editorScroll.left}px), calc(100% - 18.5rem))`,
+    };
+  }, [draftCode, editorSelectionStart, editorCursorLine, editorScroll]);
 
   const updateCursorLine = (el: HTMLTextAreaElement) => {
     const pos = el.selectionStart ?? 0;
@@ -957,12 +979,12 @@ export function CodeView({
               </span>
             </div>
 
-            <div className="pb:flex pb:rounded-lg pb:border pb:border-gray-300 pb:bg-[#1e222b] pb:overflow-hidden">
+            <div className="pb:relative pb:flex pb:rounded-lg pb:border pb:border-gray-300 pb:bg-[#1e222b]">
               {/* Line Numbers Gutter */}
               <div
                 ref={lineGutterRef}
                 aria-hidden="true"
-                className="pb:w-9 pb:shrink-0 pb:py-3 pb:pr-2 pb:pl-2 pb:font-mono pb:text-xs sm:pb:text-sm pb:leading-6 pb:text-right pb:text-gray-500 pb:select-none pb:overflow-hidden pb:border-r pb:border-gray-800"
+                className="pb:w-9 pb:shrink-0 pb:rounded-l-lg pb:py-3 pb:pr-2 pb:pl-2 pb:font-mono pb:text-xs sm:pb:text-sm pb:leading-6 pb:text-right pb:text-gray-500 pb:select-none pb:overflow-hidden pb:border-r pb:border-gray-800"
               >
                 {draftCode.split(/\r?\n/).map((_, idx) => {
                   const lineNum = idx + 1;
@@ -981,6 +1003,7 @@ export function CodeView({
                         el.focus();
                         el.setSelectionRange(offset, offset);
                         setEditorCursorLine(lineNum);
+                        setEditorSelectionStart(offset);
                         setHoveredTokenIdx(null);
                       }}
                       className={cn(
@@ -1041,80 +1064,90 @@ export function CodeView({
                     }
                   }}
                   onScroll={(e) => {
+                    const top = e.currentTarget.scrollTop;
+                    const left = e.currentTarget.scrollLeft;
                     if (highlightPreRef.current) {
-                      highlightPreRef.current.scrollTop = e.currentTarget.scrollTop;
-                      highlightPreRef.current.scrollLeft = e.currentTarget.scrollLeft;
+                      highlightPreRef.current.scrollTop = top;
+                      highlightPreRef.current.scrollLeft = left;
                     }
                     if (lineGutterRef.current) {
-                      lineGutterRef.current.scrollTop = e.currentTarget.scrollTop;
+                      lineGutterRef.current.scrollTop = top;
                     }
+                    setEditorScroll({ top, left });
                   }}
                   rows={14}
                   spellCheck={false}
-                  className="pb:absolute pb:inset-0 pb:w-full pb:h-full pb:resize-none pb:bg-transparent pb:text-transparent pb:caret-white pb:font-mono pb:text-xs sm:pb:text-sm pb:leading-6 pb:py-3 pb:px-4 pb:whitespace-pre pb:overflow-auto focus:pb:outline-none focus:pb:ring-2 focus:pb:ring-peerbots-teal"
+                  className="pb:absolute pb:inset-0 pb:w-full pb:h-full pb:resize-none pb:rounded-r-lg pb:bg-transparent pb:text-transparent pb:caret-white pb:font-mono pb:text-xs sm:pb:text-sm pb:leading-6 pb:py-3 pb:px-4 pb:whitespace-pre pb:overflow-auto focus:pb:outline-none focus:pb:ring-2 focus:pb:ring-peerbots-teal"
                 />
+
+                {/* Inline Floating Context-Aware Autocomplete */}
+                {autocompleteContext && (
+                  <div
+                    style={{
+                      top: autocompletePosition.top,
+                      bottom: autocompletePosition.bottom,
+                      left: autocompletePosition.left,
+                    }}
+                    className="pb:absolute pb:z-30 pb:w-72 pb:max-w-[calc(100%-1rem)] pb:rounded-lg pb:border pb:border-peerbots-teal/60 pb:bg-white pb:shadow-xl pb:overflow-hidden"
+                  >
+                    <div className="pb:flex pb:items-center pb:justify-between pb:px-2.5 pb:py-1 pb:bg-gray-50 pb:border-b pb:border-gray-200 pb:text-[10px]">
+                      <span className="pb:font-semibold pb:text-gray-700 pb:truncate">
+                        {autocompleteContext.heading}
+                      </span>
+                      <span className="pb:text-gray-500 pb:shrink-0 pb:ms-2">
+                        Tab/Enter
+                      </span>
+                    </div>
+                    <div
+                      role="listbox"
+                      aria-label={autocompleteContext.heading}
+                      className="pb:max-h-40 pb:overflow-y-auto pb:divide-y pb:divide-gray-100"
+                    >
+                      {autocompleteContext.suggestions.map((sug, idx) => {
+                        const isSelected = idx === clampedAutocompleteIndex;
+                        return (
+                          <button
+                            key={`${sug.label}-${idx}`}
+                            type="button"
+                            role="option"
+                            aria-selected={isSelected}
+                            onMouseDown={(e) => e.preventDefault()}
+                            onMouseEnter={() => setAutocompleteIndex(idx)}
+                            onClick={() => applyAutocompleteSuggestion(sug)}
+                            className={cn(
+                              "pb:w-full pb:flex pb:items-center pb:justify-between pb:gap-2 pb:px-2.5 pb:py-1.5 pb:text-left pb:text-xs pb:transition-colors pb:cursor-pointer",
+                              isSelected
+                                ? "pb:bg-peerbots-teal/15 pb:text-gray-900"
+                                : "pb:bg-white pb:text-gray-700 hover:pb:bg-gray-50",
+                            )}
+                          >
+                            <span className="pb:flex pb:items-center pb:gap-2 pb:min-w-0">
+                              {sug.colorSwatch && (
+                                <span
+                                  aria-hidden="true"
+                                  className="pb:w-3 pb:h-3 pb:rounded-sm pb:border pb:border-gray-300 pb:shrink-0"
+                                  style={{
+                                    backgroundColor:
+                                      PEERBOTS_COLOR_MAP[sug.colorSwatch] ??
+                                      sug.colorSwatch,
+                                  }}
+                                />
+                              )}
+                              <code className="pb:font-mono pb:font-semibold pb:text-gray-900">
+                                {sug.label}
+                              </code>
+                            </span>
+                            <span className="pb:text-[11px] pb:text-gray-500 pb:truncate">
+                              {sug.description}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-
-            {/* Context-Aware Autocomplete Suggestions */}
-            {autocompleteContext && (
-              <div className="pb:rounded-lg pb:border pb:border-peerbots-teal/50 pb:bg-white pb:shadow-md pb:overflow-hidden">
-                <div className="pb:flex pb:items-center pb:justify-between pb:px-3 pb:py-1.5 pb:bg-gray-50 pb:border-b pb:border-gray-200 pb:text-[11px]">
-                  <span className="pb:font-semibold pb:text-gray-700">
-                    {autocompleteContext.heading}
-                  </span>
-                  <span className="pb:text-gray-500">
-                    ↑↓ navigate • Enter/Tab insert • Esc close
-                  </span>
-                </div>
-                <div
-                  role="listbox"
-                  aria-label={autocompleteContext.heading}
-                  className="pb:max-h-44 pb:overflow-y-auto pb:divide-y pb:divide-gray-100"
-                >
-                  {autocompleteContext.suggestions.map((sug, idx) => {
-                    const isSelected = idx === clampedAutocompleteIndex;
-                    return (
-                      <button
-                        key={`${sug.label}-${idx}`}
-                        type="button"
-                        role="option"
-                        aria-selected={isSelected}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onMouseEnter={() => setAutocompleteIndex(idx)}
-                        onClick={() => applyAutocompleteSuggestion(sug)}
-                        className={cn(
-                          "pb:w-full pb:flex pb:items-center pb:justify-between pb:gap-3 pb:px-3 pb:py-1.5 pb:text-left pb:text-xs pb:transition-colors pb:cursor-pointer",
-                          isSelected
-                            ? "pb:bg-peerbots-teal/15 pb:text-gray-900"
-                            : "pb:bg-white pb:text-gray-700 hover:pb:bg-gray-50",
-                        )}
-                      >
-                        <span className="pb:flex pb:items-center pb:gap-2 pb:min-w-0">
-                          {sug.colorSwatch && (
-                            <span
-                              aria-hidden="true"
-                              className="pb:w-3.5 pb:h-3.5 pb:rounded-sm pb:border pb:border-gray-300 pb:shrink-0"
-                              style={{
-                                backgroundColor:
-                                  PEERBOTS_COLOR_MAP[sug.colorSwatch] ??
-                                  sug.colorSwatch,
-                              }}
-                            />
-                          )}
-                          <code className="pb:font-mono pb:font-semibold pb:text-gray-900">
-                            {sug.label}
-                          </code>
-                        </span>
-                        <span className="pb:text-[11px] pb:text-gray-500 pb:truncate">
-                          {sug.description}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
             {/* Live Cursor Status Bar */}
             {showExplainer && activeLine && (
