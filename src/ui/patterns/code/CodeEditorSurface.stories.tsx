@@ -1,58 +1,77 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useMemo, useRef, useState } from "react";
-import { analyzeTemplateCode } from "../../../../templates/codeFormat";
-import { cn } from "../../../utils";
-import { CodeEditorPane } from "./CodeEditorPane";
-import { normalizePttfLines } from "./constants";
+import { cn } from "../../utils";
+import { CodeEditorSurface } from "./CodeEditorSurface";
+import type { CodeDiagnosticItem, ExplainedCodeLine } from "./types";
 
-const meta: Meta<typeof CodeEditorPane> = {
-  title: "Code/CodeEditorPane",
-  component: CodeEditorPane,
+const meta: Meta<typeof CodeEditorSurface> = {
+  title: "Code/CodeEditorSurface",
+  component: CodeEditorSurface,
   tags: ["autodocs"],
   parameters: {
     layout: "padded",
     docs: {
       description: {
         component:
-          "Standalone layered monospace code editor pane with clickable line-number gutter, syntax-highlighted overlay, live status bar, and line-by-line diagnostics.",
+          "Domain-neutral layered monospace code editor surface with clickable line-number gutter, syntax-highlighted overlay, live status bar, and line-by-line diagnostics.",
       },
     },
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof CodeEditorPane>;
+type Story = StoryObj<typeof CodeEditorSurface>;
 
-function StandaloneEditorDemo({ initialCode }: { initialCode: string }) {
+function StandaloneSurfaceDemo({
+  initialCode,
+  diagnostics = [],
+}: {
+  initialCode: string;
+  diagnostics?: CodeDiagnosticItem[];
+}) {
   const [draftCode, setDraftCode] = useState(initialCode);
   const [cursorLine, setCursorLine] = useState(1);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const analysis = useMemo(() => analyzeTemplateCode(draftCode), [draftCode]);
-  const draftLines = useMemo(
-    () => normalizePttfLines(analysis.lines),
-    [analysis.lines],
+  const rawLines = useMemo(() => draftCode.split(/\r?\n/), [draftCode]);
+  const explainedLines: ExplainedCodeLine[] = useMemo(
+    () =>
+      rawLines.map((text, idx) => ({
+        lineNumber: idx + 1,
+        summary: text.trim() || "Empty line",
+        tokens: [
+          {
+            kind: "text",
+            badgeLabel: `Line ${idx + 1}`,
+            text,
+            explanation: text.trim() || "Blank line",
+            className: text.trim().startsWith("//")
+              ? "pb:text-gray-400 pb:italic"
+              : "pb:text-gray-100",
+          },
+        ],
+      })),
+    [rawLines],
   );
+
   const diagnosticsByLine = useMemo(() => {
-    const map = new Map<number, typeof analysis.diagnostics>();
-    for (const d of analysis.diagnostics) {
+    const map = new Map<number, CodeDiagnosticItem[]>();
+    for (const d of diagnostics) {
       const list = map.get(d.lineNumber) ?? [];
       list.push(d);
       map.set(d.lineNumber, list);
     }
     return map;
-  }, [analysis.diagnostics]);
+  }, [diagnostics]);
 
   const highlighted = useMemo(
     () =>
-      draftLines.map((line, i) => {
+      explainedLines.map((line, i) => {
         const isCursor = line.lineNumber === cursorLine;
         const lineDiags = diagnosticsByLine.get(line.lineNumber) ?? [];
         const hasError = lineDiags.some((d) => d.severity === "error");
         const hasWarning = lineDiags.some((d) => d.severity === "warning");
-        const isEmpty =
-          line.tokens.length === 0 ||
-          line.tokens.every((t) => t.text.length === 0);
+        const text = line.tokens[0]?.text ?? "";
         return (
           <div
             key={i}
@@ -67,39 +86,36 @@ function StandaloneEditorDemo({ initialCode }: { initialCode: string }) {
                 : "",
             )}
           >
-            {isEmpty
-              ? " "
-              : line.tokens.map((tok, j) => (
-                  <span key={j} className={tok.className}>
-                    {tok.text}
-                  </span>
-                ))}
+            {text.length === 0 ? (
+              " "
+            ) : (
+              <span className={line.tokens[0]?.className}>{text}</span>
+            )}
           </div>
         );
       }),
-    [draftLines, cursorLine, diagnosticsByLine],
+    [explainedLines, cursorLine, diagnosticsByLine],
   );
-
-  const activeLine =
-    draftLines.find((l) => l.lineNumber === cursorLine) ?? draftLines[0];
 
   return (
     <div className="pb:max-w-2xl pb:border pb:border-gray-200 pb:rounded-xl pb:bg-white">
-      <CodeEditorPane
-        format="shorthand"
+      <CodeEditorSurface
         draftCode={draftCode}
         highlightedDraftLines={highlighted}
-        diagnostics={analysis.diagnostics}
+        diagnostics={diagnostics}
         diagnosticsByLine={diagnosticsByLine}
-        buttonCount={Object.keys(analysis.template.buttons).length}
-        rootCount={analysis.template.hierarchy.root.length}
         editorCursorLine={cursorLine}
-        showExplainer
-        activeLine={activeLine}
+        activeLine={explainedLines[cursorLine - 1]}
         autocompleteContext={null}
         autocompleteIndex={0}
         autocompletePosition={{ top: 16, left: "16px" }}
         textareaRef={textareaRef}
+        headerLeft={<span>Domain-neutral monospace editor surface</span>}
+        headerRight={
+          <span className="pb:font-medium pb:text-gray-700">
+            {rawLines.length} lines
+          </span>
+        }
         onDraftChange={(next, el) => {
           setDraftCode(next);
           const pos = el.selectionStart ?? 0;
@@ -121,13 +137,11 @@ function StandaloneEditorDemo({ initialCode }: { initialCode: string }) {
 
 export const Default: Story = {
   render: () => (
-    <StandaloneEditorDemo
+    <StandaloneSurfaceDemo
       initialCode={[
-        "// Morning Check-In",
-        "- [Green -> Light Blue] :) Hello | Good morning! #start",
-        "  - [Blue -> Yellow] :) Great | I feel great!",
-        "  ! [Grey] Break | Child asked for a break",
-        "  -> #start",
+        "// Example snippet",
+        'const greeting = "Hello Peerbots!";',
+        "console.log(greeting);",
       ].join("\n")}
     />
   ),
@@ -135,12 +149,24 @@ export const Default: Story = {
 
 export const Variations: Story = {
   render: () => (
-    <StandaloneEditorDemo
+    <StandaloneSurfaceDemo
       initialCode={[
-        "// Diagnostics Example",
-        "! [Grey -> Red] :) Invalid Log | Should warn on robot color & emotion",
-        "  -> #missing-anchor",
+        "// With diagnostics",
+        "const value = 42;",
+        "unknownCall();",
       ].join("\n")}
+      diagnostics={[
+        {
+          lineNumber: 2,
+          severity: "warning",
+          message: "Unused variable 'value'.",
+        },
+        {
+          lineNumber: 3,
+          severity: "error",
+          message: "Identifier 'unknownCall' is not defined.",
+        },
+      ]}
     />
   ),
 };

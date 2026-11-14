@@ -1,10 +1,17 @@
 import type {
+  CodeAutocompleteContext,
   CodeTokenKind,
   FormattedCodeLine,
   FormattedJsonLine,
   JsonTokenKind,
 } from "../../../../templates/codeFormat";
-import type { PeerbotsColor, RobotControlButton } from "../../../../templates/types";
+import type { RobotControlButton } from "../../../../templates/types";
+import { PEERBOTS_COLOR_MAP } from "../../../forms/PeerbotsColorSelector";
+import type {
+  CodeAutocompleteState,
+  ExplainedCodeLine,
+  ExplainedCodeSwatch,
+} from "../../code/types";
 
 export const PTTF_TOKEN_CLASSES: Record<CodeTokenKind, string> = {
   indent: "pb:text-gray-600 pb:select-none",
@@ -52,64 +59,113 @@ export const TOKEN_BADGE_LABELS: Record<CodeTokenKind | JsonTokenKind, string> =
   punctuation: "Syntax",
 };
 
-export interface NormalizedLineView {
-  lineNumber: number;
+const STRUCTURAL_KINDS = new Set<string>([
+  "bullet",
+  "separator",
+  "punctuation",
+  "indent",
+]);
+
+export interface ExplainedPttfLine extends ExplainedCodeLine {
   depth: number;
   kind: "comment" | "section" | "button" | "jump" | "json";
   buttonId?: string;
   button?: RobotControlButton;
   anchor?: string;
   isCycle?: boolean;
-  summary: string;
-  tokens: Array<{
-    kind: CodeTokenKind | JsonTokenKind;
-    text: string;
-    explanation: string;
-    className: string;
-    labelColor?: PeerbotsColor;
-    robotColor?: PeerbotsColor;
-  }>;
 }
 
-export function normalizePttfLines(lines: FormattedCodeLine[]): NormalizedLineView[] {
+export function adaptPttfLines(
+  lines: FormattedCodeLine[],
+  selectedButtonId?: string | null,
+): ExplainedPttfLine[] {
   return lines.map((l) => ({
     lineNumber: l.lineNumber,
+    metaLabel: `Depth ${l.depth}`,
     depth: l.depth,
     kind: l.kind,
     buttonId: l.buttonId,
     button: l.button,
     anchor: l.anchor,
     isCycle: l.isCycle,
+    isInteractive: Boolean(l.buttonId && l.button),
+    isSelected: Boolean(selectedButtonId) && l.buttonId === selectedButtonId,
     summary: l.summary,
-    tokens: l.tokens.map((t) => ({
-      kind: t.kind,
-      text: t.text,
-      explanation: t.explanation,
-      className: PTTF_TOKEN_CLASSES[t.kind],
-      labelColor: t.labelColor,
-      robotColor: t.robotColor,
-    })),
+    tokens: l.tokens.map((t) => {
+      const swatches: ExplainedCodeSwatch[] = [];
+      if (t.labelColor) {
+        swatches.push({
+          color: PEERBOTS_COLOR_MAP[t.labelColor] ?? t.labelColor,
+          title: `Button color: ${t.labelColor}`,
+          shape: "square",
+        });
+      }
+      if (t.robotColor) {
+        swatches.push({
+          color: PEERBOTS_COLOR_MAP[t.robotColor] ?? t.robotColor,
+          title: `Robot face color: ${t.robotColor}`,
+          shape: "circle",
+        });
+      }
+      return {
+        kind: t.kind,
+        badgeLabel: TOKEN_BADGE_LABELS[t.kind],
+        text: t.text,
+        explanation: t.explanation,
+        className: PTTF_TOKEN_CLASSES[t.kind],
+        isStructural: STRUCTURAL_KINDS.has(t.kind),
+        swatches: swatches.length > 0 ? swatches : undefined,
+      };
+    }),
   }));
 }
 
-export function normalizeJsonLines(lines: FormattedJsonLine[]): NormalizedLineView[] {
+export function adaptJsonLines(
+  lines: FormattedJsonLine[],
+  selectedButtonId?: string | null,
+): ExplainedPttfLine[] {
   return lines.map((l) => ({
     lineNumber: l.lineNumber,
     depth: 0,
     kind: "json",
     buttonId: l.buttonId,
     button: l.button,
+    isInteractive: Boolean(l.buttonId && l.button),
+    isSelected: Boolean(selectedButtonId) && l.buttonId === selectedButtonId,
     summary: l.summary,
     tokens: l.tokens.map((t) => ({
       kind: t.kind,
+      badgeLabel: TOKEN_BADGE_LABELS[t.kind],
       text: t.text,
       explanation: t.explanation,
       className: JSON_TOKEN_CLASSES[t.kind],
+      isStructural: STRUCTURAL_KINDS.has(t.kind),
     })),
   }));
 }
 
-export function highlightJsonRaw(raw: string): Array<{ text: string; className: string }> {
+export function adaptAutocompleteContext(
+  ctx: CodeAutocompleteContext | null,
+): CodeAutocompleteState | null {
+  if (!ctx) return null;
+  return {
+    heading: ctx.heading,
+    replaceStart: ctx.replaceStart,
+    replaceEnd: ctx.replaceEnd,
+    suggestions: ctx.suggestions.map((sug) => ({
+      label: sug.label,
+      insertText: sug.insertText,
+      description: sug.description,
+      swatchColor: sug.colorSwatch
+        ? (PEERBOTS_COLOR_MAP[sug.colorSwatch] ?? sug.colorSwatch)
+        : undefined,
+    })),
+  };
+}
+
+export function highlightJsonRaw(
+  raw: string,
+): Array<{ text: string; className: string }> {
   const parts: Array<{ text: string; className: string }> = [];
   const regex =
     /("(?:\\.|[^"\\])*")(\s*:)?|(-?\d+(?:\.\d+)?)|(\btrue\b|\bfalse\b|\bnull\b)|([{}[\],:])/g;

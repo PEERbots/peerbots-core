@@ -1,14 +1,14 @@
-import { cn } from "../../../utils";
-import { TOKEN_BADGE_LABELS, type NormalizedLineView } from "./constants";
+import { cn } from "../../utils";
+import type { ExplainedCodeLine, ExplainedCodeToken } from "./types";
 
 export interface CodeStatusBarProps {
-  activeLine: NormalizedLineView | undefined;
-  activeToken?: NormalizedLineView["tokens"][number];
+  activeLine: ExplainedCodeLine | undefined;
+  activeToken?: ExplainedCodeToken;
   className?: string;
 }
 
 /**
- * Compact live status bar displaying the active token or line summary.
+ * Compact live status bar displaying the active token badge or line summary.
  */
 export function CodeStatusBar({
   activeLine,
@@ -26,9 +26,7 @@ export function CodeStatusBar({
       )}
     >
       <span className="pb:px-1.5 pb:py-0.5 pb:rounded pb:bg-peerbots-teal/20 pb:text-peerbots-teal pb:font-semibold pb:shrink-0">
-        {activeToken
-          ? TOKEN_BADGE_LABELS[activeToken.kind]
-          : `Line ${activeLine.lineNumber}`}
+        {activeToken ? activeToken.badgeLabel : `Line ${activeLine.lineNumber}`}
       </span>
       <span className="pb:truncate">
         {activeToken ? activeToken.explanation : activeLine.summary}

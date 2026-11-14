@@ -1,28 +1,26 @@
 import React, { useRef } from "react";
-import type {
-  CodeAutocompleteContext,
-  CodeAutocompleteSuggestion,
-  CodeDiagnostic,
-} from "../../../../templates/codeFormat";
-import { Icon } from "../../../foundations/Icon";
-import { cn } from "../../../utils";
+import { Icon } from "../../foundations/Icon";
+import { cn } from "../../utils";
 import { CodeAutocompletePopup } from "./CodeAutocompletePopup";
 import { CodeStatusBar } from "./CodeStatusBar";
-import type { NormalizedLineView } from "./constants";
+import type {
+  CodeAutocompleteOption,
+  CodeAutocompleteState,
+  CodeDiagnosticItem,
+  ExplainedCodeLine,
+  ExplainedCodeToken,
+} from "./types";
 
-export interface CodeEditorPaneProps {
-  format: "shorthand" | "json";
+export interface CodeEditorSurfaceProps {
   draftCode: string;
   highlightedDraftLines: React.ReactNode;
-  diagnostics: CodeDiagnostic[];
-  diagnosticsByLine: Map<number, CodeDiagnostic[]>;
-  buttonCount: number;
-  rootCount: number;
+  diagnostics: CodeDiagnosticItem[];
+  diagnosticsByLine: Map<number, CodeDiagnosticItem[]>;
   editorCursorLine: number;
-  showExplainer: boolean;
-  activeLine: NormalizedLineView | undefined;
-  activeToken?: NormalizedLineView["tokens"][number];
-  autocompleteContext: CodeAutocompleteContext | null;
+  showStatusBar?: boolean;
+  activeLine: ExplainedCodeLine | undefined;
+  activeToken?: ExplainedCodeToken;
+  autocompleteContext: CodeAutocompleteState | null;
   autocompleteIndex: number;
   autocompletePosition: {
     top?: number;
@@ -30,36 +28,40 @@ export interface CodeEditorPaneProps {
     left: string;
   };
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+  headerLeft?: React.ReactNode;
+  headerRight?: React.ReactNode;
+  textareaAriaLabel?: string;
   onDraftChange: (nextValue: string, el: HTMLTextAreaElement) => void;
   onCursorUpdate: (el: HTMLTextAreaElement) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onScrollSync: (scroll: { top: number; left: number }) => void;
   onJumpToLine: (lineNumber: number, offset: number) => void;
   onAutocompleteHover: (idx: number) => void;
-  onAutocompleteSelect: (suggestion: CodeAutocompleteSuggestion) => void;
+  onAutocompleteSelect: (suggestion: CodeAutocompleteOption) => void;
   className?: string;
 }
 
 /**
- * Layered monospace code editor pane with line-number gutter, syntax-highlighted
- * `<pre>` overlay, inline floating autocomplete, live status bar, and diagnostics.
+ * Domain-neutral layered monospace code editor surface with clickable
+ * line-number gutter, syntax-highlighted `<pre>` overlay, inline floating
+ * autocomplete, live status bar, and line-by-line diagnostics.
  */
-export function CodeEditorPane({
-  format,
+export function CodeEditorSurface({
   draftCode,
   highlightedDraftLines,
   diagnostics,
   diagnosticsByLine,
-  buttonCount,
-  rootCount,
   editorCursorLine,
-  showExplainer,
+  showStatusBar = true,
   activeLine,
   activeToken,
   autocompleteContext,
   autocompleteIndex,
   autocompletePosition,
   textareaRef,
+  headerLeft,
+  headerRight,
+  textareaAriaLabel = "Template code editor",
   onDraftChange,
   onCursorUpdate,
   onKeyDown,
@@ -68,43 +70,18 @@ export function CodeEditorPane({
   onAutocompleteHover,
   onAutocompleteSelect,
   className,
-}: CodeEditorPaneProps) {
+}: CodeEditorSurfaceProps) {
   const highlightPreRef = useRef<HTMLPreElement | null>(null);
   const lineGutterRef = useRef<HTMLDivElement | null>(null);
 
   return (
     <div className={cn("pb:p-4 pb:flex pb:flex-col pb:gap-3", className)}>
-      <div className="pb:flex pb:flex-wrap pb:items-center pb:justify-between pb:gap-2 pb:text-xs pb:text-gray-600">
-        {format === "shorthand" ? (
-          <span>
-            Start a line with{" "}
-            <code className="pb:px-1 pb:bg-gray-100 pb:rounded">!</code> for a
-            Log button, indent 2 spaces for children, use{" "}
-            <code className="pb:px-1 pb:bg-gray-100 pb:rounded">
-              [Label -&gt; Robot]
-            </code>{" "}
-            for colors,{" "}
-            <code className="pb:px-1 pb:bg-gray-100 pb:rounded">:)</code> for
-            emotion, and{" "}
-            <code className="pb:px-1 pb:bg-gray-100 pb:rounded">#tag</code> /{" "}
-            <code className="pb:px-1 pb:bg-gray-100 pb:rounded">-&gt; #tag</code>{" "}
-            for loops.
-          </span>
-        ) : (
-          <span>
-            Edit raw{" "}
-            <code className="pb:px-1 pb:bg-gray-100 pb:rounded">Template</code>{" "}
-            JSON (
-            <code className="pb:px-1 pb:bg-gray-100 pb:rounded">buttons</code>{" "}
-            &amp;{" "}
-            <code className="pb:px-1 pb:bg-gray-100 pb:rounded">hierarchy</code>
-            ). Click <strong>Format</strong> to pretty-print.
-          </span>
-        )}
-        <span className="pb:font-medium pb:text-gray-700">
-          {buttonCount} buttons • {rootCount} root
-        </span>
-      </div>
+      {(headerLeft || headerRight) && (
+        <div className="pb:flex pb:flex-wrap pb:items-center pb:justify-between pb:gap-2 pb:text-xs pb:text-gray-600">
+          {headerLeft}
+          {headerRight}
+        </div>
+      )}
 
       <div className="pb:relative pb:flex pb:rounded-lg pb:border pb:border-gray-300 pb:bg-[#1e222b]">
         {/* Line Numbers Gutter */}
@@ -166,7 +143,7 @@ export function CodeEditorPane({
           </pre>
           <textarea
             ref={textareaRef}
-            aria-label="Template code editor"
+            aria-label={textareaAriaLabel}
             aria-expanded={Boolean(autocompleteContext)}
             aria-autocomplete="list"
             value={draftCode}
@@ -206,7 +183,7 @@ export function CodeEditorPane({
         </div>
       </div>
 
-      {showExplainer && (
+      {showStatusBar && (
         <CodeStatusBar
           activeLine={activeLine}
           activeToken={activeToken}

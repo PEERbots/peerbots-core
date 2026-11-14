@@ -1,41 +1,44 @@
-import { cn } from "../../../utils";
-import type { PeerbotsButtonActionHandler } from "../types";
+import { cn } from "../../utils";
 import { CodeStatusBar } from "./CodeStatusBar";
-import type { NormalizedLineView } from "./constants";
+import type { ExplainedCodeLine, ExplainedCodeToken } from "./types";
 
-export interface CodeReadOnlyPaneProps {
-  lines: NormalizedLineView[];
-  selectedButtonId: string | null;
-  disabled: boolean;
-  showExplainer: boolean;
+export interface CodeInteractiveLinesProps<
+  TLine extends ExplainedCodeLine = ExplainedCodeLine,
+> {
+  lines: TLine[];
+  disabled?: boolean;
+  showStatusBar?: boolean;
   hoveredLineNumber: number | null;
   hoveredTokenIdx: number | null;
-  activeLine: NormalizedLineView | undefined;
-  activeToken?: NormalizedLineView["tokens"][number];
+  activeLine: TLine | undefined;
+  activeToken?: ExplainedCodeToken;
   onHoverLine: (lineNumber: number | null) => void;
   onHoverToken: (tokenIdx: number | null) => void;
-  onButtonAction?: PeerbotsButtonActionHandler;
+  onSelectLine?: (line: TLine) => void;
+  ariaLabel?: string;
   className?: string;
 }
 
 /**
- * Interactive read-only syntax-highlighted code pane with line/token hover
- * inspection and keyboard selection.
+ * Domain-neutral interactive read-only code pane with line/token hover
+ * highlighting and keyboard selection.
  */
-export function CodeReadOnlyPane({
+export function CodeInteractiveLines<
+  TLine extends ExplainedCodeLine = ExplainedCodeLine,
+>({
   lines,
-  selectedButtonId,
-  disabled,
-  showExplainer,
+  disabled = false,
+  showStatusBar = true,
   hoveredLineNumber,
   hoveredTokenIdx,
   activeLine,
   activeToken,
   onHoverLine,
   onHoverToken,
-  onButtonAction,
+  onSelectLine,
+  ariaLabel = "Formatted template code lines",
   className,
-}: CodeReadOnlyPaneProps) {
+}: CodeInteractiveLinesProps<TLine>) {
   return (
     <div
       className={cn(
@@ -48,11 +51,9 @@ export function CodeReadOnlyPane({
           No lines to display.
         </div>
       ) : (
-        <div role="list" aria-label="Formatted template code lines">
+        <div role="list" aria-label={ariaLabel}>
           {lines.map((line) => {
             const isHovered = hoveredLineNumber === line.lineNumber;
-            const isSelected =
-              Boolean(selectedButtonId) && line.buttonId === selectedButtonId;
 
             return (
               <div
@@ -69,37 +70,27 @@ export function CodeReadOnlyPane({
                   onHoverToken(null);
                 }}
                 onClick={() => {
-                  if (
-                    !disabled &&
-                    onButtonAction &&
-                    line.buttonId &&
-                    line.button
-                  ) {
-                    onButtonAction(line.button, line.buttonId, {
-                      type: "SELECT",
-                    });
+                  if (!disabled && onSelectLine && line.isInteractive) {
+                    onSelectLine(line);
                   }
                 }}
                 onKeyDown={(e) => {
                   if (
                     (e.key === "Enter" || e.key === " ") &&
                     !disabled &&
-                    onButtonAction &&
-                    line.buttonId &&
-                    line.button
+                    onSelectLine &&
+                    line.isInteractive
                   ) {
                     e.preventDefault();
-                    onButtonAction(line.button, line.buttonId, {
-                      type: "SELECT",
-                    });
+                    onSelectLine(line);
                   }
                 }}
                 className={cn(
                   "pb:flex pb:items-baseline pb:gap-3 pb:px-2 pb:py-0.5 pb:rounded pb:transition-colors pb:outline-none",
-                  line.buttonId && !disabled && "pb:cursor-pointer",
+                  line.isInteractive && !disabled && "pb:cursor-pointer",
                   isHovered
                     ? "pb:bg-white/10 pb:ring-1 pb:ring-peerbots-teal/60"
-                    : isSelected
+                    : line.isSelected
                       ? "pb:bg-peerbots-teal/15"
                       : "hover:pb:bg-white/5",
                 )}
@@ -143,7 +134,7 @@ export function CodeReadOnlyPane({
         </div>
       )}
 
-      {showExplainer && (
+      {showStatusBar && (
         <CodeStatusBar
           activeLine={activeLine}
           activeToken={activeToken}

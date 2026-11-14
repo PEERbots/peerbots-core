@@ -1,12 +1,8 @@
-import type {
-  CodeAutocompleteContext,
-  CodeAutocompleteSuggestion,
-} from "../../../../templates/codeFormat";
-import { PEERBOTS_COLOR_MAP } from "../../../forms/PeerbotsColorSelector";
-import { cn } from "../../../utils";
+import { cn } from "../../utils";
+import type { CodeAutocompleteOption, CodeAutocompleteState } from "./types";
 
 export interface CodeAutocompletePopupProps {
-  context: CodeAutocompleteContext;
+  context: CodeAutocompleteState;
   selectedIndex: number;
   position: {
     top?: number;
@@ -14,9 +10,12 @@ export interface CodeAutocompletePopupProps {
     left: string;
   };
   onHoverIndex: (idx: number) => void;
-  onSelect: (suggestion: CodeAutocompleteSuggestion) => void;
+  onSelect: (suggestion: CodeAutocompleteOption) => void;
 }
 
+/**
+ * Domain-neutral inline floating autocomplete listbox positioned near the editor caret.
+ */
 export function CodeAutocompletePopup({
   context,
   selectedIndex,
@@ -63,14 +62,11 @@ export function CodeAutocompletePopup({
               )}
             >
               <span className="pb:flex pb:items-center pb:gap-2 pb:min-w-0">
-                {sug.colorSwatch && (
+                {sug.swatchColor && (
                   <span
                     aria-hidden="true"
                     className="pb:w-3 pb:h-3 pb:rounded-sm pb:border pb:border-gray-300 pb:shrink-0"
-                    style={{
-                      backgroundColor:
-                        PEERBOTS_COLOR_MAP[sug.colorSwatch] ?? sug.colorSwatch,
-                    }}
+                    style={{ backgroundColor: sug.swatchColor }}
                   />
                 )}
                 <code className="pb:font-mono pb:font-semibold pb:text-gray-900">

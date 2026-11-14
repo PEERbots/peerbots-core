@@ -4,23 +4,26 @@ import {
   formatTemplateToCode,
   formatTemplateToJsonCode,
   getCodeAutocompleteContext,
-  type CodeAutocompleteContext,
-  type CodeAutocompleteSuggestion,
   type CodeDiagnostic,
 } from "../../../templates/codeFormat";
 import type { PeerbotsEmotion, Template } from "../../../templates/types";
 import { EmptyState } from "../../feedback/EmptyState";
 import { Icon, type IconName } from "../../foundations/Icon";
 import { cn } from "../../utils";
-import { CodeEditorPane } from "./code-view/CodeEditorPane";
-import { CodeExplainerAside } from "./code-view/CodeExplainerAside";
-import { CodeReadOnlyPane } from "./code-view/CodeReadOnlyPane";
 import {
+  CodeEditorSurface,
+  CodeExplainerPanel,
+  CodeInteractiveLines,
+  type CodeAutocompleteOption,
+} from "../code";
+import {
+  adaptAutocompleteContext,
+  adaptJsonLines,
+  adaptPttfLines,
   highlightJsonRaw,
-  normalizeJsonLines,
-  normalizePttfLines,
-  type NormalizedLineView,
-} from "./code-view/constants";
+  type ExplainedPttfLine,
+} from "./code-view/pttfAdapter";
+import { PttfButtonPreview } from "./code-view/PttfButtonPreview";
 import type { PeerbotsButtonActionHandler } from "./types";
 
 export interface CodeViewProps {
@@ -60,9 +63,8 @@ interface UndoEntry {
 /**
  * Interactive Code & Shorthand View for Peerbots `Template` objects.
  *
- * Supports switching between **Shorthand (PTTF)** and **JSON** with syntax highlighting,
- * interactive hover/focus explainers (previewing the live `<PeerbotsButton>` produced by each line),
- * inline context-aware autocomplete, line-by-line diagnostics, and round-trip editing when `onTemplateChange` is provided.
+ * Composes domain-neutral {@link CodeInteractiveLines}, {@link CodeEditorSurface},
+ * and {@link CodeExplainerPanel} with PTTF/JSON adapters and {@link PttfButtonPreview}.
  */
 export function CodeView({
   template,
@@ -124,9 +126,9 @@ export function CodeView({
   const normalizedLines = useMemo(
     () =>
       format === "shorthand"
-        ? normalizePttfLines(formattedPttf.lines)
-        : normalizeJsonLines(formattedJson.lines),
-    [format, formattedPttf.lines, formattedJson.lines],
+        ? adaptPttfLines(formattedPttf.lines, selectedButtonId)
+        : adaptJsonLines(formattedJson.lines, selectedButtonId),
+    [format, formattedPttf.lines, formattedJson.lines, selectedButtonId],
   );
 
   const [draftCode, setDraftCode] = useState<string>(activeCode);
@@ -154,7 +156,7 @@ export function CodeView({
     diagnostics: CodeDiagnostic[];
     buttonCount: number;
     rootCount: number;
-    draftLines: NormalizedLineView[];
+    draftLines: ExplainedPttfLine[];
   } => {
     if (format === "shorthand") {
       const res = analyzeTemplateCode(draftCode, {
@@ -167,7 +169,7 @@ export function CodeView({
         diagnostics: res.diagnostics,
         buttonCount: Object.keys(res.template.buttons).length,
         rootCount: res.template.hierarchy.root.length,
-        draftLines: normalizePttfLines(res.lines),
+        draftLines: adaptPttfLines(res.lines, selectedButtonId),
       };
     }
 
@@ -204,7 +206,7 @@ export function CodeView({
         diagnostics: [],
         buttonCount: Object.keys(nextTemplate.buttons).length,
         rootCount: nextTemplate.hierarchy.root.length,
-        draftLines: normalizeJsonLines(jsonFormatted.lines),
+        draftLines: adaptJsonLines(jsonFormatted.lines, selectedButtonId),
       };
     } catch (err) {
       return {
@@ -224,7 +226,7 @@ export function CodeView({
         draftLines: [],
       };
     }
-  }, [draftCode, format, template]);
+  }, [draftCode, format, template, selectedButtonId]);
 
   const diagnosticsByLine = useMemo(() => {
     const map = new Map<number, CodeDiagnostic[]>();
@@ -245,9 +247,7 @@ export function CodeView({
         const canUseStructuredTokens =
           matchedLine &&
           matchedLine.tokens.map((t) => t.text).join("") === line;
-        const isSelected =
-          Boolean(selectedButtonId) &&
-          matchedLine?.buttonId === selectedButtonId;
+        const isSelected = Boolean(matchedLine?.isSelected);
         const lineDiags = diagnosticsByLine.get(lineNum) ?? [];
         const hasError = lineDiags.some((d) => d.severity === "error");
         const hasWarning = lineDiags.some((d) => d.severity === "warning");
@@ -304,8 +304,6 @@ export function CodeView({
 
     return parsedDraft.draftLines.map((line, i) => {
       const isCursorLine = line.lineNumber === editorCursorLine;
-      const isSelected =
-        Boolean(selectedButtonId) && line.buttonId === selectedButtonId;
       const lineDiags = diagnosticsByLine.get(line.lineNumber) ?? [];
       const hasError = lineDiags.some((d) => d.severity === "error");
       const hasWarning = lineDiags.some((d) => d.severity === "warning");
@@ -327,7 +325,7 @@ export function CodeView({
                 ? "pb:bg-red-500/10"
                 : hasWarning
                   ? "pb:bg-amber-500/10"
-                  : isSelected
+                  : line.isSelected
                     ? "pb:bg-peerbots-teal/15"
                     : "",
           )}
@@ -360,10 +358,9 @@ export function CodeView({
     diagnosticsByLine,
     editorCursorLine,
     hoveredTokenIdx,
-    selectedButtonId,
   ]);
 
-  const activeLine: NormalizedLineView | undefined = useMemo(() => {
+  const activeLine: ExplainedPttfLine | undefined = useMemo(() => {
     if (isEditable) {
       return (
         parsedDraft.draftLines.find((l) => l.lineNumber === editorCursorLine) ??
@@ -407,7 +404,7 @@ export function CodeView({
     return list;
   }, [parsedDraft.draftLines]);
 
-  const autocompleteContext: CodeAutocompleteContext | null = useMemo(() => {
+  const autocompleteContext = useMemo(() => {
     if (
       !isEditable ||
       format !== "shorthand" ||
@@ -415,10 +412,12 @@ export function CodeView({
     ) {
       return null;
     }
-    return getCodeAutocompleteContext(
-      draftCode,
-      editorSelectionStart,
-      availableAnchors,
+    return adaptAutocompleteContext(
+      getCodeAutocompleteContext(
+        draftCode,
+        editorSelectionStart,
+        availableAnchors,
+      ),
     );
   }, [
     isEditable,
@@ -467,9 +466,7 @@ export function CodeView({
     setHoveredTokenIdx(null);
   };
 
-  const applyAutocompleteSuggestion = (
-    suggestion: CodeAutocompleteSuggestion,
-  ) => {
+  const applyAutocompleteSuggestion = (suggestion: CodeAutocompleteOption) => {
     if (!autocompleteContext) return;
     pushUndo(draftCode, editorSelectionStart);
     const { replaceStart, replaceEnd } = autocompleteContext;
@@ -746,37 +743,79 @@ export function CodeView({
         )}
       >
         {!isEditable ? (
-          <CodeReadOnlyPane
+          <CodeInteractiveLines
             lines={normalizedLines}
-            selectedButtonId={selectedButtonId}
             disabled={disabled}
-            showExplainer={showExplainer}
+            showStatusBar={showExplainer}
             hoveredLineNumber={hoveredLineNumber}
             hoveredTokenIdx={hoveredTokenIdx}
             activeLine={activeLine}
             activeToken={activeToken}
             onHoverLine={setHoveredLineNumber}
             onHoverToken={setHoveredTokenIdx}
-            onButtonAction={onButtonAction}
+            onSelectLine={(line) => {
+              if (onButtonAction && line.buttonId && line.button) {
+                onButtonAction(line.button, line.buttonId, { type: "SELECT" });
+              }
+            }}
             className={showExplainer ? "lg:pb:col-span-7" : "pb:col-span-1"}
           />
         ) : (
-          <CodeEditorPane
-            format={format}
+          <CodeEditorSurface
             draftCode={draftCode}
             highlightedDraftLines={highlightedDraftLines}
             diagnostics={parsedDraft.diagnostics}
             diagnosticsByLine={diagnosticsByLine}
-            buttonCount={parsedDraft.buttonCount}
-            rootCount={parsedDraft.rootCount}
             editorCursorLine={editorCursorLine}
-            showExplainer={showExplainer}
+            showStatusBar={showExplainer}
             activeLine={activeLine}
             activeToken={activeToken}
             autocompleteContext={autocompleteContext}
             autocompleteIndex={clampedAutocompleteIndex}
             autocompletePosition={autocompletePosition}
             textareaRef={textareaRef}
+            headerLeft={
+              format === "shorthand" ? (
+                <span>
+                  Start a line with{" "}
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">!</code>{" "}
+                  for a Log button, indent 2 spaces for children, use{" "}
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">
+                    [Label -&gt; Robot]
+                  </code>{" "}
+                  for colors,{" "}
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">:)</code>{" "}
+                  for emotion, and{" "}
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">#tag</code>{" "}
+                  /{" "}
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">
+                    -&gt; #tag
+                  </code>{" "}
+                  for loops.
+                </span>
+              ) : (
+                <span>
+                  Edit raw{" "}
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">
+                    Template
+                  </code>{" "}
+                  JSON (
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">
+                    buttons
+                  </code>{" "}
+                  &amp;{" "}
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">
+                    hierarchy
+                  </code>
+                  ). Click <strong>Format</strong> to pretty-print.
+                </span>
+              )
+            }
+            headerRight={
+              <span className="pb:font-medium pb:text-gray-700">
+                {parsedDraft.buttonCount} buttons • {parsedDraft.rootCount} root
+              </span>
+            }
             onDraftChange={(nextValue, el) => {
               setDraftCode(nextValue);
               updateCursorLine(el);
@@ -796,21 +835,25 @@ export function CodeView({
         )}
 
         {showExplainer && (
-          <CodeExplainerAside
+          <CodeExplainerPanel
             activeLine={activeLine}
             lineDiagnostics={
               isEditable && activeLine
                 ? (diagnosticsByLine.get(activeLine.lineNumber) ?? [])
                 : []
             }
-            format={format}
-            disabled={disabled}
-            logIcon={logIcon}
-            emotionIcons={emotionIcons}
-            emotionLabels={emotionLabels}
             hoveredTokenIdx={hoveredTokenIdx}
             onHoverToken={setHoveredTokenIdx}
-            onButtonAction={onButtonAction}
+            renderPreview={(line) => (
+              <PttfButtonPreview
+                line={line}
+                disabled={disabled}
+                logIcon={logIcon}
+                emotionIcons={emotionIcons}
+                emotionLabels={emotionLabels}
+                onButtonAction={onButtonAction}
+              />
+            )}
             emptyHint={
               isEditable
                 ? format === "json" && !parsedDraft.template
