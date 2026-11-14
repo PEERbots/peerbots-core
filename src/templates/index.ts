@@ -7,4 +7,5 @@ export * from "./hierarchy";
 export * from "./reordering";
 export * from "./bulkAuthor";
 export * from "./templateIO";
+export * from "./codeFormat";
 export * from "./examples";

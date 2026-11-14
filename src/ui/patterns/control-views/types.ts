@@ -53,6 +53,7 @@ export type PeerbotsTemplateView =
   | "Buttons"
   | "Table"
   | "Flow"
+  | "Code"
   | (string & {});
 
 /**
