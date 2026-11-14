@@ -945,6 +945,8 @@ export function analyzeTemplateCode(
     let labelColor: PeerbotsColor = defaultColor;
     let robotColor: PeerbotsColor = defaultColor;
     let emotion: Emotion = DEFAULT_EMOTION;
+    let hasExplicitRobotColor = false;
+    let hasExplicitEmotion = false;
 
     // Parse leading bracket tokens `[...]` in any order
     while (rawLine.slice(pos).startsWith("[")) {
@@ -967,6 +969,7 @@ export function analyzeTemplateCode(
         });
       } else if (EMOTION_LOOKUP.has(lower)) {
         emotion = EMOTION_LOOKUP.get(lower)!;
+        hasExplicitEmotion = true;
         tokens.push({
           kind: "emotion",
           text: tokenText,
@@ -982,7 +985,10 @@ export function analyzeTemplateCode(
         );
         if (colorRes.matched) {
           if (colorRes.labelColor) labelColor = colorRes.labelColor;
-          if (colorRes.robotColor) robotColor = colorRes.robotColor;
+          if (colorRes.robotColor) {
+            robotColor = colorRes.robotColor;
+            hasExplicitRobotColor = true;
+          }
           tokens.push({
             kind: "colors",
             text: tokenText,
@@ -1012,6 +1018,7 @@ export function analyzeTemplateCode(
     for (const { prefix, emotion: mappedEmotion } of EXTRA_EMOTION_PREFIXES) {
       if (afterBrackets.startsWith(prefix)) {
         emotion = mappedEmotion;
+        hasExplicitEmotion = true;
         const spaceMatch = afterBrackets.slice(prefix.length).match(/^([ \t]*)/);
         const spaceAfter = spaceMatch ? spaceMatch[1] : "";
         const tokenText = prefix + spaceAfter;
@@ -1023,6 +1030,23 @@ export function analyzeTemplateCode(
         });
         pos += tokenText.length;
         break;
+      }
+    }
+
+    if (isLog) {
+      if (hasExplicitRobotColor) {
+        diagnostics.push({
+          lineNumber,
+          severity: "warning",
+          message: `Log buttons (!) do not have a robot face color; "-> ${robotColor}" will be ignored.`,
+        });
+      }
+      if (hasExplicitEmotion) {
+        diagnostics.push({
+          lineNumber,
+          severity: "warning",
+          message: `Log buttons (!) do not have a robot facial expression; emotion "${emotion}" will be ignored.`,
+        });
       }
     }
 
@@ -1320,6 +1344,8 @@ export function getCodeAutocompleteContext(
     return null;
   }
 
+  const isLogLine = /^(?:!|[-*]?\s*\[log\])/i.test(trimmedBefore);
+
   // 1. Inside `[...]` brackets -> colors (label or robot) and emotions
   const lastOpen = lineBeforeCaret.lastIndexOf("[");
   const lastClose = lineBeforeCaret.lastIndexOf("]");
@@ -1329,6 +1355,9 @@ export function getCodeAutocompleteContext(
     const suffix = alreadyHasClosing ? "" : "] ";
 
     if (inside.includes("->")) {
+      // Log buttons do not have a robot face color
+      if (isLogLine) return null;
+
       const afterArrow = inside.split("->").pop() ?? "";
       const query = afterArrow.trimStart().toLowerCase();
       const replaceStart = selectionStart - afterArrow.trimStart().length;
@@ -1364,15 +1393,19 @@ export function getCodeAutocompleteContext(
       const bStarts = b.toLowerCase().startsWith(query) ? 0 : 1;
       return aStarts - bStarts;
     });
-    const matchingEmotions = PEERBOTS_EMOTIONS.filter(
-      (e) => e !== "Neutral" && e.toLowerCase().includes(query),
-    );
+    const matchingEmotions = isLogLine
+      ? []
+      : PEERBOTS_EMOTIONS.filter(
+          (e) => e !== "Neutral" && e.toLowerCase().includes(query),
+        );
 
     const suggestions: CodeAutocompleteSuggestion[] = [
       ...matchingColors.map((color) => ({
         label: color,
         insertText: `${color}${suffix}`,
-        description: `Button color (${color})`,
+        description: isLogLine
+          ? `Log button color (${color})`
+          : `Button color (${color})`,
         colorSwatch: color,
       })),
       ...matchingEmotions.map((emotion) => ({
@@ -1385,7 +1418,9 @@ export function getCodeAutocompleteContext(
     if (suggestions.length === 0) return null;
     return {
       kind: "labelColor",
-      heading: "Button Color or Emotion (type -> for Robot Color)",
+      heading: isLogLine
+        ? "Log Button Color"
+        : "Button Color or Emotion (type -> for Robot Color)",
       replaceStart,
       replaceEnd: selectionStart,
       suggestions,
@@ -1418,9 +1453,13 @@ export function getCodeAutocompleteContext(
     };
   }
 
-  // 3. Emoticon prefix (`:` after bullet/indent/brackets)
+  // 3. Emoticon prefix (`:` after bullet/indent/brackets — only for Message buttons)
+  if (isLogLine) {
+    return null;
+  }
+
   const colonMatch = lineBeforeCaret.match(
-    /^([ \t]*(?:[-*!][ \t]+)?(?:#[a-zA-Z0-9_-]+[ \t]+)?(?:\[[^\]]+\][ \t]*)*)(:[a-zA-Z()\\]?)$/,
+    /^([ \t]*(?:[-*][ \t]+)?(?:#[a-zA-Z0-9_-]+[ \t]+)?(?:\[[^\]]+\][ \t]*)*)(:[a-zA-Z()\\]?)$/,
   );
   if (colonMatch) {
     const typed = colonMatch[2].toLowerCase();

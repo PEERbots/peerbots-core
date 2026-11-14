@@ -208,5 +208,18 @@ describe("CodeView", () => {
 
     fireEvent.click(purpleOption);
     expect(textarea.value).toBe("// Test\n- [Purple] ");
+
+    // Typing an invalid Log modifier (robot color + emotion) shows line-specific warnings in explainer
+    const badLog = "// Test\n! [Grey -> Red] :) Marker";
+    fireEvent.change(textarea, {
+      target: { value: badLog, selectionStart: badLog.length },
+    });
+    const explainer = screen.getByLabelText("Interactive code explainer");
+    expect(
+      within(explainer).getByText(/do not have a robot face color/i),
+    ).toBeInTheDocument();
+    expect(
+      within(explainer).getByText(/do not have a robot facial expression/i),
+    ).toBeInTheDocument();
   });
 });

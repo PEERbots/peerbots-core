@@ -345,6 +345,16 @@ export function CodeView({
     }
   }, [draftCode, format, template]);
 
+  const diagnosticsByLine = useMemo(() => {
+    const map = new Map<number, CodeDiagnostic[]>();
+    for (const diag of parsedDraft.diagnostics) {
+      const existing = map.get(diag.lineNumber) ?? [];
+      existing.push(diag);
+      map.set(diag.lineNumber, existing);
+    }
+    return map;
+  }, [parsedDraft.diagnostics]);
+
   const highlightedDraftLines = useMemo(() => {
     if (format === "json") {
       return draftCode.split(/\r?\n/).map((line, i) => {
@@ -357,6 +367,9 @@ export function CodeView({
         const isSelected =
           Boolean(selectedButtonId) &&
           matchedLine?.buttonId === selectedButtonId;
+        const lineDiags = diagnosticsByLine.get(lineNum) ?? [];
+        const hasError = lineDiags.some((d) => d.severity === "error");
+        const hasWarning = lineDiags.some((d) => d.severity === "warning");
 
         return (
           <div
@@ -364,10 +377,18 @@ export function CodeView({
             className={cn(
               "pb:rounded pb:px-1",
               isCursorLine
-                ? "pb:bg-white/10 pb:ring-1 pb:ring-peerbots-teal/60"
-                : isSelected
-                  ? "pb:bg-peerbots-teal/15"
-                  : "",
+                ? hasError
+                  ? "pb:bg-red-500/15 pb:ring-1 pb:ring-red-400/70"
+                  : hasWarning
+                    ? "pb:bg-amber-500/15 pb:ring-1 pb:ring-amber-400/70"
+                    : "pb:bg-white/10 pb:ring-1 pb:ring-peerbots-teal/60"
+                : hasError
+                  ? "pb:bg-red-500/10"
+                  : hasWarning
+                    ? "pb:bg-amber-500/10"
+                    : isSelected
+                      ? "pb:bg-peerbots-teal/15"
+                      : "",
             )}
           >
             {line.length === 0
@@ -404,6 +425,9 @@ export function CodeView({
       const isCursorLine = line.lineNumber === editorCursorLine;
       const isSelected =
         Boolean(selectedButtonId) && line.buttonId === selectedButtonId;
+      const lineDiags = diagnosticsByLine.get(line.lineNumber) ?? [];
+      const hasError = lineDiags.some((d) => d.severity === "error");
+      const hasWarning = lineDiags.some((d) => d.severity === "warning");
       const isEmpty =
         line.tokens.length === 0 ||
         line.tokens.every((t) => t.text.length === 0);
@@ -413,10 +437,18 @@ export function CodeView({
           className={cn(
             "pb:rounded pb:px-1",
             isCursorLine
-              ? "pb:bg-white/10 pb:ring-1 pb:ring-peerbots-teal/60"
-              : isSelected
-                ? "pb:bg-peerbots-teal/15"
-                : "",
+              ? hasError
+                ? "pb:bg-red-500/15 pb:ring-1 pb:ring-red-400/70"
+                : hasWarning
+                  ? "pb:bg-amber-500/15 pb:ring-1 pb:ring-amber-400/70"
+                  : "pb:bg-white/10 pb:ring-1 pb:ring-peerbots-teal/60"
+              : hasError
+                ? "pb:bg-red-500/10"
+                : hasWarning
+                  ? "pb:bg-amber-500/10"
+                  : isSelected
+                    ? "pb:bg-peerbots-teal/15"
+                    : "",
           )}
         >
           {isEmpty
@@ -444,6 +476,7 @@ export function CodeView({
     draftCode,
     format,
     parsedDraft.draftLines,
+    diagnosticsByLine,
     editorCursorLine,
     hoveredTokenIdx,
     selectedButtonId,
@@ -989,9 +1022,17 @@ export function CodeView({
                 {draftCode.split(/\r?\n/).map((_, idx) => {
                   const lineNum = idx + 1;
                   const isActive = lineNum === editorCursorLine;
+                  const lineDiags = diagnosticsByLine.get(lineNum) ?? [];
+                  const hasError = lineDiags.some((d) => d.severity === "error");
+                  const hasWarning = lineDiags.some((d) => d.severity === "warning");
                   return (
                     <div
                       key={lineNum}
+                      title={
+                        lineDiags.length > 0
+                          ? lineDiags.map((d) => d.message).join("\n")
+                          : undefined
+                      }
                       onClick={() => {
                         const el = textareaRef.current;
                         if (!el) return;
@@ -1008,7 +1049,13 @@ export function CodeView({
                       }}
                       className={cn(
                         "pb:cursor-pointer pb:transition-colors",
-                        isActive ? "pb:text-peerbots-teal pb:font-semibold" : "hover:pb:text-gray-300",
+                        hasError
+                          ? "pb:text-red-400 pb:font-bold"
+                          : hasWarning
+                            ? "pb:text-amber-400 pb:font-semibold"
+                            : isActive
+                              ? "pb:text-peerbots-teal pb:font-semibold"
+                              : "hover:pb:text-gray-300",
                       )}
                     >
                       {lineNum}
@@ -1202,6 +1249,11 @@ export function CodeView({
           {showExplainer && (
             <CodeExplainerAside
               activeLine={activeLine}
+              lineDiagnostics={
+                activeLine
+                  ? (diagnosticsByLine.get(activeLine.lineNumber) ?? [])
+                  : []
+              }
               format={format}
               disabled={disabled}
               logIcon={logIcon}
@@ -1225,6 +1277,7 @@ export function CodeView({
 
 function CodeExplainerAside({
   activeLine,
+  lineDiagnostics = [],
   format,
   disabled,
   logIcon,
@@ -1236,6 +1289,7 @@ function CodeExplainerAside({
   emptyHint,
 }: {
   activeLine: NormalizedLineView | undefined;
+  lineDiagnostics?: CodeDiagnostic[];
   format: "shorthand" | "json";
   disabled: boolean;
   logIcon: IconName;
@@ -1262,6 +1316,30 @@ function CodeExplainerAside({
           </span>
         )}
       </div>
+
+      {lineDiagnostics.length > 0 && (
+        <div className="pb:flex pb:flex-col pb:gap-1.5">
+          {lineDiagnostics.map((diag, idx) => (
+            <div
+              key={idx}
+              className={cn(
+                "pb:flex pb:items-start pb:gap-2 pb:px-2.5 pb:py-2 pb:rounded-lg pb:text-xs pb:border",
+                diag.severity === "error"
+                  ? "pb:bg-red-50 pb:border-red-200 pb:text-red-800"
+                  : "pb:bg-amber-50 pb:border-amber-200 pb:text-amber-900",
+              )}
+            >
+              <Icon
+                name={
+                  diag.severity === "error" ? "xCircle" : "exclamationTriangle"
+                }
+                className="pb:w-4 pb:h-4 pb:shrink-0 pb:mt-0.5"
+              />
+              <span>{diag.message}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {activeLine ? (
         <>

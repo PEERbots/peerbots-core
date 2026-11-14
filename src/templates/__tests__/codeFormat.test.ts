@@ -255,4 +255,29 @@ describe("Template Code Format (PTTF)", () => {
     expect(emotionCtx?.kind).toBe("emotion");
     expect(emotionCtx?.suggestions.map((s) => s.label)).toContain(":)");
   });
+
+  it("validates Log lines in autocomplete and emits line-level warnings for robot color or emotion on Log buttons", () => {
+    // Log line autocomplete should only suggest colors (no emotions, no -> robotColor)
+    const logBracketCtx = getCodeAutocompleteContext("! [", 3);
+    expect(logBracketCtx?.heading).toBe("Log Button Color");
+    expect(logBracketCtx?.suggestions.map((s) => s.label)).not.toContain(
+      "Happy",
+    );
+    expect(getCodeAutocompleteContext("! [Grey -> ", 11)).toBeNull();
+    expect(getCodeAutocompleteContext("! :", 3)).toBeNull();
+
+    // Parser emits line-by-line warnings when robot color or emotion is given to a Log button
+    const { diagnostics } = parseCodeToTemplate(
+      [
+        "// Test",
+        "! [Grey -> Red] :) Bad Log",
+      ].join("\n"),
+    );
+    expect(diagnostics).toHaveLength(2);
+    expect(diagnostics[0].lineNumber).toBe(2);
+    expect(diagnostics[0].severity).toBe("warning");
+    expect(diagnostics[0].message).toContain("robot face color");
+    expect(diagnostics[1].lineNumber).toBe(2);
+    expect(diagnostics[1].message).toContain("facial expression");
+  });
 });
