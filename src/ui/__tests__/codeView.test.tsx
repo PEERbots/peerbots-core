@@ -96,7 +96,7 @@ describe("CodeView", () => {
     expect(results.violations).toEqual([]);
   });
 
-  it("supports Edit mode with live syntax highlighting, live explainer, Format button, diagnostics, and Apply Changes", () => {
+  it("supports unified live editing with syntax highlighting, live explainer, Format, Unsaved/Discard, diagnostics, and Apply Changes", () => {
     const onTemplateChange = vi.fn();
     const template = makeCyclicTemplate();
 
@@ -104,7 +104,6 @@ describe("CodeView", () => {
       <CodeView
         template={template}
         onTemplateChange={onTemplateChange}
-        defaultMode="edit"
       />,
     );
 
@@ -113,14 +112,15 @@ describe("CodeView", () => {
     ) as HTMLTextAreaElement;
     expect(textarea.value).toContain("Say Hello | Hello friend!");
     expect(textarea.value).toContain("! [Grey] Wave Logged | Child waved back");
+    expect(screen.queryByText("Unsaved")).not.toBeInTheDocument();
 
-    // Explainer aside is visible in Edit mode too
+    // Explainer aside is visible in unified editor too
     const explainer = screen.getByLabelText("Interactive code explainer");
     expect(
       within(explainer).getByText("What This Produces"),
     ).toBeInTheDocument();
 
-    // Typing a Log line with `!` and moving cursor to it updates the live explainer
+    // Typing a Log line with `!` and moving cursor to it updates the live explainer & shows Unsaved/Discard
     const nextText = "// Updated\n! [Purple] Break Logged | Requested break";
     fireEvent.change(textarea, {
       target: {
@@ -128,12 +128,27 @@ describe("CodeView", () => {
         selectionStart: nextText.length,
       },
     });
+    expect(screen.getByText("Unsaved")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Discard" })).toBeInTheDocument();
     expect(
       within(explainer).getByRole("button", { name: "Break Logged" }),
     ).toBeInTheDocument();
     expect(
       within(explainer).getByText(/Log button \(!\)/i),
     ).toBeInTheDocument();
+
+    // Clicking Discard reverts draftCode and hides Unsaved
+    fireEvent.click(screen.getByRole("button", { name: "Discard" }));
+    expect(textarea.value).toContain("Say Hello | Hello friend!");
+    expect(screen.queryByText("Unsaved")).not.toBeInTheDocument();
+
+    // Re-apply edit for token hover & diagnostics tests
+    fireEvent.change(textarea, {
+      target: {
+        value: nextText,
+        selectionStart: nextText.length,
+      },
+    });
 
     // Hovering a token in Syntax Breakdown highlights that section in the Edit overlay
     const logTypeItem = within(explainer)
@@ -161,10 +176,11 @@ describe("CodeView", () => {
     });
     expect(within(diagnostics).getByText(/#missing/i)).toBeInTheDocument();
 
-    // Fix the code and click Format, then Apply Changes
+    // Fix the code and click Format, verify Ctrl+Z undoes Format, then re-Format and Apply Changes
+    const unformatted = "// Updated\n[Green -> Red] :) Hi | Hello!";
     fireEvent.change(textarea, {
       target: {
-        value: "// Updated\n[Green -> Red] :) Hi | Hello!",
+        value: unformatted,
         selectionStart: 0,
       },
     });
@@ -172,6 +188,10 @@ describe("CodeView", () => {
     fireEvent.click(screen.getByRole("button", { name: "Format" }));
     expect(textarea.value).toContain("- [Green -> Red] :) Hi | Hello!");
 
+    fireEvent.keyDown(textarea, { key: "z", ctrlKey: true });
+    expect(textarea.value).toBe(unformatted);
+
+    fireEvent.click(screen.getByRole("button", { name: "Format" }));
     fireEvent.click(screen.getByRole("button", { name: "Apply Changes" }));
     expect(onTemplateChange).toHaveBeenCalledTimes(1);
     const updated = onTemplateChange.mock.calls[0][0] as Template;
@@ -179,13 +199,12 @@ describe("CodeView", () => {
     expect(Object.keys(updated.buttons)).toHaveLength(1);
   });
 
-  it("shows context-aware color autocomplete when typing inside brackets in Edit mode", () => {
+  it("shows context-aware color autocomplete, supports Ctrl+Z undo after insert, and validates Log lines", () => {
     const template = makeCyclicTemplate();
     render(
       <CodeView
         template={template}
         onTemplateChange={vi.fn()}
-        defaultMode="edit"
       />,
     );
 
@@ -208,6 +227,10 @@ describe("CodeView", () => {
 
     fireEvent.click(purpleOption);
     expect(textarea.value).toBe("// Test\n- [Purple] ");
+
+    // Ctrl+Z undoes the programmatic autocomplete insert
+    fireEvent.keyDown(textarea, { key: "z", ctrlKey: true });
+    expect(textarea.value).toBe("// Test\n- [pur");
 
     // Typing an invalid Log modifier (robot color + emotion) shows line-specific warnings in explainer
     const badLog = "// Test\n! [Grey -> Red] :) Marker";

@@ -7,22 +7,23 @@ import {
   type CodeAutocompleteContext,
   type CodeAutocompleteSuggestion,
   type CodeDiagnostic,
-  type CodeTokenKind,
-  type FormattedCodeLine,
-  type FormattedJsonLine,
-  type JsonTokenKind,
 } from "../../../templates/codeFormat";
 import type {
-  PeerbotsColor,
   PeerbotsEmotion,
-  RobotControlButton,
   Template,
 } from "../../../templates/types";
 import { EmptyState } from "../../feedback/EmptyState";
-import { PEERBOTS_COLOR_MAP } from "../../forms/PeerbotsColorSelector";
 import { Icon, type IconName } from "../../foundations/Icon";
 import { cn } from "../../utils";
-import { PeerbotsButton } from "../PeerbotsButton";
+import { CodeAutocompletePopup } from "./code-view/CodeAutocompletePopup";
+import { CodeExplainerAside } from "./code-view/CodeExplainerAside";
+import {
+  highlightJsonRaw,
+  normalizeJsonLines,
+  normalizePttfLines,
+  TOKEN_BADGE_LABELS,
+  type NormalizedLineView,
+} from "./code-view/constants";
 import type { PeerbotsButtonActionHandler } from "./types";
 
 export interface CodeViewProps {
@@ -30,7 +31,7 @@ export interface CodeViewProps {
   template: Template;
   /** Optional action callback invoked when a code line's button is selected or activated */
   onButtonAction?: PeerbotsButtonActionHandler;
-  /** Optional template update callback used when editing and applying code or JSON */
+  /** Optional template update callback; when provided (and not disabled), renders the unified live editor */
   onTemplateChange?: (nextTemplate: Template) => void;
   /** Primary active/selected button ID */
   selectedButtonId?: string | null;
@@ -44,7 +45,9 @@ export interface CodeViewProps {
   emotionLabels?: Partial<Record<PeerbotsEmotion, string>>;
   /** Initial syntax format: `"shorthand"` (PTTF) or `"json"` (@default "shorthand") */
   defaultFormat?: "shorthand" | "json";
-  /** Initial view mode (@default "inspect") */
+  /**
+   * @deprecated Inspect and Edit are now unified: providing `onTemplateChange` enables live editing directly.
+   */
   defaultMode?: "inspect" | "edit";
   /** Whether hover/focus explainers are enabled (@default true) */
   defaultShowExplainer?: boolean;
@@ -52,143 +55,9 @@ export interface CodeViewProps {
   className?: string;
 }
 
-const PTTF_TOKEN_CLASSES: Record<CodeTokenKind, string> = {
-  indent: "pb:text-gray-600 pb:select-none",
-  bullet: "pb:text-gray-500 pb:font-bold",
-  anchor: "pb:text-amber-300 pb:font-semibold",
-  jump: "pb:text-cyan-300 pb:font-semibold",
-  type: "pb:text-fuchsia-300 pb:font-semibold",
-  colors: "pb:text-emerald-300 pb:font-medium",
-  emotion: "pb:text-yellow-300 pb:font-semibold",
-  title: "pb:text-gray-100 pb:font-medium",
-  separator: "pb:text-gray-500",
-  speech: "pb:text-sky-200 pb:italic",
-  metadata: "pb:text-purple-300",
-  section: "pb:text-amber-400 pb:font-bold",
-  comment: "pb:text-gray-400 pb:italic",
-};
-
-const JSON_TOKEN_CLASSES: Record<JsonTokenKind, string> = {
-  indent: "pb:text-gray-600 pb:select-none",
-  key: "pb:text-sky-300 pb:font-medium",
-  string: "pb:text-emerald-300",
-  number: "pb:text-amber-300",
-  boolean: "pb:text-fuchsia-300 pb:font-semibold",
-  punctuation: "pb:text-gray-400",
-};
-
-const TOKEN_BADGE_LABELS: Record<CodeTokenKind | JsonTokenKind, string> = {
-  indent: "Hierarchy",
-  bullet: "Item",
-  anchor: "Anchor",
-  jump: "Jump / Loop",
-  type: "Button Type",
-  colors: "Colors",
-  emotion: "Emotion",
-  title: "Button Title",
-  separator: "Separator",
-  speech: "Robot Speech",
-  metadata: "Metadata",
-  section: "Section",
-  comment: "Comment",
-  key: "JSON Key",
-  string: "String",
-  number: "Number",
-  boolean: "Literal",
-  punctuation: "Syntax",
-};
-
-interface NormalizedLineView {
-  lineNumber: number;
-  depth: number;
-  kind: "comment" | "section" | "button" | "jump" | "json";
-  buttonId?: string;
-  button?: RobotControlButton;
-  anchor?: string;
-  isCycle?: boolean;
-  summary: string;
-  tokens: Array<{
-    kind: CodeTokenKind | JsonTokenKind;
-    text: string;
-    explanation: string;
-    className: string;
-    labelColor?: PeerbotsColor;
-    robotColor?: PeerbotsColor;
-  }>;
-}
-
-function normalizePttfLines(lines: FormattedCodeLine[]): NormalizedLineView[] {
-  return lines.map((l) => ({
-    lineNumber: l.lineNumber,
-    depth: l.depth,
-    kind: l.kind,
-    buttonId: l.buttonId,
-    button: l.button,
-    anchor: l.anchor,
-    isCycle: l.isCycle,
-    summary: l.summary,
-    tokens: l.tokens.map((t) => ({
-      kind: t.kind,
-      text: t.text,
-      explanation: t.explanation,
-      className: PTTF_TOKEN_CLASSES[t.kind],
-      labelColor: t.labelColor,
-      robotColor: t.robotColor,
-    })),
-  }));
-}
-
-function normalizeJsonLines(lines: FormattedJsonLine[]): NormalizedLineView[] {
-  return lines.map((l) => ({
-    lineNumber: l.lineNumber,
-    depth: 0,
-    kind: "json",
-    buttonId: l.buttonId,
-    button: l.button,
-    summary: l.summary,
-    tokens: l.tokens.map((t) => ({
-      kind: t.kind,
-      text: t.text,
-      explanation: t.explanation,
-      className: JSON_TOKEN_CLASSES[t.kind],
-    })),
-  }));
-}
-
-function highlightJsonRaw(raw: string): Array<{ text: string; className: string }> {
-  const parts: Array<{ text: string; className: string }> = [];
-  const regex =
-    /("(?:\\.|[^"\\])*")(\s*:)?|(-?\d+(?:\.\d+)?)|(\btrue\b|\bfalse\b|\bnull\b)|([{}[\],:])/g;
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-  while ((match = regex.exec(raw)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push({
-        text: raw.slice(lastIndex, match.index),
-        className: "pb:text-gray-300",
-      });
-    }
-    if (match[1]) {
-      parts.push({
-        text: match[1],
-        className: match[2] ? JSON_TOKEN_CLASSES.key : JSON_TOKEN_CLASSES.string,
-      });
-      if (match[2]) {
-        parts.push({ text: match[2], className: JSON_TOKEN_CLASSES.punctuation });
-      }
-    } else if (match[3]) {
-      parts.push({ text: match[3], className: JSON_TOKEN_CLASSES.number });
-    } else if (match[4]) {
-      parts.push({ text: match[4], className: JSON_TOKEN_CLASSES.boolean });
-    } else if (match[5]) {
-      parts.push({ text: match[5], className: JSON_TOKEN_CLASSES.punctuation });
-    }
-    lastIndex = regex.lastIndex;
-  }
-  if (lastIndex < raw.length) {
-    parts.push({ text: raw.slice(lastIndex), className: "pb:text-gray-300" });
-  }
-  return parts;
+interface UndoEntry {
+  code: string;
+  selectionStart: number;
 }
 
 /**
@@ -196,7 +65,7 @@ function highlightJsonRaw(raw: string): Array<{ text: string; className: string 
  *
  * Supports switching between **Shorthand (PTTF)** and **JSON** with syntax highlighting,
  * interactive hover/focus explainers (previewing the live `<PeerbotsButton>` produced by each line),
- * and an **Edit & Format** mode for round-trip authoring.
+ * inline context-aware autocomplete, line-by-line diagnostics, and round-trip editing when `onTemplateChange` is provided.
  */
 export function CodeView({
   template,
@@ -208,12 +77,13 @@ export function CodeView({
   emotionIcons,
   emotionLabels,
   defaultFormat = "shorthand",
-  defaultMode = "inspect",
+  defaultMode: _defaultMode,
   defaultShowExplainer = true,
   className,
 }: CodeViewProps) {
+  const isEditable = Boolean(onTemplateChange) && !disabled;
+
   const [format, setFormat] = useState<"shorthand" | "json">(defaultFormat);
-  const [mode, setMode] = useState<"inspect" | "edit">(defaultMode);
   const [showExplainer, setShowExplainer] = useState<boolean>(
     defaultShowExplainer,
   );
@@ -234,9 +104,11 @@ export function CodeView({
     top: number;
     left: number;
   }>({ top: 0, left: 0 });
+
   const highlightPreRef = useRef<HTMLPreElement | null>(null);
   const lineGutterRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const undoStackRef = useRef<UndoEntry[]>([]);
 
   const formattedPttf = useMemo(
     () =>
@@ -263,12 +135,24 @@ export function CodeView({
   );
 
   const [draftCode, setDraftCode] = useState<string>(activeCode);
+  const prevActiveCodeRef = useRef<string>(activeCode);
 
   useEffect(() => {
-    if (mode === "inspect") {
+    if (prevActiveCodeRef.current !== activeCode) {
+      prevActiveCodeRef.current = activeCode;
       setDraftCode(activeCode);
+      undoStackRef.current = [];
     }
-  }, [activeCode, mode]);
+  }, [activeCode]);
+
+  const hasUnsavedChanges = isEditable && draftCode !== activeCode;
+
+  const pushUndo = (code: string, selectionStart: number) => {
+    undoStackRef.current.push({ code, selectionStart });
+    if (undoStackRef.current.length > 50) {
+      undoStackRef.current.shift();
+    }
+  };
 
   const parsedDraft = useMemo((): {
     template: Template | null;
@@ -483,7 +367,7 @@ export function CodeView({
   ]);
 
   const activeLine: NormalizedLineView | undefined = useMemo(() => {
-    if (mode === "edit") {
+    if (isEditable) {
       return (
         parsedDraft.draftLines.find((l) => l.lineNumber === editorCursorLine) ??
         parsedDraft.draftLines.find((l) => Boolean(l.button)) ??
@@ -498,7 +382,7 @@ export function CodeView({
     }
     return normalizedLines.find((l) => Boolean(l.button)) ?? normalizedLines[0];
   }, [
-    mode,
+    isEditable,
     parsedDraft.draftLines,
     editorCursorLine,
     normalizedLines,
@@ -528,7 +412,7 @@ export function CodeView({
 
   const autocompleteContext: CodeAutocompleteContext | null = useMemo(() => {
     if (
-      mode !== "edit" ||
+      !isEditable ||
       format !== "shorthand" ||
       autocompleteDismissedAt === editorSelectionStart
     ) {
@@ -540,7 +424,7 @@ export function CodeView({
       availableAnchors,
     );
   }, [
-    mode,
+    isEditable,
     format,
     autocompleteDismissedAt,
     editorSelectionStart,
@@ -565,7 +449,9 @@ export function CodeView({
 
     return {
       top: flipAbove ? undefined : Math.max(4, lineBottom + 4),
-      bottom: flipAbove ? `calc(100% - ${Math.max(4, lineTop)}px + 4px)` : undefined,
+      bottom: flipAbove
+        ? `calc(100% - ${Math.max(4, lineTop)}px + 4px)`
+        : undefined,
       left: `clamp(8px, calc(16px + ${cursorCol}ch - ${editorScroll.left}px), calc(100% - 18.5rem))`,
     };
   }, [draftCode, editorSelectionStart, editorCursorLine, editorScroll]);
@@ -588,6 +474,7 @@ export function CodeView({
     suggestion: CodeAutocompleteSuggestion,
   ) => {
     if (!autocompleteContext) return;
+    pushUndo(draftCode, editorSelectionStart);
     const { replaceStart, replaceEnd } = autocompleteContext;
     const nextCode =
       draftCode.slice(0, replaceStart) +
@@ -612,7 +499,7 @@ export function CodeView({
   };
 
   const handleCopy = async () => {
-    const textToCopy = mode === "edit" ? draftCode : activeCode;
+    const textToCopy = isEditable ? draftCode : activeCode;
     try {
       await navigator.clipboard.writeText(textToCopy);
       setCopied(true);
@@ -624,6 +511,7 @@ export function CodeView({
 
   const handleFormatDraft = () => {
     if (!parsedDraft.template) return;
+    pushUndo(draftCode, editorSelectionStart);
     if (format === "shorthand") {
       const reformatted = formatTemplateToCode(parsedDraft.template, {
         alwaysEmitAnchors: showAllAnchors,
@@ -634,10 +522,17 @@ export function CodeView({
     }
   };
 
+  const handleDiscardDraft = () => {
+    setDraftCode(activeCode);
+    undoStackRef.current = [];
+    setAutocompleteDismissedAt(null);
+    setAutocompleteIndex(0);
+  };
+
   const handleApplyDraft = () => {
     if (!onTemplateChange || disabled || !parsedDraft.template) return;
     onTemplateChange(parsedDraft.template);
-    setMode("inspect");
+    undoStackRef.current = [];
   };
 
   const handleSwitchFormat = (nextFormat: "shorthand" | "json") => {
@@ -645,19 +540,19 @@ export function CodeView({
     setHoveredLineNumber(null);
     setHoveredTokenIdx(null);
     setEditorCursorLine(1);
+    undoStackRef.current = [];
     setDraftCode(
       nextFormat === "shorthand" ? formattedPttf.code : formattedJson.code,
     );
   };
 
   const hasButtons = Object.keys(template.buttons ?? {}).length > 0;
-  const canEdit = Boolean(onTemplateChange) && !disabled;
 
-  if (!hasButtons && mode === "inspect" && !canEdit) {
+  if (!hasButtons && !isEditable) {
     return (
       <EmptyState
         title="No buttons in template"
-        description="Add buttons or switch to Edit mode to write Peerbots Template Text."
+        description="Add buttons to see Peerbots Template Text."
         className={className}
       />
     );
@@ -711,47 +606,15 @@ export function CodeView({
               JSON
             </button>
           </div>
+
+          {hasUnsavedChanges && (
+            <span className="pb:px-2 pb:py-0.5 pb:text-[11px] pb:font-semibold pb:rounded-full pb:bg-amber-100 pb:text-amber-900 pb:border pb:border-amber-300">
+              Unsaved
+            </span>
+          )}
         </div>
 
         <div className="pb:flex pb:flex-wrap pb:items-center pb:gap-2">
-          {canEdit && (
-            <div
-              role="group"
-              aria-label="Code view mode"
-              className="pb:inline-flex pb:rounded-lg pb:bg-gray-200/70 pb:p-0.5"
-            >
-              <button
-                type="button"
-                onClick={() => setMode("inspect")}
-                aria-pressed={mode === "inspect"}
-                className={cn(
-                  "pb:px-2.5 pb:py-1 pb:text-xs pb:font-medium pb:rounded-md pb:transition-colors pb:cursor-pointer",
-                  mode === "inspect"
-                    ? "pb:bg-white pb:text-gray-900 pb:shadow-xs"
-                    : "pb:text-gray-600 pb:hover:text-gray-900",
-                )}
-              >
-                Inspect
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setDraftCode(activeCode);
-                  setMode("edit");
-                }}
-                aria-pressed={mode === "edit"}
-                className={cn(
-                  "pb:px-2.5 pb:py-1 pb:text-xs pb:font-medium pb:rounded-md pb:transition-colors pb:cursor-pointer",
-                  mode === "edit"
-                    ? "pb:bg-white pb:text-gray-900 pb:shadow-xs"
-                    : "pb:text-gray-600 pb:hover:text-gray-900",
-                )}
-              >
-                Edit
-              </button>
-            </div>
-          )}
-
           <button
             type="button"
             onClick={() => setShowExplainer((prev) => !prev)}
@@ -766,7 +629,7 @@ export function CodeView({
             Explainer {showExplainer ? "On" : "Off"}
           </button>
 
-          {mode === "inspect" && format === "shorthand" && (
+          {format === "shorthand" && (
             <button
               type="button"
               onClick={() => setShowAllAnchors((prev) => !prev)}
@@ -782,7 +645,7 @@ export function CodeView({
             </button>
           )}
 
-          {mode === "edit" && (
+          {isEditable && (
             <>
               <button
                 type="button"
@@ -792,10 +655,20 @@ export function CodeView({
               >
                 Format
               </button>
+              {hasUnsavedChanges && (
+                <button
+                  type="button"
+                  onClick={handleDiscardDraft}
+                  className="pb:px-2.5 pb:py-1 pb:text-xs pb:font-medium pb:rounded-lg pb:border pb:border-gray-300 pb:bg-white pb:text-gray-700 pb:hover:bg-gray-100 pb:cursor-pointer"
+                >
+                  Discard
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleApplyDraft}
                 disabled={
+                  !hasUnsavedChanges ||
                   !parsedDraft.template ||
                   parsedDraft.diagnostics.some((d) => d.severity === "error")
                 }
@@ -822,14 +695,14 @@ export function CodeView({
       </div>
 
       {/* Main Content */}
-      {mode === "inspect" ? (
+      {!isEditable ? (
         <div
           className={cn(
             "pb:grid pb:grid-cols-1",
             showExplainer && "lg:pb:grid-cols-12",
           )}
         >
-          {/* Syntax-Highlighted Interactive Code Pane */}
+          {/* Read-Only Syntax-Highlighted Interactive Code Pane */}
           <div
             className={cn(
               "pb:bg-[#1e222b] pb:text-gray-100 pb:font-mono pb:text-xs sm:pb:text-sm pb:overflow-x-auto pb:p-3 pb:max-h-[32rem] pb:overflow-y-auto",
@@ -972,7 +845,7 @@ export function CodeView({
           )}
         </div>
       ) : (
-        /* Edit & Format Mode with Layered Syntax Highlighting + Live Explainer */
+        /* Unified Live Editor with Layered Syntax Highlighting, Inline Autocomplete & Explainer */
         <div
           className={cn(
             "pb:grid pb:grid-cols-1",
@@ -989,22 +862,36 @@ export function CodeView({
               {format === "shorthand" ? (
                 <span>
                   Start a line with{" "}
-                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">!</code> for a Log
-                  button, indent 2 spaces for children, use{" "}
-                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">[Label -&gt; Robot]</code>{" "}
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">!</code>{" "}
+                  for a Log button, indent 2 spaces for children, use{" "}
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">
+                    [Label -&gt; Robot]
+                  </code>{" "}
                   for colors,{" "}
-                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">:)</code> for
-                  emotion, and{" "}
-                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">#tag</code> /{" "}
-                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">-&gt; #tag</code>{" "}
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">:)</code>{" "}
+                  for emotion, and{" "}
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">#tag</code>{" "}
+                  /{" "}
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">
+                    -&gt; #tag
+                  </code>{" "}
                   for loops.
                 </span>
               ) : (
                 <span>
-                  Edit raw <code className="pb:px-1 pb:bg-gray-100 pb:rounded">Template</code> JSON
-                  (<code className="pb:px-1 pb:bg-gray-100 pb:rounded">buttons</code> &amp;{" "}
-                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">hierarchy</code>). Click{" "}
-                  <strong>Format</strong> to pretty-print.
+                  Edit raw{" "}
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">
+                    Template
+                  </code>{" "}
+                  JSON (
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">
+                    buttons
+                  </code>{" "}
+                  &amp;{" "}
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">
+                    hierarchy
+                  </code>
+                  ). Click <strong>Format</strong> to pretty-print.
                 </span>
               )}
               <span className="pb:font-medium pb:text-gray-700">
@@ -1024,7 +911,9 @@ export function CodeView({
                   const isActive = lineNum === editorCursorLine;
                   const lineDiags = diagnosticsByLine.get(lineNum) ?? [];
                   const hasError = lineDiags.some((d) => d.severity === "error");
-                  const hasWarning = lineDiags.some((d) => d.severity === "warning");
+                  const hasWarning = lineDiags.some(
+                    (d) => d.severity === "warning",
+                  );
                   return (
                     <div
                       key={lineNum}
@@ -1088,17 +977,48 @@ export function CodeView({
                   onSelect={(e) => updateCursorLine(e.currentTarget)}
                   onFocus={(e) => updateCursorLine(e.currentTarget)}
                   onKeyDown={(e) => {
+                    if (
+                      (e.metaKey || e.ctrlKey) &&
+                      !e.shiftKey &&
+                      e.key.toLowerCase() === "z" &&
+                      undoStackRef.current.length > 0
+                    ) {
+                      e.preventDefault();
+                      const prev = undoStackRef.current.pop()!;
+                      const prevLine = prev.code
+                        .slice(0, prev.selectionStart)
+                        .split(/\r?\n/).length;
+                      setDraftCode(prev.code);
+                      setEditorSelectionStart(prev.selectionStart);
+                      setEditorCursorLine(prevLine);
+                      setAutocompleteDismissedAt(null);
+                      requestAnimationFrame(() => {
+                        const el = textareaRef.current;
+                        if (el) {
+                          el.focus();
+                          el.setSelectionRange(
+                            prev.selectionStart,
+                            prev.selectionStart,
+                          );
+                        }
+                      });
+                      return;
+                    }
+
                     if (!autocompleteContext) return;
                     const { suggestions } = autocompleteContext;
                     if (suggestions.length === 0) return;
 
                     if (e.key === "ArrowDown") {
                       e.preventDefault();
-                      setAutocompleteIndex((prev) => (prev + 1) % suggestions.length);
+                      setAutocompleteIndex(
+                        (prev) => (prev + 1) % suggestions.length,
+                      );
                     } else if (e.key === "ArrowUp") {
                       e.preventDefault();
                       setAutocompleteIndex(
-                        (prev) => (prev - 1 + suggestions.length) % suggestions.length,
+                        (prev) =>
+                          (prev - 1 + suggestions.length) % suggestions.length,
                       );
                     } else if (e.key === "Enter" || e.key === "Tab") {
                       e.preventDefault();
@@ -1129,69 +1049,13 @@ export function CodeView({
 
                 {/* Inline Floating Context-Aware Autocomplete */}
                 {autocompleteContext && (
-                  <div
-                    style={{
-                      top: autocompletePosition.top,
-                      bottom: autocompletePosition.bottom,
-                      left: autocompletePosition.left,
-                    }}
-                    className="pb:absolute pb:z-30 pb:w-72 pb:max-w-[calc(100%-1rem)] pb:rounded-lg pb:border pb:border-peerbots-teal/60 pb:bg-white pb:shadow-xl pb:overflow-hidden"
-                  >
-                    <div className="pb:flex pb:items-center pb:justify-between pb:px-2.5 pb:py-1 pb:bg-gray-50 pb:border-b pb:border-gray-200 pb:text-[10px]">
-                      <span className="pb:font-semibold pb:text-gray-700 pb:truncate">
-                        {autocompleteContext.heading}
-                      </span>
-                      <span className="pb:text-gray-500 pb:shrink-0 pb:ms-2">
-                        Tab/Enter
-                      </span>
-                    </div>
-                    <div
-                      role="listbox"
-                      aria-label={autocompleteContext.heading}
-                      className="pb:max-h-40 pb:overflow-y-auto pb:divide-y pb:divide-gray-100"
-                    >
-                      {autocompleteContext.suggestions.map((sug, idx) => {
-                        const isSelected = idx === clampedAutocompleteIndex;
-                        return (
-                          <button
-                            key={`${sug.label}-${idx}`}
-                            type="button"
-                            role="option"
-                            aria-selected={isSelected}
-                            onMouseDown={(e) => e.preventDefault()}
-                            onMouseEnter={() => setAutocompleteIndex(idx)}
-                            onClick={() => applyAutocompleteSuggestion(sug)}
-                            className={cn(
-                              "pb:w-full pb:flex pb:items-center pb:justify-between pb:gap-2 pb:px-2.5 pb:py-1.5 pb:text-left pb:text-xs pb:transition-colors pb:cursor-pointer",
-                              isSelected
-                                ? "pb:bg-peerbots-teal/15 pb:text-gray-900"
-                                : "pb:bg-white pb:text-gray-700 hover:pb:bg-gray-50",
-                            )}
-                          >
-                            <span className="pb:flex pb:items-center pb:gap-2 pb:min-w-0">
-                              {sug.colorSwatch && (
-                                <span
-                                  aria-hidden="true"
-                                  className="pb:w-3 pb:h-3 pb:rounded-sm pb:border pb:border-gray-300 pb:shrink-0"
-                                  style={{
-                                    backgroundColor:
-                                      PEERBOTS_COLOR_MAP[sug.colorSwatch] ??
-                                      sug.colorSwatch,
-                                  }}
-                                />
-                              )}
-                              <code className="pb:font-mono pb:font-semibold pb:text-gray-900">
-                                {sug.label}
-                              </code>
-                            </span>
-                            <span className="pb:text-[11px] pb:text-gray-500 pb:truncate">
-                              {sug.description}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+                  <CodeAutocompletePopup
+                    context={autocompleteContext}
+                    selectedIndex={clampedAutocompleteIndex}
+                    position={autocompletePosition}
+                    onHoverIndex={setAutocompleteIndex}
+                    onSelect={applyAutocompleteSuggestion}
+                  />
                 )}
               </div>
             </div>
@@ -1270,214 +1134,6 @@ export function CodeView({
             />
           )}
         </div>
-      )}
-    </div>
-  );
-}
-
-function CodeExplainerAside({
-  activeLine,
-  lineDiagnostics = [],
-  format,
-  disabled,
-  logIcon,
-  emotionIcons,
-  emotionLabels,
-  hoveredTokenIdx,
-  onHoverToken,
-  onButtonAction,
-  emptyHint,
-}: {
-  activeLine: NormalizedLineView | undefined;
-  lineDiagnostics?: CodeDiagnostic[];
-  format: "shorthand" | "json";
-  disabled: boolean;
-  logIcon: IconName;
-  emotionIcons?: Partial<Record<PeerbotsEmotion, string | React.ReactNode>>;
-  emotionLabels?: Partial<Record<PeerbotsEmotion, string>>;
-  hoveredTokenIdx: number | null;
-  onHoverToken: (idx: number | null) => void;
-  onButtonAction?: PeerbotsButtonActionHandler;
-  emptyHint: string;
-}) {
-  return (
-    <aside
-      aria-label="Interactive code explainer"
-      className="lg:pb:col-span-5 pb:bg-gray-50 pb:border-t lg:pb:border-t-0 lg:pb:border-l pb:border-gray-200 pb:p-4 pb:flex pb:flex-col pb:gap-4"
-    >
-      <div className="pb:flex pb:items-center pb:justify-between">
-        <h3 className="pb:text-xs pb:font-bold pb:uppercase pb:tracking-wider pb:text-gray-500">
-          What This Produces
-        </h3>
-        {activeLine && (
-          <span className="pb:text-xs pb:text-gray-500">
-            Line {activeLine.lineNumber}
-            {format === "shorthand" ? ` • Depth ${activeLine.depth}` : ""}
-          </span>
-        )}
-      </div>
-
-      {lineDiagnostics.length > 0 && (
-        <div className="pb:flex pb:flex-col pb:gap-1.5">
-          {lineDiagnostics.map((diag, idx) => (
-            <div
-              key={idx}
-              className={cn(
-                "pb:flex pb:items-start pb:gap-2 pb:px-2.5 pb:py-2 pb:rounded-lg pb:text-xs pb:border",
-                diag.severity === "error"
-                  ? "pb:bg-red-50 pb:border-red-200 pb:text-red-800"
-                  : "pb:bg-amber-50 pb:border-amber-200 pb:text-amber-900",
-              )}
-            >
-              <Icon
-                name={
-                  diag.severity === "error" ? "xCircle" : "exclamationTriangle"
-                }
-                className="pb:w-4 pb:h-4 pb:shrink-0 pb:mt-0.5"
-              />
-              <span>{diag.message}</span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {activeLine ? (
-        <>
-          {activeLine.button && (
-            <div className="pb:rounded-xl pb:bg-white pb:border pb:border-gray-200 pb:p-3 pb:flex pb:flex-col pb:items-center pb:gap-2">
-              {activeLine.kind === "jump" && (
-                <div className="pb:inline-flex pb:items-center pb:gap-1.5 pb:text-xs pb:font-medium pb:px-2.5 pb:py-0.5 pb:rounded-full pb:bg-cyan-50 pb:text-cyan-800 pb:border pb:border-cyan-200">
-                  <Icon name="arrowPath" className="pb:w-3.5 pb:h-3.5" />
-                  <span>
-                    {activeLine.isCycle
-                      ? `Loops back to ${activeLine.anchor}`
-                      : `Jumps to ${activeLine.anchor}`}
-                  </span>
-                </div>
-              )}
-
-              <PeerbotsButton
-                button={activeLine.button}
-                logIcon={logIcon}
-                emotionIcons={emotionIcons}
-                emotionLabels={emotionLabels}
-                onClick={() => {
-                  if (
-                    !disabled &&
-                    onButtonAction &&
-                    activeLine.buttonId &&
-                    activeLine.button
-                  ) {
-                    onButtonAction(activeLine.button, activeLine.buttonId, {
-                      type: "CLICK",
-                    });
-                  }
-                }}
-              />
-
-              {activeLine.button.type === "Message" ? (
-                <p className="pb:text-xs pb:text-gray-600 pb:text-center">
-                  Robot speaks:{" "}
-                  <span className="pb:font-medium pb:text-gray-900">
-                    &ldquo;{activeLine.button.details.speech}&rdquo;
-                  </span>
-                </p>
-              ) : (
-                <p className="pb:text-xs pb:text-gray-600 pb:text-center">
-                  Logs event
-                  {activeLine.button.details.details
-                    ? `: "${activeLine.button.details.details}"`
-                    : " (no robot speech)"}
-                </p>
-              )}
-            </div>
-          )}
-
-          <div className="pb:flex pb:flex-col pb:gap-1.5">
-            <div className="pb:text-xs pb:font-semibold pb:text-gray-700">
-              Syntax Breakdown
-            </div>
-            <ul className="pb:flex pb:flex-col pb:gap-1.5">
-              {activeLine.tokens
-                .filter(
-                  (t) =>
-                    t.kind !== "bullet" &&
-                    t.kind !== "separator" &&
-                    t.kind !== "punctuation" &&
-                    t.kind !== "indent",
-                )
-                .map((tok, idx) => {
-                  const originalIdx = activeLine.tokens.indexOf(tok);
-                  const isHighlighted = hoveredTokenIdx === originalIdx;
-                  return (
-                    <li
-                      key={idx}
-                      onMouseEnter={() => onHoverToken(originalIdx)}
-                      onMouseLeave={() => onHoverToken(null)}
-                      className={cn(
-                        "pb:flex pb:items-start pb:gap-2 pb:p-2 pb:rounded-lg pb:border pb:text-xs pb:transition-colors",
-                        isHighlighted
-                          ? "pb:bg-peerbots-teal/10 pb:border-peerbots-teal"
-                          : "pb:bg-white pb:border-gray-200",
-                      )}
-                    >
-                      <TokenColorSwatches
-                        labelColor={tok.labelColor}
-                        robotColor={tok.robotColor}
-                      />
-                      <div className="pb:min-w-0 pb:flex-1">
-                        <div className="pb:flex pb:items-center pb:gap-1.5">
-                          <span className="pb:font-semibold pb:text-gray-900">
-                            {TOKEN_BADGE_LABELS[tok.kind]}
-                          </span>
-                          <code className="pb:px-1 pb:py-0.5 pb:rounded pb:bg-gray-100 pb:text-gray-800 pb:font-mono pb:text-[11px] pb:truncate">
-                            {tok.text.trim() || `${tok.text.length} spaces`}
-                          </code>
-                        </div>
-                        <p className="pb:text-gray-600 pb:mt-0.5">
-                          {tok.explanation}
-                        </p>
-                      </div>
-                    </li>
-                  );
-                })}
-            </ul>
-          </div>
-        </>
-      ) : (
-        <p className="pb:text-xs pb:text-gray-500">{emptyHint}</p>
-      )}
-    </aside>
-  );
-}
-
-function TokenColorSwatches({
-  labelColor,
-  robotColor,
-}: {
-  labelColor?: PeerbotsColor;
-  robotColor?: PeerbotsColor;
-}) {
-  if (!labelColor && !robotColor) return null;
-  return (
-    <div className="pb:flex pb:items-center pb:gap-1 pb:mt-0.5 pb:shrink-0">
-      {labelColor && (
-        <span
-          title={`Button color: ${labelColor}`}
-          className="pb:w-3 pb:h-3 pb:rounded-sm pb:border pb:border-gray-300"
-          style={{
-            backgroundColor: PEERBOTS_COLOR_MAP[labelColor] ?? labelColor,
-          }}
-        />
-      )}
-      {robotColor && (
-        <span
-          title={`Robot face color: ${robotColor}`}
-          className="pb:w-3 pb:h-3 pb:rounded-full pb:border pb:border-gray-300"
-          style={{
-            backgroundColor: PEERBOTS_COLOR_MAP[robotColor] ?? robotColor,
-          }}
-        />
       )}
     </div>
   );

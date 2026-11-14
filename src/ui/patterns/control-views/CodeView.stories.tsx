@@ -106,11 +106,10 @@ export const Variations: Story = {
       <div className="pb:flex pb:flex-col pb:gap-6">
         <div>
           <h3 className="pb:text-sm pb:font-semibold pb:text-gray-800 pb:mb-2">
-            Full 17-Button Template (Edit & Format Mode)
+            Full 17-Button Template (Editable)
           </h3>
           <CodeView
             template={template}
-            defaultMode="edit"
             onTemplateChange={setTemplate}
           />
         </div>
