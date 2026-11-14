@@ -3,6 +3,9 @@ import {
   analyzeTemplateCode,
   formatTemplateToCode,
   formatTemplateToJsonCode,
+  getCodeAutocompleteContext,
+  type CodeAutocompleteContext,
+  type CodeAutocompleteSuggestion,
   type CodeDiagnostic,
   type CodeTokenKind,
   type FormattedCodeLine,
@@ -222,6 +225,11 @@ export function CodeView({
   );
   const [hoveredTokenIdx, setHoveredTokenIdx] = useState<number | null>(null);
   const [editorCursorLine, setEditorCursorLine] = useState<number>(1);
+  const [editorSelectionStart, setEditorSelectionStart] = useState<number>(0);
+  const [autocompleteIndex, setAutocompleteIndex] = useState<number>(0);
+  const [autocompleteDismissedAt, setAutocompleteDismissedAt] = useState<
+    number | null
+  >(null);
   const highlightPreRef = useRef<HTMLPreElement | null>(null);
   const lineGutterRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -466,11 +474,86 @@ export function CodeView({
     return activeLine.tokens[hoveredTokenIdx];
   }, [activeLine, hoveredTokenIdx]);
 
+  const availableAnchors = useMemo(() => {
+    const seen = new Set<string>();
+    const list: Array<{ anchor: string; title: string }> = [];
+    for (const line of parsedDraft.draftLines) {
+      if (line.kind === "button" && line.anchor && !seen.has(line.anchor)) {
+        seen.add(line.anchor);
+        list.push({
+          anchor: line.anchor,
+          title: line.button?.details.title ?? line.anchor,
+        });
+      }
+    }
+    return list;
+  }, [parsedDraft.draftLines]);
+
+  const autocompleteContext: CodeAutocompleteContext | null = useMemo(() => {
+    if (
+      mode !== "edit" ||
+      format !== "shorthand" ||
+      autocompleteDismissedAt === editorSelectionStart
+    ) {
+      return null;
+    }
+    return getCodeAutocompleteContext(
+      draftCode,
+      editorSelectionStart,
+      availableAnchors,
+    );
+  }, [
+    mode,
+    format,
+    autocompleteDismissedAt,
+    editorSelectionStart,
+    draftCode,
+    availableAnchors,
+  ]);
+
+  const clampedAutocompleteIndex = autocompleteContext
+    ? Math.min(autocompleteIndex, autocompleteContext.suggestions.length - 1)
+    : 0;
+
   const updateCursorLine = (el: HTMLTextAreaElement) => {
     const pos = el.selectionStart ?? 0;
     const line = el.value.slice(0, pos).split(/\r?\n/).length;
     setEditorCursorLine(line);
+    setEditorSelectionStart((prev) => {
+      if (prev !== pos) {
+        setAutocompleteDismissedAt(null);
+        setAutocompleteIndex(0);
+      }
+      return pos;
+    });
     setHoveredTokenIdx(null);
+  };
+
+  const applyAutocompleteSuggestion = (
+    suggestion: CodeAutocompleteSuggestion,
+  ) => {
+    if (!autocompleteContext) return;
+    const { replaceStart, replaceEnd } = autocompleteContext;
+    const nextCode =
+      draftCode.slice(0, replaceStart) +
+      suggestion.insertText +
+      draftCode.slice(replaceEnd);
+    const nextCaret = replaceStart + suggestion.insertText.length;
+    const nextLine = nextCode.slice(0, nextCaret).split(/\r?\n/).length;
+
+    setDraftCode(nextCode);
+    setEditorSelectionStart(nextCaret);
+    setEditorCursorLine(nextLine);
+    setAutocompleteDismissedAt(null);
+    setAutocompleteIndex(0);
+
+    requestAnimationFrame(() => {
+      const el = textareaRef.current;
+      if (el) {
+        el.focus();
+        el.setSelectionRange(nextCaret, nextCaret);
+      }
+    });
   };
 
   const handleCopy = async () => {
@@ -922,6 +1005,8 @@ export function CodeView({
                 <textarea
                   ref={textareaRef}
                   aria-label="Template code editor"
+                  aria-expanded={Boolean(autocompleteContext)}
+                  aria-autocomplete="list"
                   value={draftCode}
                   wrap="off"
                   onChange={(e) => {
@@ -932,6 +1017,29 @@ export function CodeView({
                   onKeyUp={(e) => updateCursorLine(e.currentTarget)}
                   onSelect={(e) => updateCursorLine(e.currentTarget)}
                   onFocus={(e) => updateCursorLine(e.currentTarget)}
+                  onKeyDown={(e) => {
+                    if (!autocompleteContext) return;
+                    const { suggestions } = autocompleteContext;
+                    if (suggestions.length === 0) return;
+
+                    if (e.key === "ArrowDown") {
+                      e.preventDefault();
+                      setAutocompleteIndex((prev) => (prev + 1) % suggestions.length);
+                    } else if (e.key === "ArrowUp") {
+                      e.preventDefault();
+                      setAutocompleteIndex(
+                        (prev) => (prev - 1 + suggestions.length) % suggestions.length,
+                      );
+                    } else if (e.key === "Enter" || e.key === "Tab") {
+                      e.preventDefault();
+                      applyAutocompleteSuggestion(
+                        suggestions[clampedAutocompleteIndex],
+                      );
+                    } else if (e.key === "Escape") {
+                      e.preventDefault();
+                      setAutocompleteDismissedAt(editorSelectionStart);
+                    }
+                  }}
                   onScroll={(e) => {
                     if (highlightPreRef.current) {
                       highlightPreRef.current.scrollTop = e.currentTarget.scrollTop;
@@ -947,6 +1055,66 @@ export function CodeView({
                 />
               </div>
             </div>
+
+            {/* Context-Aware Autocomplete Suggestions */}
+            {autocompleteContext && (
+              <div className="pb:rounded-lg pb:border pb:border-peerbots-teal/50 pb:bg-white pb:shadow-md pb:overflow-hidden">
+                <div className="pb:flex pb:items-center pb:justify-between pb:px-3 pb:py-1.5 pb:bg-gray-50 pb:border-b pb:border-gray-200 pb:text-[11px]">
+                  <span className="pb:font-semibold pb:text-gray-700">
+                    {autocompleteContext.heading}
+                  </span>
+                  <span className="pb:text-gray-500">
+                    ↑↓ navigate • Enter/Tab insert • Esc close
+                  </span>
+                </div>
+                <div
+                  role="listbox"
+                  aria-label={autocompleteContext.heading}
+                  className="pb:max-h-44 pb:overflow-y-auto pb:divide-y pb:divide-gray-100"
+                >
+                  {autocompleteContext.suggestions.map((sug, idx) => {
+                    const isSelected = idx === clampedAutocompleteIndex;
+                    return (
+                      <button
+                        key={`${sug.label}-${idx}`}
+                        type="button"
+                        role="option"
+                        aria-selected={isSelected}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onMouseEnter={() => setAutocompleteIndex(idx)}
+                        onClick={() => applyAutocompleteSuggestion(sug)}
+                        className={cn(
+                          "pb:w-full pb:flex pb:items-center pb:justify-between pb:gap-3 pb:px-3 pb:py-1.5 pb:text-left pb:text-xs pb:transition-colors pb:cursor-pointer",
+                          isSelected
+                            ? "pb:bg-peerbots-teal/15 pb:text-gray-900"
+                            : "pb:bg-white pb:text-gray-700 hover:pb:bg-gray-50",
+                        )}
+                      >
+                        <span className="pb:flex pb:items-center pb:gap-2 pb:min-w-0">
+                          {sug.colorSwatch && (
+                            <span
+                              aria-hidden="true"
+                              className="pb:w-3.5 pb:h-3.5 pb:rounded-sm pb:border pb:border-gray-300 pb:shrink-0"
+                              style={{
+                                backgroundColor:
+                                  PEERBOTS_COLOR_MAP[sug.colorSwatch] ??
+                                  sug.colorSwatch,
+                              }}
+                            />
+                          )}
+                          <code className="pb:font-mono pb:font-semibold pb:text-gray-900">
+                            {sug.label}
+                          </code>
+                        </span>
+                        <span className="pb:text-[11px] pb:text-gray-500 pb:truncate">
+                          {sug.description}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Live Cursor Status Bar */}
             {showExplainer && activeLine && (

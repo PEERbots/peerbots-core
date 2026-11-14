@@ -178,4 +178,35 @@ describe("CodeView", () => {
     expect(updated.title).toBe("Updated");
     expect(Object.keys(updated.buttons)).toHaveLength(1);
   });
+
+  it("shows context-aware color autocomplete when typing inside brackets in Edit mode", () => {
+    const template = makeCyclicTemplate();
+    render(
+      <CodeView
+        template={template}
+        onTemplateChange={vi.fn()}
+        defaultMode="edit"
+      />,
+    );
+
+    const textarea = screen.getByLabelText(
+      "Template code editor",
+    ) as HTMLTextAreaElement;
+
+    const draft = "// Test\n- [pur";
+    fireEvent.change(textarea, {
+      target: { value: draft, selectionStart: draft.length },
+    });
+
+    const listbox = screen.getByRole("listbox", {
+      name: /Button Color or Emotion/i,
+    });
+    const purpleOption = within(listbox).getByRole("option", {
+      name: /Purple/i,
+    });
+    expect(purpleOption).toBeInTheDocument();
+
+    fireEvent.click(purpleOption);
+    expect(textarea.value).toBe("// Test\n- [Purple] ");
+  });
 });

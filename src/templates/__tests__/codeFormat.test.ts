@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   analyzeTemplateCode,
   formatTemplateToCode,
+  getCodeAutocompleteContext,
   parseCodeToTemplate,
   serializeTemplateToCode,
 } from "../codeFormat";
@@ -230,5 +231,28 @@ describe("Template Code Format (PTTF)", () => {
     expect(diagnostics).toHaveLength(1);
     expect(diagnostics[0].severity).toBe("error");
     expect(diagnostics[0].message).toContain("#missing-anchor");
+  });
+
+  it("provides context-aware autocomplete for colors, robot colors, anchors, and emotions", () => {
+    const labelCtx = getCodeAutocompleteContext("- [gr", 5);
+    expect(labelCtx?.kind).toBe("labelColor");
+    expect(labelCtx?.suggestions.map((s) => s.label)).toContain("Green");
+    expect(labelCtx?.suggestions.map((s) => s.label)).toContain("Grey");
+
+    const robotCtx = getCodeAutocompleteContext("- [Green -> r", 13);
+    expect(robotCtx?.kind).toBe("robotColor");
+    expect(robotCtx?.suggestions[0]?.label).toBe("Red");
+    expect(robotCtx?.suggestions[0]?.insertText).toBe("Red] ");
+
+    const anchorCtx = getCodeAutocompleteContext("  - -> #che", 11, [
+      { anchor: "#check-in", title: "Check In" },
+      { anchor: "#bye", title: "Bye" },
+    ]);
+    expect(anchorCtx?.kind).toBe("anchor");
+    expect(anchorCtx?.suggestions.map((s) => s.label)).toEqual(["#check-in"]);
+
+    const emotionCtx = getCodeAutocompleteContext("- :", 3);
+    expect(emotionCtx?.kind).toBe("emotion");
+    expect(emotionCtx?.suggestions.map((s) => s.label)).toContain(":)");
   });
 });
