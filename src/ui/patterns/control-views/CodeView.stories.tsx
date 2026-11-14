@@ -5,7 +5,7 @@ import type { Template } from "../../../templates/types";
 import { CodeView } from "./CodeView";
 
 const meta: Meta<typeof CodeView> = {
-  title: "Templates/Views/CodeView",
+  title: "Code/CodeView",
   component: CodeView,
   tags: ["autodocs"],
   parameters: {

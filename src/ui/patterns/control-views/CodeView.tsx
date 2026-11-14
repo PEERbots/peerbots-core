@@ -8,20 +8,17 @@ import {
   type CodeAutocompleteSuggestion,
   type CodeDiagnostic,
 } from "../../../templates/codeFormat";
-import type {
-  PeerbotsEmotion,
-  Template,
-} from "../../../templates/types";
+import type { PeerbotsEmotion, Template } from "../../../templates/types";
 import { EmptyState } from "../../feedback/EmptyState";
 import { Icon, type IconName } from "../../foundations/Icon";
 import { cn } from "../../utils";
-import { CodeAutocompletePopup } from "./code-view/CodeAutocompletePopup";
+import { CodeEditorPane } from "./code-view/CodeEditorPane";
 import { CodeExplainerAside } from "./code-view/CodeExplainerAside";
+import { CodeReadOnlyPane } from "./code-view/CodeReadOnlyPane";
 import {
   highlightJsonRaw,
   normalizeJsonLines,
   normalizePttfLines,
-  TOKEN_BADGE_LABELS,
   type NormalizedLineView,
 } from "./code-view/constants";
 import type { PeerbotsButtonActionHandler } from "./types";
@@ -105,8 +102,6 @@ export function CodeView({
     left: number;
   }>({ top: 0, left: 0 });
 
-  const highlightPreRef = useRef<HTMLPreElement | null>(null);
-  const lineGutterRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const undoStackRef = useRef<UndoEntry[]>([]);
 
@@ -219,7 +214,9 @@ export function CodeView({
             lineNumber: 1,
             severity: "error",
             message:
-              err instanceof Error ? `Invalid JSON: ${err.message}` : "Invalid JSON.",
+              err instanceof Error
+                ? `Invalid JSON: ${err.message}`
+                : "Invalid JSON.",
           },
         ],
         buttonCount: 0,
@@ -498,6 +495,53 @@ export function CodeView({
     });
   };
 
+  const handleEditorKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (
+      (e.metaKey || e.ctrlKey) &&
+      !e.shiftKey &&
+      e.key.toLowerCase() === "z" &&
+      undoStackRef.current.length > 0
+    ) {
+      e.preventDefault();
+      const prev = undoStackRef.current.pop()!;
+      const prevLine = prev.code
+        .slice(0, prev.selectionStart)
+        .split(/\r?\n/).length;
+      setDraftCode(prev.code);
+      setEditorSelectionStart(prev.selectionStart);
+      setEditorCursorLine(prevLine);
+      setAutocompleteDismissedAt(null);
+      requestAnimationFrame(() => {
+        const el = textareaRef.current;
+        if (el) {
+          el.focus();
+          el.setSelectionRange(prev.selectionStart, prev.selectionStart);
+        }
+      });
+      return;
+    }
+
+    if (!autocompleteContext) return;
+    const { suggestions } = autocompleteContext;
+    if (suggestions.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setAutocompleteIndex((prev) => (prev + 1) % suggestions.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setAutocompleteIndex(
+        (prev) => (prev - 1 + suggestions.length) % suggestions.length,
+      );
+    } else if (e.key === "Enter" || e.key === "Tab") {
+      e.preventDefault();
+      applyAutocompleteSuggestion(suggestions[clampedAutocompleteIndex]);
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setAutocompleteDismissedAt(editorSelectionStart);
+    }
+  };
+
   const handleCopy = async () => {
     const textToCopy = isEditable ? draftCode : activeCode;
     try {
@@ -695,446 +739,88 @@ export function CodeView({
       </div>
 
       {/* Main Content */}
-      {!isEditable ? (
-        <div
-          className={cn(
-            "pb:grid pb:grid-cols-1",
-            showExplainer && "lg:pb:grid-cols-12",
-          )}
-        >
-          {/* Read-Only Syntax-Highlighted Interactive Code Pane */}
-          <div
-            className={cn(
-              "pb:bg-[#1e222b] pb:text-gray-100 pb:font-mono pb:text-xs sm:pb:text-sm pb:overflow-x-auto pb:p-3 pb:max-h-[32rem] pb:overflow-y-auto",
-              showExplainer ? "lg:pb:col-span-7" : "pb:col-span-1",
-            )}
-          >
-            {normalizedLines.length === 0 ? (
-              <div className="pb:text-gray-400 pb:py-6 pb:text-center pb:font-sans">
-                No lines to display.
-              </div>
-            ) : (
-              <div role="list" aria-label="Formatted template code lines">
-                {normalizedLines.map((line) => {
-                  const isHovered = hoveredLineNumber === line.lineNumber;
-                  const isSelected =
-                    Boolean(selectedButtonId) &&
-                    line.buttonId === selectedButtonId;
+      <div
+        className={cn(
+          "pb:grid pb:grid-cols-1",
+          showExplainer && "lg:pb:grid-cols-12",
+        )}
+      >
+        {!isEditable ? (
+          <CodeReadOnlyPane
+            lines={normalizedLines}
+            selectedButtonId={selectedButtonId}
+            disabled={disabled}
+            showExplainer={showExplainer}
+            hoveredLineNumber={hoveredLineNumber}
+            hoveredTokenIdx={hoveredTokenIdx}
+            activeLine={activeLine}
+            activeToken={activeToken}
+            onHoverLine={setHoveredLineNumber}
+            onHoverToken={setHoveredTokenIdx}
+            onButtonAction={onButtonAction}
+            className={showExplainer ? "lg:pb:col-span-7" : "pb:col-span-1"}
+          />
+        ) : (
+          <CodeEditorPane
+            format={format}
+            draftCode={draftCode}
+            highlightedDraftLines={highlightedDraftLines}
+            diagnostics={parsedDraft.diagnostics}
+            diagnosticsByLine={diagnosticsByLine}
+            buttonCount={parsedDraft.buttonCount}
+            rootCount={parsedDraft.rootCount}
+            editorCursorLine={editorCursorLine}
+            showExplainer={showExplainer}
+            activeLine={activeLine}
+            activeToken={activeToken}
+            autocompleteContext={autocompleteContext}
+            autocompleteIndex={clampedAutocompleteIndex}
+            autocompletePosition={autocompletePosition}
+            textareaRef={textareaRef}
+            onDraftChange={(nextValue, el) => {
+              setDraftCode(nextValue);
+              updateCursorLine(el);
+            }}
+            onCursorUpdate={updateCursorLine}
+            onKeyDown={handleEditorKeyDown}
+            onScrollSync={setEditorScroll}
+            onJumpToLine={(lineNum, offset) => {
+              setEditorCursorLine(lineNum);
+              setEditorSelectionStart(offset);
+              setHoveredTokenIdx(null);
+            }}
+            onAutocompleteHover={setAutocompleteIndex}
+            onAutocompleteSelect={applyAutocompleteSuggestion}
+            className={showExplainer ? "lg:pb:col-span-7" : "pb:col-span-1"}
+          />
+        )}
 
-                  return (
-                    <div
-                      key={line.lineNumber}
-                      role="listitem"
-                      tabIndex={0}
-                      aria-label={`Line ${line.lineNumber}: ${line.summary}`}
-                      onMouseEnter={() => {
-                        setHoveredLineNumber(line.lineNumber);
-                        setHoveredTokenIdx(null);
-                      }}
-                      onFocus={() => {
-                        setHoveredLineNumber(line.lineNumber);
-                        setHoveredTokenIdx(null);
-                      }}
-                      onClick={() => {
-                        if (
-                          !disabled &&
-                          onButtonAction &&
-                          line.buttonId &&
-                          line.button
-                        ) {
-                          onButtonAction(line.button, line.buttonId, {
-                            type: "SELECT",
-                          });
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        if (
-                          (e.key === "Enter" || e.key === " ") &&
-                          !disabled &&
-                          onButtonAction &&
-                          line.buttonId &&
-                          line.button
-                        ) {
-                          e.preventDefault();
-                          onButtonAction(line.button, line.buttonId, {
-                            type: "SELECT",
-                          });
-                        }
-                      }}
-                      className={cn(
-                        "pb:flex pb:items-baseline pb:gap-3 pb:px-2 pb:py-0.5 pb:rounded pb:transition-colors pb:outline-none",
-                        line.buttonId && !disabled && "pb:cursor-pointer",
-                        isHovered
-                          ? "pb:bg-white/10 pb:ring-1 pb:ring-peerbots-teal/60"
-                          : isSelected
-                            ? "pb:bg-peerbots-teal/15"
-                            : "hover:pb:bg-white/5",
-                      )}
-                    >
-                      <span
-                        aria-hidden="true"
-                        className="pb:w-6 pb:shrink-0 pb:text-right pb:text-gray-500 pb:select-none pb:text-xs"
-                      >
-                        {line.lineNumber}
-                      </span>
-                      <span className="pb:whitespace-pre">
-                        {line.tokens.map((tok, tokIdx) => {
-                          const isTokenHovered =
-                            isHovered && hoveredTokenIdx === tokIdx;
-                          return (
-                            <span
-                              key={tokIdx}
-                              onMouseEnter={(e) => {
-                                e.stopPropagation();
-                                setHoveredLineNumber(line.lineNumber);
-                                setHoveredTokenIdx(tokIdx);
-                              }}
-                              onMouseLeave={() => {
-                                setHoveredTokenIdx(null);
-                              }}
-                              className={cn(
-                                tok.className,
-                                "pb:rounded-xs pb:transition-colors",
-                                isTokenHovered &&
-                                  "pb:bg-white/20 pb:underline pb:decoration-peerbots-teal pb:underline-offset-4",
-                              )}
-                            >
-                              {tok.text}
-                            </span>
-                          );
-                        })}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Quick Hover Status Bar at bottom of code pane */}
-            {showExplainer && activeLine && (
-              <div
-                aria-live="polite"
-                className="pb:mt-3 pb:pt-2.5 pb:border-t pb:border-gray-700/80 pb:font-sans pb:text-xs pb:text-gray-300 pb:flex pb:items-center pb:gap-2"
-              >
-                <span className="pb:px-1.5 pb:py-0.5 pb:rounded pb:bg-peerbots-teal/20 pb:text-peerbots-teal pb:font-semibold pb:shrink-0">
-                  {activeToken
-                    ? TOKEN_BADGE_LABELS[activeToken.kind]
-                    : `Line ${activeLine.lineNumber}`}
-                </span>
-                <span className="pb:truncate">
-                  {activeToken ? activeToken.explanation : activeLine.summary}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Interactive Hover Explainer & Live Button Preview */}
-          {showExplainer && (
-            <CodeExplainerAside
-              activeLine={activeLine}
-              format={format}
-              disabled={disabled}
-              logIcon={logIcon}
-              emotionIcons={emotionIcons}
-              emotionLabels={emotionLabels}
-              hoveredTokenIdx={hoveredTokenIdx}
-              onHoverToken={setHoveredTokenIdx}
-              onButtonAction={onButtonAction}
-              emptyHint="Hover or focus any line on the left to preview its button and see what each symbol means."
-            />
-          )}
-        </div>
-      ) : (
-        /* Unified Live Editor with Layered Syntax Highlighting, Inline Autocomplete & Explainer */
-        <div
-          className={cn(
-            "pb:grid pb:grid-cols-1",
-            showExplainer && "lg:pb:grid-cols-12",
-          )}
-        >
-          <div
-            className={cn(
-              "pb:p-4 pb:flex pb:flex-col pb:gap-3",
-              showExplainer ? "lg:pb:col-span-7" : "pb:col-span-1",
-            )}
-          >
-            <div className="pb:flex pb:flex-wrap pb:items-center pb:justify-between pb:gap-2 pb:text-xs pb:text-gray-600">
-              {format === "shorthand" ? (
-                <span>
-                  Start a line with{" "}
-                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">!</code>{" "}
-                  for a Log button, indent 2 spaces for children, use{" "}
-                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">
-                    [Label -&gt; Robot]
-                  </code>{" "}
-                  for colors,{" "}
-                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">:)</code>{" "}
-                  for emotion, and{" "}
-                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">#tag</code>{" "}
-                  /{" "}
-                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">
-                    -&gt; #tag
-                  </code>{" "}
-                  for loops.
-                </span>
-              ) : (
-                <span>
-                  Edit raw{" "}
-                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">
-                    Template
-                  </code>{" "}
-                  JSON (
-                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">
-                    buttons
-                  </code>{" "}
-                  &amp;{" "}
-                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">
-                    hierarchy
-                  </code>
-                  ). Click <strong>Format</strong> to pretty-print.
-                </span>
-              )}
-              <span className="pb:font-medium pb:text-gray-700">
-                {parsedDraft.buttonCount} buttons • {parsedDraft.rootCount} root
-              </span>
-            </div>
-
-            <div className="pb:relative pb:flex pb:rounded-lg pb:border pb:border-gray-300 pb:bg-[#1e222b]">
-              {/* Line Numbers Gutter */}
-              <div
-                ref={lineGutterRef}
-                aria-hidden="true"
-                className="pb:w-9 pb:shrink-0 pb:rounded-l-lg pb:py-3 pb:pr-2 pb:pl-2 pb:font-mono pb:text-xs sm:pb:text-sm pb:leading-6 pb:text-right pb:text-gray-500 pb:select-none pb:overflow-hidden pb:border-r pb:border-gray-800"
-              >
-                {draftCode.split(/\r?\n/).map((_, idx) => {
-                  const lineNum = idx + 1;
-                  const isActive = lineNum === editorCursorLine;
-                  const lineDiags = diagnosticsByLine.get(lineNum) ?? [];
-                  const hasError = lineDiags.some((d) => d.severity === "error");
-                  const hasWarning = lineDiags.some(
-                    (d) => d.severity === "warning",
-                  );
-                  return (
-                    <div
-                      key={lineNum}
-                      title={
-                        lineDiags.length > 0
-                          ? lineDiags.map((d) => d.message).join("\n")
-                          : undefined
-                      }
-                      onClick={() => {
-                        const el = textareaRef.current;
-                        if (!el) return;
-                        const lines = el.value.split(/\r?\n/);
-                        let offset = 0;
-                        for (let k = 0; k < idx; k += 1) {
-                          offset += lines[k].length + 1;
-                        }
-                        el.focus();
-                        el.setSelectionRange(offset, offset);
-                        setEditorCursorLine(lineNum);
-                        setEditorSelectionStart(offset);
-                        setHoveredTokenIdx(null);
-                      }}
-                      className={cn(
-                        "pb:cursor-pointer pb:transition-colors",
-                        hasError
-                          ? "pb:text-red-400 pb:font-bold"
-                          : hasWarning
-                            ? "pb:text-amber-400 pb:font-semibold"
-                            : isActive
-                              ? "pb:text-peerbots-teal pb:font-semibold"
-                              : "hover:pb:text-gray-300",
-                      )}
-                    >
-                      {lineNum}
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="pb:relative pb:flex-1 pb:min-w-0">
-                <pre
-                  ref={highlightPreRef}
-                  aria-hidden="true"
-                  className="pb:pointer-events-none pb:m-0 pb:py-3 pb:px-3 pb:font-mono pb:text-xs sm:pb:text-sm pb:leading-6 pb:whitespace-pre pb:overflow-hidden pb:min-h-[21rem]"
-                >
-                  {highlightedDraftLines}
-                </pre>
-                <textarea
-                  ref={textareaRef}
-                  aria-label="Template code editor"
-                  aria-expanded={Boolean(autocompleteContext)}
-                  aria-autocomplete="list"
-                  value={draftCode}
-                  wrap="off"
-                  onChange={(e) => {
-                    setDraftCode(e.target.value);
-                    updateCursorLine(e.currentTarget);
-                  }}
-                  onClick={(e) => updateCursorLine(e.currentTarget)}
-                  onKeyUp={(e) => updateCursorLine(e.currentTarget)}
-                  onSelect={(e) => updateCursorLine(e.currentTarget)}
-                  onFocus={(e) => updateCursorLine(e.currentTarget)}
-                  onKeyDown={(e) => {
-                    if (
-                      (e.metaKey || e.ctrlKey) &&
-                      !e.shiftKey &&
-                      e.key.toLowerCase() === "z" &&
-                      undoStackRef.current.length > 0
-                    ) {
-                      e.preventDefault();
-                      const prev = undoStackRef.current.pop()!;
-                      const prevLine = prev.code
-                        .slice(0, prev.selectionStart)
-                        .split(/\r?\n/).length;
-                      setDraftCode(prev.code);
-                      setEditorSelectionStart(prev.selectionStart);
-                      setEditorCursorLine(prevLine);
-                      setAutocompleteDismissedAt(null);
-                      requestAnimationFrame(() => {
-                        const el = textareaRef.current;
-                        if (el) {
-                          el.focus();
-                          el.setSelectionRange(
-                            prev.selectionStart,
-                            prev.selectionStart,
-                          );
-                        }
-                      });
-                      return;
-                    }
-
-                    if (!autocompleteContext) return;
-                    const { suggestions } = autocompleteContext;
-                    if (suggestions.length === 0) return;
-
-                    if (e.key === "ArrowDown") {
-                      e.preventDefault();
-                      setAutocompleteIndex(
-                        (prev) => (prev + 1) % suggestions.length,
-                      );
-                    } else if (e.key === "ArrowUp") {
-                      e.preventDefault();
-                      setAutocompleteIndex(
-                        (prev) =>
-                          (prev - 1 + suggestions.length) % suggestions.length,
-                      );
-                    } else if (e.key === "Enter" || e.key === "Tab") {
-                      e.preventDefault();
-                      applyAutocompleteSuggestion(
-                        suggestions[clampedAutocompleteIndex],
-                      );
-                    } else if (e.key === "Escape") {
-                      e.preventDefault();
-                      setAutocompleteDismissedAt(editorSelectionStart);
-                    }
-                  }}
-                  onScroll={(e) => {
-                    const top = e.currentTarget.scrollTop;
-                    const left = e.currentTarget.scrollLeft;
-                    if (highlightPreRef.current) {
-                      highlightPreRef.current.scrollTop = top;
-                      highlightPreRef.current.scrollLeft = left;
-                    }
-                    if (lineGutterRef.current) {
-                      lineGutterRef.current.scrollTop = top;
-                    }
-                    setEditorScroll({ top, left });
-                  }}
-                  rows={14}
-                  spellCheck={false}
-                  className="pb:absolute pb:inset-0 pb:w-full pb:h-full pb:resize-none pb:rounded-r-lg pb:bg-transparent pb:text-transparent pb:caret-white pb:font-mono pb:text-xs sm:pb:text-sm pb:leading-6 pb:py-3 pb:px-4 pb:whitespace-pre pb:overflow-auto focus:pb:outline-none focus:pb:ring-2 focus:pb:ring-peerbots-teal"
-                />
-
-                {/* Inline Floating Context-Aware Autocomplete */}
-                {autocompleteContext && (
-                  <CodeAutocompletePopup
-                    context={autocompleteContext}
-                    selectedIndex={clampedAutocompleteIndex}
-                    position={autocompletePosition}
-                    onHoverIndex={setAutocompleteIndex}
-                    onSelect={applyAutocompleteSuggestion}
-                  />
-                )}
-              </div>
-            </div>
-
-            {/* Live Cursor Status Bar */}
-            {showExplainer && activeLine && (
-              <div
-                aria-live="polite"
-                className="pb:px-3 pb:py-2 pb:rounded-lg pb:bg-[#1e222b] pb:font-sans pb:text-xs pb:text-gray-300 pb:flex pb:items-center pb:gap-2"
-              >
-                <span className="pb:px-1.5 pb:py-0.5 pb:rounded pb:bg-peerbots-teal/20 pb:text-peerbots-teal pb:font-semibold pb:shrink-0">
-                  {activeToken
-                    ? TOKEN_BADGE_LABELS[activeToken.kind]
-                    : `Line ${activeLine.lineNumber}`}
-                </span>
-                <span className="pb:truncate">
-                  {activeToken ? activeToken.explanation : activeLine.summary}
-                </span>
-              </div>
-            )}
-
-            {parsedDraft.diagnostics.length > 0 && (
-              <div
-                role="status"
-                aria-label="Code diagnostics"
-                className="pb:flex pb:flex-col pb:gap-1.5"
-              >
-                {parsedDraft.diagnostics.map((diag, idx) => (
-                  <div
-                    key={idx}
-                    className={cn(
-                      "pb:flex pb:items-center pb:gap-2 pb:px-3 pb:py-1.5 pb:rounded-lg pb:text-xs pb:border",
-                      diag.severity === "error"
-                        ? "pb:bg-red-50 pb:border-red-200 pb:text-red-800"
-                        : "pb:bg-amber-50 pb:border-amber-200 pb:text-amber-900",
-                    )}
-                  >
-                    <Icon
-                      name={
-                        diag.severity === "error"
-                          ? "xCircle"
-                          : "exclamationTriangle"
-                      }
-                      className="pb:w-4 pb:h-4 pb:shrink-0"
-                    />
-                    <span>
-                      <strong>Line {diag.lineNumber}:</strong> {diag.message}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {showExplainer && (
-            <CodeExplainerAside
-              activeLine={activeLine}
-              lineDiagnostics={
-                activeLine
-                  ? (diagnosticsByLine.get(activeLine.lineNumber) ?? [])
-                  : []
-              }
-              format={format}
-              disabled={disabled}
-              logIcon={logIcon}
-              emotionIcons={emotionIcons}
-              emotionLabels={emotionLabels}
-              hoveredTokenIdx={hoveredTokenIdx}
-              onHoverToken={setHoveredTokenIdx}
-              onButtonAction={onButtonAction}
-              emptyHint={
-                format === "json" && !parsedDraft.template
+        {showExplainer && (
+          <CodeExplainerAside
+            activeLine={activeLine}
+            lineDiagnostics={
+              isEditable && activeLine
+                ? (diagnosticsByLine.get(activeLine.lineNumber) ?? [])
+                : []
+            }
+            format={format}
+            disabled={disabled}
+            logIcon={logIcon}
+            emotionIcons={emotionIcons}
+            emotionLabels={emotionLabels}
+            hoveredTokenIdx={hoveredTokenIdx}
+            onHoverToken={setHoveredTokenIdx}
+            onButtonAction={onButtonAction}
+            emptyHint={
+              isEditable
+                ? format === "json" && !parsedDraft.template
                   ? "Fix the JSON syntax error to restore the live button preview and breakdown."
                   : "Place your cursor on any line to preview its button and see what each symbol means."
-              }
-            />
-          )}
-        </div>
-      )}
+                : "Hover or focus any line on the left to preview its button and see what each symbol means."
+            }
+          />
+        )}
+      </div>
     </div>
   );
 }
