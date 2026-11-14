@@ -7,6 +7,10 @@ import type {
 
 const RTL_LANGUAGES = ["ar", "he", "fa", "ur"];
 
+/**
+ * Returns `true` when the given BCP-47 language tag (e.g., `"ar"`, `"he-IL"`, `"fa"`, `"ur"`)
+ * uses a right-to-left (`"rtl"`) writing system.
+ */
 export const isRTL = (lang?: string): boolean => {
   if (!lang) return false;
   const baseLang = lang.split("-")[0].toLowerCase();
@@ -21,17 +25,36 @@ const defaultContextValue: PeerbotsI18nContextValue = {
 const PeerbotsI18nContext =
   createContext<PeerbotsI18nContextValue>(defaultContextValue);
 
+/**
+ * React hook returning the active {@link PeerbotsI18nContextValue} (`dir`, `lang`, and `labels`)
+ * from the nearest enclosing {@link PeerbotsI18nProvider}.
+ */
 export const usePeerbotsI18n = (): PeerbotsI18nContextValue => {
   return useContext(PeerbotsI18nContext);
 };
 
+/**
+ * Props for {@link PeerbotsI18nProvider}.
+ */
 export interface PeerbotsI18nProviderProps {
+  /** Subtree of `@peerbots/core` and application components to receive i18n context. */
   children: React.ReactNode;
+  /**
+   * Explicit layout direction (`"ltr"` or `"rtl"`), or `"auto"` (default) to infer
+   * direction automatically from `lang` via {@link isRTL}.
+   */
   dir?: Direction | "auto";
+  /** Optional BCP-47 language tag (e.g., `"en"`, `"ar-EG"`) synchronized to `<html lang>`. */
   lang?: string;
+  /** Optional partial localized string overrides grouped by namespace (`common`, `auth`, etc.). */
   labels?: PeerbotsLabels;
 }
 
+/**
+ * Root internationalization provider for `@peerbots/core` applications.
+ * Resolves `"ltr"` / `"rtl"` direction, synchronizes `document.documentElement.dir` and `lang`,
+ * and supplies localized {@link PeerbotsLabels} to descendant components.
+ */
 export const PeerbotsI18nProvider: React.FC<PeerbotsI18nProviderProps> = ({
   children,
   dir,
@@ -79,4 +102,7 @@ export const PeerbotsI18nProvider: React.FC<PeerbotsI18nProviderProps> = ({
   );
 };
 
+/**
+ * Convenience alias for {@link PeerbotsI18nProvider}.
+ */
 export { PeerbotsI18nProvider as PeerbotsProvider };

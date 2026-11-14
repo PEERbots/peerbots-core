@@ -2,8 +2,14 @@ import { Input as BaseInput } from "@base-ui/react";
 import React, { ComponentPropsWithoutRef } from "react";
 import { cn } from "../utils";
 
+/**
+ * Props for `<TextArea>` — multi-line text input primitive backed by `@base-ui/react`.
+ */
 export type TextAreaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
+/**
+ * Multi-line text input styled with Peerbots focus rings and subtle primary tint.
+ */
 export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
   ({ className, id, ...props }, ref) => {
     return (

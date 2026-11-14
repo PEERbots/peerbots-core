@@ -2,14 +2,26 @@ import React from "react";
 import { Dialog as BaseDialog } from "@base-ui/react";
 import { cn } from "../utils";
 
+/**
+ * Maximum width preset for `<Dialog>` popups.
+ */
 export type DialogSize = "sm" | "md" | "lg" | "xl" | "2xl" | "full" | "auto";
 
+/**
+ * Props for `<Dialog>` — an accessible modal dialog backed by `@base-ui/react`.
+ */
 export interface DialogProps {
+  /** Controlled open state of the modal dialog. */
   open?: boolean;
+  /** Callback invoked when the user opens or dismisses the dialog (Escape, backdrop click, or close button). */
   onOpenChange?: (open: boolean, event?: Event) => void;
+  /** Optional trigger element or label that opens the dialog on click. */
   trigger?: React.ReactNode;
+  /** Modal body content (commonly includes `<DialogTitle>`, `<DialogDescription>`, and `<DialogClose>`). */
   children: React.ReactNode;
+  /** Additional classes applied to the modal popup surface. */
   className?: string;
+  /** Width preset for the modal popup (@default "auto"). */
   size?: DialogSize;
 }
 

@@ -7,6 +7,10 @@
         "strict": true,
         "declaration": true,
         "skipLibCheck": true,
-        "esModuleInterop": true
-    }
+        "esModuleInterop": true,
+        "paths": {
+            "@peerbots/core/flow": ["./src/flow/index.ts"]
+        }
+    },
+    "exclude": ["dist", "node_modules", "storybook-static", "vitest.config.ts"]
 }

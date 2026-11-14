@@ -2,13 +2,23 @@ import React from "react";
 import { Switch as BaseSwitch } from "@base-ui/react";
 import { cn } from "../utils";
 
+/**
+ * Props for `<Switch>` — accessible on/off toggle switch backed by `@base-ui/react` (RTL-aware).
+ */
 export interface SwitchProps extends React.AriaAttributes {
+  /** Controlled boolean state of the switch. */
   checked?: boolean;
+  /** Initial boolean state in uncontrolled mode. */
   defaultChecked?: boolean;
+  /** Callback fired when the switch is toggled. */
   onChange?: (checked: boolean, event: Event) => void;
+  /** Disables interaction when `true`. */
   disabled?: boolean;
+  /** Additional wrapper classes. */
   className?: string;
+  /** DOM `id` forwarded to the switch button. */
   id?: string;
+  /** Optional form field `name`. */
   name?: string;
 }
 

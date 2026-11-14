@@ -1,0 +1,180 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as AccordionStories from "../ui/layout/Accordion.stories";
+import * as CollapsibleStories from "../ui/layout/Collapsible.stories";
+import * as TabRadioStories from "../ui/forms/TabRadio.stories";
+import * as ChipGroupStories from "../ui/forms/ChipGroup.stories";
+import * as TabSelectionStories from "../ui/patterns/TabSelection.stories";
+
+<Meta title="Component Selection Guide" />
+
+# Component Selection & Taxonomy Guide
+
+This guide helps Peerbots engineers choose the right component when building interfaces with `@peerbots/core`, clarifying our **Layout vs. Forms vs. Patterns** taxonomy, **Disclosures**, and **Selection Controls**.
+
+---
+
+## 1. Layout vs. Forms vs. Patterns Taxonomy
+
+Every UI export in `@peerbots/core` belongs to one conceptual tier in Storybook while remaining re-exported from the top-level `@peerbots/core` barrel so imports never break:
+
+- **Forms (`Forms/*`)**: Single-value or multi-value input controls and selection primitives (`Button`, `Input`, `SearchInput`, `Select`, `Switch`, `Checkbox`, `EmotionSelector`, `PeerbotsColorSelector`, `TabRadio`, `ChipGroup`, `TabSelection`).
+- **Layout (`Layout/*`)**: Structural containers, surfaces, dividers, disclosures, and semantic table primitives (`Card`, `Separator`, `Collapsible`, `Accordion`, `Table.*`).
+- **Patterns (`Patterns/*`)**: Multi-component domain or workflow compositions combining multiple primitives with coordinated state (`SettingsPanel`, `CopyButton`, `Stepper`, `AuthFormUI`, `PeerbotsButtonDisplay`, `ButtonView`, `TableView`, `FlowView`).
+
+### Borderline Component Placement
+
+<div className="pb:overflow-x-auto pb:my-6">
+  <table className="pb:w-full pb:text-left pb:border-collapse pb:text-xs sm:pb:text-sm pb:border pb:border-gray-200 pb:rounded-xl pb:overflow-hidden">
+    <thead className="pb:bg-gray-100 pb:text-gray-900">
+      <tr>
+        <th className="pb:p-3 pb:border-b pb:border-gray-200">Component</th>
+        <th className="pb:p-3 pb:border-b pb:border-gray-200">Storybook Category</th>
+        <th className="pb:p-3 pb:border-b pb:border-gray-200">Source Module</th>
+        <th className="pb:p-3 pb:border-b pb:border-gray-200">Why It Lives Here</th>
+      </tr>
+    </thead>
+    <tbody className="pb:divide-y pb:divide-gray-200 pb:bg-white">
+      <tr>
+        <td className="pb:p-3 pb:font-mono pb:font-semibold">SettingsPanel</td>
+        <td className="pb:p-3"><code>Patterns/SettingsPanel</code></td>
+        <td className="pb:p-3"><code>ui/layout</code></td>
+        <td className="pb:p-3">Composite settings workflow combining <code>Card</code> + <code>Heading</code> + optional <code>Collapsible</code>.</td>
+      </tr>
+      <tr>
+        <td className="pb:p-3 pb:font-mono pb:font-semibold">Table.* vs DataTable vs TableView</td>
+        <td className="pb:p-3"><code>Layout/Table</code> &amp; <code>Patterns/Template Views/TableView</code></td>
+        <td className="pb:p-3"><code>ui/layout</code> &amp; <code>ui/patterns/control-views</code></td>
+        <td className="pb:p-3"><code>Table.*</code> provides structural HTML table primitives (Layout); <code>DataTable</code> + <code>TableToolbar</code> + <code>TableBulkActionBar</code> provide the generic data-grid layer; <code>TableView</code> provides the Peerbots template spreadsheet pattern.</td>
+      </tr>
+      <tr>
+        <td className="pb:p-3 pb:font-mono pb:font-semibold">SearchInput</td>
+        <td className="pb:p-3"><code>Forms/SearchInput</code></td>
+        <td className="pb:p-3"><code>ui/forms</code></td>
+        <td className="pb:p-3">Single-field search input primitive (<code>Input</code> + search icon + Enter/Escape/Clear) living alongside <code>Input</code>.</td>
+      </tr>
+      <tr>
+        <td className="pb:p-3 pb:font-mono pb:font-semibold">CopyButton</td>
+        <td className="pb:p-3"><code>Patterns/CopyButton</code></td>
+        <td className="pb:p-3"><code>ui/patterns</code></td>
+        <td className="pb:p-3">Stateful clipboard workflow combining <code>Button</code> + <code>useClipboard</code> + timed polite status feedback.</td>
+      </tr>
+      <tr>
+        <td className="pb:p-3 pb:font-mono pb:font-semibold">TabSelection</td>
+        <td className="pb:p-3"><code>Forms/Selection Controls/TabSelection</code></td>
+        <td className="pb:p-3"><code>ui/patterns</code></td>
+        <td className="pb:p-3">Grouped beside <code>TabRadio</code> and <code>ChipGroup</code> so engineers can compare all three horizontal selection bars in one place.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+---
+
+## 2. Disclosures: `Collapsible` vs. `Accordion`
+
+Both components live under `Layout/Disclosures/*` and provide smooth expand/collapse transitions, but target distinct cardinalities:
+
+<div className="pb:overflow-x-auto pb:my-6">
+  <table className="pb:w-full pb:text-left pb:border-collapse pb:text-xs sm:pb:text-sm pb:border pb:border-gray-200">
+    <thead className="pb:bg-gray-100 pb:text-gray-900">
+      <tr>
+        <th className="pb:p-3 pb:border-b pb:border-gray-200">Dimension</th>
+        <th className="pb:p-3 pb:border-b pb:border-gray-200"><code>&lt;Collapsible&gt;</code></th>
+        <th className="pb:p-3 pb:border-b pb:border-gray-200"><code>&lt;Accordion&gt;</code></th>
+      </tr>
+    </thead>
+    <tbody className="pb:divide-y pb:divide-gray-200 pb:bg-white">
+      <tr>
+        <td className="pb:p-3 pb:font-semibold">Cardinality</td>
+        <td className="pb:p-3"><strong>1 standalone disclosure</strong> wrapping arbitrary React <code>children</code></td>
+        <td className="pb:p-3"><strong>2+ coordinated items</strong> passed via <code>items=&#123;[...]&#125;</code></td>
+      </tr>
+      <tr>
+        <td className="pb:p-3 pb:font-semibold">Mutual Exclusivity</td>
+        <td className="pb:p-3">Independent open/close state (<code>defaultOpen</code> / <code>isOpen</code>)</td>
+        <td className="pb:p-3">Single-open (<code>allowMultiple=&#123;false&#125;</code>) or multi-open (<code>allowMultiple=&#123;true&#125;</code>)</td>
+      </tr>
+      <tr>
+        <td className="pb:p-3 pb:font-semibold">Size Scale</td>
+        <td className="pb:p-3"><code>size=&quot;sm&quot; | &quot;md&quot; | &quot;lg&quot;</code> (ideal for compact sidebars)</td>
+        <td className="pb:p-3"><code>variant=&quot;default&quot; | &quot;bordered&quot; | &quot;flat&quot;</code></td>
+      </tr>
+      <tr>
+        <td className="pb:p-3 pb:font-semibold">Best For</td>
+        <td className="pb:p-3">&quot;Advanced Settings&quot;, debug drawers, collapsible <code>SettingsPanel</code></td>
+        <td className="pb:p-3">FAQs, multi-section troubleshooting guides, help centers</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Side-by-Side Preview
+
+<Canvas of={AccordionStories.ComparisonWithCollapsible} />
+
+### `Collapsible` Size Scale (`sm` / `md` / `lg`)
+
+<Canvas of={CollapsibleStories.Sizes} />
+
+---
+
+## 3. Selection Controls: `TabRadio` vs. `ChipGroup` vs. `TabSelection`
+
+All three controls live under `Forms/Selection Controls/*`:
+
+<div className="pb:overflow-x-auto pb:my-6">
+  <table className="pb:w-full pb:text-left pb:border-collapse pb:text-xs sm:pb:text-sm pb:border pb:border-gray-200">
+    <thead className="pb:bg-gray-100 pb:text-gray-900">
+      <tr>
+        <th className="pb:p-3 pb:border-b pb:border-gray-200">Dimension</th>
+        <th className="pb:p-3 pb:border-b pb:border-gray-200"><code>&lt;TabRadio&gt;</code></th>
+        <th className="pb:p-3 pb:border-b pb:border-gray-200"><code>&lt;ChipGroup&gt;</code></th>
+        <th className="pb:p-3 pb:border-b pb:border-gray-200"><code>&lt;TabSelection&gt;</code></th>
+      </tr>
+    </thead>
+    <tbody className="pb:divide-y pb:divide-gray-200 pb:bg-white">
+      <tr>
+        <td className="pb:p-3 pb:font-semibold">Option Count</td>
+        <td className="pb:p-3"><strong>2–5 static</strong> segments</td>
+        <td className="pb:p-3"><strong>3–12+</strong> wrapping or scrolling chips</td>
+        <td className="pb:p-3"><strong>1–10+ dynamic</strong> user tabs</td>
+      </tr>
+      <tr>
+        <td className="pb:p-3 pb:font-semibold">Selection Mode</td>
+        <td className="pb:p-3">Single-select only</td>
+        <td className="pb:p-3">Single-select <strong>or</strong> Multi-select (<code>multiple</code>)</td>
+        <td className="pb:p-3">Single active workspace tab</td>
+      </tr>
+      <tr>
+        <td className="pb:p-3 pb:font-semibold">ARIA Semantics</td>
+        <td className="pb:p-3"><code>ToggleGroup</code> / pressed toggles</td>
+        <td className="pb:p-3"><code>radiogroup</code> (single) or <code>group</code> + <code>checkbox</code> (multi)</td>
+        <td className="pb:p-3"><code>tablist</code> + <code>tab</code> (Arrow/Home/End keys)</td>
+      </tr>
+      <tr>
+        <td className="pb:p-3 pb:font-semibold">Dynamic Lifecycle</td>
+        <td className="pb:p-3">Fixed options</td>
+        <td className="pb:p-3">Optional count/status <code>badge</code> &amp; <code>icon</code></td>
+        <td className="pb:p-3">Built-in <code>onAddClick</code> (<code>+</code>), <code>onEdit</code> (rename), <code>onClose</code> (<code>×</code>)</td>
+      </tr>
+      <tr>
+        <td className="pb:p-3 pb:font-semibold">Canonical Example</td>
+        <td className="pb:p-3"><code>Buttons | Table | Flow</code> view toggle</td>
+        <td className="pb:p-3">Robot hardware capability filters</td>
+        <td className="pb:p-3">Multi-template workspace tab bar</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### `TabRadio` — Static Mode / Enum Switcher
+
+<Canvas of={TabRadioStories.Default} />
+
+### `ChipGroup` — Wrapping Single / Multi-Select Filter Facets
+
+<Canvas of={ChipGroupStories.MultiSelectFilter} />
+
+### `TabSelection` — Dynamic Add / Rename / Close Workspace Tabs
+
+<Canvas of={TabSelectionStories.Default} />

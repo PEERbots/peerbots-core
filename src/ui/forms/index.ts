@@ -1,5 +1,6 @@
 export * from "./Button";
 export * from "./Input";
+export * from "./SearchInput";
 export * from "./Select";
 export * from "./Slider";
 export * from "./SliderWithNumberField";
@@ -12,4 +13,8 @@ export * from "./Field";
 export * from "./TextArea";
 export * from "./Checkbox";
 export * from "./PeerbotsColorSelector";
+export * from "./emotionMapper";
+export * from "./EmotionSelector";
+export * from "./VoiceSelector";
+export * from "./LanguageSelector";
 export * from "./ChipGroup";

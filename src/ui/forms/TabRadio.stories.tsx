@@ -5,11 +5,26 @@ import { Icon } from "../foundations/Icon";
 import { Heading, Text } from "../foundations/Typography";
 import React from "react";
 
+const SELECTION_CONTROLS_MD = `
+Compact segmented toggle (\`@base-ui/react\` \`ToggleGroup\`) for selecting **one option out of 2–5 static, mutually exclusive modes or enum values** inside a single bordered track.
+
+| Control | Option Count | Selection Mode | Layout & Lifecycle | Typical Use Case |
+|---|---|---|---|---|
+| **\`<TabRadio>\`** | **2–5 static** | Single-select | Inline segmented pill track | View switcher (\`Buttons \\| Table \\| Flow\`), graph axis (\`TB \\| LR\`) |
+| **\`<ChipGroup>\`** | **3–12+ static/dynamic** | Single **or** Multi-select (\`multiple\`) | Wrapping or horizontally scrolling pills + count badges | Tag filters, robot capability facets, category chips |
+| **\`<TabSelection>\`** | **1–10+ dynamic** | Single active workspace tab | Accessible \`tablist\`/\`tab\` strip with \`+\` Add, Rename, and \`×\` Close | Editable template tabs, multi-document workspaces |
+`.trim();
+
 const meta = {
-  title: "Forms/TabRadio",
+  title: "Forms/Selection Controls/TabRadio",
   component: TabRadio,
   parameters: {
     layout: "centered",
+    docs: {
+      description: {
+        component: SELECTION_CONTROLS_MD,
+      },
+    },
   },
   tags: ["autodocs"],
   argTypes: {

@@ -1,14 +1,15 @@
 name: Build
- 
+
 on:
-  pull_request:
+  push:
     branches:
       - main
- 
+  pull_request:
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
- 
+
 jobs:
   build:
     name: Build & Lint
@@ -16,15 +17,30 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
- 
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
- 
+
       - name: Install dependencies
         run: npm ci
- 
+
+      - name: Typecheck (including stories and tests)
+        run: npm run typecheck
+
+      - name: Run unit tests
+        run: npm test
+
       - name: Build package
         run: npm run build
+
+      - name: Install Playwright Chromium for Storybook tests
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Storybook browser tests
+        run: npm run test:storybook
+
+      - name: Build Storybook
+        run: npm run build-storybook

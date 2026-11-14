@@ -3,8 +3,17 @@ import { useState } from "react";
 import { SearchInput } from "./SearchInput";
 
 const meta: Meta<typeof SearchInput> = {
-  title: "Patterns/SearchInput",
+  title: "Forms/SearchInput",
   component: SearchInput,
+  tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          "Single-field search input control built on `<Input>`, pairing a leading search icon with IME-safe `Enter`-to-search (`onSearch`) and `Escape` / clear-button reset (`onClear`). Lives in `ui/forms` (`Forms/SearchInput`) alongside `<Input>`.",
+      },
+    },
+  },
 };
 
 export default meta;

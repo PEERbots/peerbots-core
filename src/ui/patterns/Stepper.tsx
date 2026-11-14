@@ -3,13 +3,24 @@ import { cn } from "../utils";
 import { Icon } from "../foundations/Icon";
 import { ComponentColor, ComponentSize } from "../types";
 
+/**
+ * Completion state of an individual `<Stepper>` step.
+ */
 export type StepStatus = "complete" | "current" | "upcoming" | "disabled";
 
+/**
+ * Step descriptor rendered inside `<Stepper>`.
+ */
 export interface StepItem {
+  /** Unique step identifier passed to `activeStepId` and `onStepClick`. */
   id: string;
+  /** Visible step title. */
   title: React.ReactNode;
+  /** Optional secondary description (rendered in `"horizontal"` and `"vertical"` orientations). */
   description?: React.ReactNode;
+  /** Optional explicit status override (inferred automatically from `activeStepId` when omitted). */
   status?: StepStatus;
+  /** Optional custom icon node replacing the step number / checkmark. */
   icon?: React.ReactNode;
 }
 

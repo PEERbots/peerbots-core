@@ -14,6 +14,16 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
+    "./templates": {
+      "types": "./dist/templates/index.d.ts",
+      "import": "./dist/templates/index.mjs",
+      "require": "./dist/templates/index.js"
+    },
+    "./flow": {
+      "types": "./dist/flow/index.d.ts",
+      "import": "./dist/flow/index.mjs",
+      "require": "./dist/flow/index.js"
+    },
     "./theme": {
       "style": "./dist/styles/theme.css",
       "default": "./dist/styles/theme.css"
@@ -39,7 +49,10 @@
   },
   "scripts": {
     "test": "vitest run --project unit",
+    "test:storybook": "vitest run --project storybook",
+    "typecheck": "tsc --noEmit",
     "build": "tsup",
+    "check": "npm run typecheck && npm test && npm run build",
     "changeset": "changeset",
     "release": "changeset publish",
     "storybook": "storybook dev -p 6006",
@@ -51,16 +64,27 @@
   },
   "peerDependencies": {
     "@base-ui/react": "^1.2.0",
+    "@dagrejs/dagre": "^1.1.0 || ^2.0.0",
+    "@xyflow/react": "^12.0.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "tailwindcss": "^4.2.0",
     "victory": "^37.3.6"
+  },
+  "peerDependenciesMeta": {
+    "@dagrejs/dagre": {
+      "optional": true
+    },
+    "@xyflow/react": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@base-ui/react": "^1.7.0",
     "@changesets/changelog-github": "^0.6.0",
     "@changesets/cli": "^2.30.0",
     "@chromatic-com/storybook": "^5.1.1",
+    "@dagrejs/dagre": "^2.0.4",
     "@storybook/addon-a11y": "^10.3.3",
     "@storybook/addon-docs": "^10.3.3",
     "@storybook/addon-onboarding": "^10.3.3",
@@ -68,11 +92,15 @@
     "@storybook/react-vite": "^10.3.3",
     "@tailwindcss/postcss": "^4.2.2",
     "@tailwindcss/vite": "^4.2.2",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitest/browser-playwright": "^4.1.2",
     "@vitest/coverage-v8": "^4.1.2",
+    "@xyflow/react": "^12.10.2",
     "autoprefixer": "^10.4.27",
+    "jsdom": "^27.4.0",
     "playwright": "^1.58.2",
     "postcss": "^8.5.8",
     "react": "^19.2.4",

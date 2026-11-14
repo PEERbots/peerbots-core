@@ -1,11 +1,23 @@
+/**
+ * Metadata props accepted by the {@link SEO} document head helper.
+ */
 interface SEOProps {
+  /** Page title (formatted as `"${title} | Peerbots App"`, or `"Peerbots App"` when `"Home"`). */
   title: string;
+  /** Meta description for search engines, Open Graph, and Twitter Cards. */
   description?: string;
+  /** Social preview image URL or path (defaults to `"/peerbots-logo.png"`). */
   image?: string;
+  /** Canonical page URL for `og:url` (falls back to `window.location.href` in browser environments). */
   url?: string;
+  /** Open Graph content type (defaults to `"website"`). */
   type?: string;
 }
 
+/**
+ * Renders React 19 native document metadata tags (`<title>`, `<meta name="description">`,
+ * Open Graph `og:*`, and Twitter `summary_large_image` card tags) for Peerbots web pages.
+ */
 export function SEO({
   title,
   description = "Peerbots platform: social robots for everyone, powered by experts.",

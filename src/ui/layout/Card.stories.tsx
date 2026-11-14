@@ -138,12 +138,12 @@ export const Variants: Story = {
         <Heading level={4}>Outline</Heading>
         <Text variant="muted">Clean 2px border</Text>
       </Card>
-      <Card variant="teal-tint">
-        <Heading level={4} variant="marketing-teal">Teal Tint</Heading>
+      <Card color="teal">
+        <Heading level={4} color="teal">Teal Tint</Heading>
         <Text variant="muted">Brand teal tinted background</Text>
       </Card>
-      <Card variant="pink-tint">
-        <Heading level={4} variant="marketing-pink">Pink Tint</Heading>
+      <Card color="pink">
+        <Heading level={4} color="pink">Pink Tint</Heading>
         <Text variant="muted">Brand pink tinted background</Text>
       </Card>
     </div>

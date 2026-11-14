@@ -1,12 +1,19 @@
 import React, { useRef, useImperativeHandle } from "react";
 import { Icon } from "../foundations/Icon";
-import { Input, InputProps } from "../forms/Input";
+import { Input, InputProps } from "./Input";
 import { cn } from "../utils";
 
+/**
+ * Props for `<SearchInput>` — single-field search input primitive combining `<Input>`, a leading magnifying-glass icon,
+ * IME-safe Enter-to-search, and Escape / clear-button reset behavior.
+ */
 export interface SearchInputProps
   extends Omit<InputProps, "leftIcon" | "rightIcon"> {
+  /** Callback invoked with the current query string when pressing `Enter` or clearing the input. */
   onSearch?: (query: string) => void;
+  /** Callback invoked when the clear button is clicked or `Escape` is pressed. */
   onClear?: () => void;
+  /** Whether to show the trailing clear (`xCircle`) button when the input is non-empty (@default true). */
   showClearButton?: boolean;
 }
 
@@ -44,8 +51,17 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter" && onSearch) {
+        if (e.nativeEvent.isComposing || e.keyCode === 229) {
+          onKeyDown?.(e);
+          return;
+        }
+        e.preventDefault();
         onSearch(internalRef.current?.value ?? "");
       } else if (e.key === "Escape") {
+        if (e.nativeEvent.isComposing || e.keyCode === 229) {
+          onKeyDown?.(e);
+          return;
+        }
         handleClear();
       }
       if (onKeyDown) {

@@ -21,17 +21,32 @@ function SubmitButton({ label }: { label: string }) {
   );
 }
 
+/**
+ * Active workflow state displayed by `<AuthFormUI>`.
+ */
 export type AuthFormMode = "signing up" | "signing in" | "resetting password";
 
+/**
+ * Props for `<AuthFormUI>` — reusable Sign In / Sign Up / Password Reset form workflow with i18n support.
+ */
 export interface AuthFormUIProps {
+  /** Controlled authentication mode (`"signing in"`, `"signing up"`, or `"resetting password"`). */
   mode?: AuthFormMode;
+  /** Callback invoked when the user switches between Sign In, Sign Up, or Reset Password links. */
   onModeChange?: (mode: AuthFormMode) => void;
+  /** Optional React 19 server/client `<form action={...}>` handler. */
   formAction?: (payload: FormData) => void;
+  /** Standard form submit event handler. */
   onSubmit?: (e: React.FormEvent<HTMLFormElement>) => void;
+  /** Server/form action feedback containing an optional `error` or confirmation `message`. */
   actionState?: { error?: string; message?: string };
+  /** Optional Google OAuth handler; renders the "Continue with Google" button when provided. */
   onGoogleSignIn?: () => void;
+  /** Optional custom heading override. */
   title?: React.ReactNode;
+  /** Optional subtitle/helper text rendered beneath the heading. */
   description?: React.ReactNode;
+  /** Optional localized string overrides (cascades over `PeerbotsI18nProvider`). */
   labels?: Partial<AuthFormLabels>;
 }
 

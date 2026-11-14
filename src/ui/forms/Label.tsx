@@ -2,9 +2,15 @@ import React from "react";
 import { cn } from "../utils";
 import { HelperTooltip } from "../feedback/Tooltip";
 
+/**
+ * Props for `<Label>` — styled `<label>` element with optional inline `<HelperTooltip>`.
+ */
 export interface LabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
+  /** Label text or inline content. */
   children: React.ReactNode;
+  /** Optional tooltip copy displayed in a trailing question-mark `<HelperTooltip>`. */
   tooltip?: string;
+  /** Additional label classes. */
   className?: string;
 }
 

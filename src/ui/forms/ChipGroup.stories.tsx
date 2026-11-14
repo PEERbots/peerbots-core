@@ -4,11 +4,26 @@ import { Icon } from "../foundations/Icon";
 import { Heading, Text } from "../foundations/Typography";
 import React, { useState } from "react";
 
+const CHIP_GROUP_DECISION_MD = `
+Wrapping or horizontally scrollable pill group supporting **both single-select (\`role="radiogroup"\`) and multi-select (\`multiple={true}\`, \`role="group"\`)**, optional icons, and count/status badges.
+
+| Control | Option Count | Selection Mode | Layout & Lifecycle | Typical Use Case |
+|---|---|---|---|---|
+| **\`<ChipGroup>\`** | **3–12+ static/dynamic** | Single **or** Multi-select (\`multiple\`) | Wrapping or scrolling pills + icons & badges | Multi-facet capability filters, category tags |
+| **\`<TabRadio>\`** | **2–5 static** | Single-select | Compact bordered segmented track | View mode toggles (\`Buttons \\| Table \\| Flow\`), binary/ternary settings |
+| **\`<TabSelection>\`** | **1–10+ dynamic** | Single active workspace tab | Accessible \`tablist\`/\`tab\` strip with \`+\` Add, Rename, and \`×\` Close | Multi-template editor tabs, user-created collections |
+`.trim();
+
 const meta: Meta<typeof ChipGroup> = {
-  title: "Forms/ChipGroup",
+  title: "Forms/Selection Controls/ChipGroup",
   component: ChipGroup,
   parameters: {
     layout: "centered",
+    docs: {
+      description: {
+        component: CHIP_GROUP_DECISION_MD,
+      },
+    },
   },
   tags: ["autodocs"],
   argTypes: {
@@ -69,7 +84,7 @@ export const MultiSelectFilter: Story = {
           variant="soft"
           options={[
             { value: "audio", label: "Audio Output", icon: <Icon name="speakerWave" className="pb:w-3.5 pb:h-3.5 pb:me-1" /> },
-            { value: "video", label: "Camera Vision", icon: <Icon name="camera" className="pb:w-3.5 pb:h-3.5 pb:me-1" /> },
+            { value: "video", label: "Camera Vision", icon: <Icon name="face" className="pb:w-3.5 pb:h-3.5 pb:me-1" /> },
             { value: "motors", label: "Servos & Motors" },
             { value: "leds", label: "RGB Matrix" },
             { value: "imu", label: "Gyro/IMU", disabled: true, badge: "Experimental" },

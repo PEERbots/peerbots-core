@@ -2,10 +2,15 @@ import * as React from "react";
 import { Separator as BaseSeparator } from "@base-ui/react/separator";
 import { cn } from "../utils";
 
+/**
+ * Props for `<Separator>` — accessible 1px visual and semantic divider backed by `@base-ui/react`.
+ */
 export interface SeparatorProps extends React.ComponentPropsWithoutRef<
   typeof BaseSeparator
 > {
+  /** Divider axis (`"horizontal"` spans full width; `"vertical"` spans full height). @default "horizontal" */
   orientation?: "horizontal" | "vertical";
+  /** Additional divider classes. */
   className?: string;
 }
 

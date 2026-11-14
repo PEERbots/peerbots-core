@@ -12,13 +12,26 @@ const dirname =
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
+  resolve: {
+    dedupe: ['react', 'react-dom'],
+    alias: {
+      '@peerbots/core/flow': path.resolve(dirname, 'src/flow/index.ts'),
+    },
+  },
   test: {
     projects: [
       {
+        extends: true,
         test: {
           name: 'unit',
           include: ['src/**/*.test.{ts,tsx}'],
-          environment: 'node',
+          environment: 'jsdom',
+          setupFiles: ['./src/testSetup.ts'],
+          server: {
+            deps: {
+              inline: ['@testing-library/react', '@xyflow/react'],
+            },
+          },
         },
       },
       {

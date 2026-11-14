@@ -4,9 +4,15 @@ import { IconName, icons } from "./IconRegistry";
 
 export type { IconName };
 
+/**
+ * Props for `<Icon>` — vector icon primitive backed by `IconRegistry` with automatic RTL mirroring for directional glyphs.
+ */
 export interface IconProps extends React.SVGProps<SVGSVGElement> {
+  /** Icon bounding box scale (@default "md"). */
   size?: "sm" | "md" | "lg" | "xl";
+  /** Registered icon key from `IconRegistry` (omit when passing custom SVG `<path>` `children`). */
   name?: IconName;
+  /** Overrides automatic horizontal mirroring in `dir="rtl"` layouts. */
   shouldMirror?: boolean;
 }
 
