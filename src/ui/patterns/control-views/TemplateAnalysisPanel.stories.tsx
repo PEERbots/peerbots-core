@@ -3,7 +3,7 @@ import { EXAMPLE_LOG_AND_SPEAK_TEMPLATE } from "../../../templates/examples";
 import { TemplateAnalysisPanel } from "./TemplateAnalysisPanel";
 
 const meta: Meta<typeof TemplateAnalysisPanel> = {
-  title: "Patterns/Template Views/TemplateAnalysisPanel",
+  title: "Templates/Panels/TemplateAnalysisPanel",
   component: TemplateAnalysisPanel,
   tags: ["autodocs"],
   parameters: {

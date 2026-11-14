@@ -4,7 +4,7 @@ import type { RobotControlButton } from "../../../templates/types";
 import { PeerbotsButtonEditor } from "./PeerbotsButtonEditor";
 
 const meta: Meta<typeof PeerbotsButtonEditor> = {
-  title: "Patterns/Template Views/PeerbotsButtonEditor",
+  title: "Templates/Panels/PeerbotsButtonEditor",
   component: PeerbotsButtonEditor,
   tags: ["autodocs"],
   parameters: {
