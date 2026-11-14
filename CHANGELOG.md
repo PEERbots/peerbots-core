@@ -1,5 +1,21 @@
 # @peerbots/core
 
+## 1.3.0
+
+### Minor Changes
+
+- [#29](https://github.com/PEERbots/peerbots-core/pull/29) [`2210210`](https://github.com/PEERbots/peerbots-core/commit/221021015f37d24fbd59a71f05f8b11626166246) Thanks [@sbeleidy](https://github.com/sbeleidy)! - Add pure, controlled, store-agnostic Peerbots domain UI components, PR [#26](https://github.com/PEERbots/peerbots-core/issues/26) `TableView` suite, `@peerbots/core/flow` graph editor, and inlined robot face PNG icons:
+
+  - `emotionMapper` (`PEERBOTS_EMOTION_IMAGES`, `emotion_mapping`), `EmotionSelector`, & `PeerbotsEmotionIcon` using inlined `app.peerbots.org` robot face PNGs (`Happy` -> `Neutral.png`, `Sleepy` -> `Sleep.png`) with neutral hover/border styling
+  - `PeerbotsControlAction` & `RobotControlButtonAction` in `control-views/types`
+  - `ButtonView` (`PeerbotsButtonView`), `TableView` (`PeerbotsTableView`) built on the `Table` component suite (`TableBulkActionBar`, `TableColumnApplyAllPopover`, Shift+Click range selection, Sync Speech with Title), and `PeerbotsButtonDisplay` orchestrator
+  - `@peerbots/core/flow` subpath (`FlowView` / `PeerbotsFlowView`, `templateToFlowElements`, `FlowDirection`) with optional `@xyflow/react` and `@dagrejs/dagre` peer dependencies
+  - `VoiceSelector` + `voiceHelpers` and `LanguageSelector` + `languageUtils`
+
+- [#29](https://github.com/PEERbots/peerbots-core/pull/29) [`1e99505`](https://github.com/PEERbots/peerbots-core/commit/1e995059e5c9e7e0426a8a90916d1486a3a7ab25) Thanks [@sbeleidy](https://github.com/sbeleidy)! - Add responsive `Table` / `DataTable` component suite with decoupled state management (`useTableState`), `TableCellField` (`ghost`, `compact`, `default` variants), column header `Apply all` popovers, row selection with range support, and Storybook examples.
+
+- [#29](https://github.com/PEERbots/peerbots-core/pull/29) [`5659d6d`](https://github.com/PEERbots/peerbots-core/commit/5659d6de32ec3dc770fd2a68e116d778f6fc38b0) Thanks [@sbeleidy](https://github.com/sbeleidy)! - Add canonical Peerbots template, message, palette, and hierarchy types (`Template`, `Message`, `RobotControlButton`, `PeerbotsEmotion`, `ProvenanceRef`), cycle-safe hierarchy traversal helpers (`flattenHierarchy`, `getRootButtonIds`, `getDirectChildIds`, `extractMessageButtons`), and zero-dependency RFC-4180 CSV & JSON template/palette I/O (`parseTemplateJson`, `parseTemplateCsv`, `parsePaletteCsv`, `convertPaletteToCSV`, `convertPaletteToTemplate`, `convertTemplateToPalette`, `parseTemplateFile`).
+
 ## 1.2.0
 
 ### Minor Changes
