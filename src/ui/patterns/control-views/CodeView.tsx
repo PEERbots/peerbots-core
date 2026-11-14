@@ -223,6 +223,8 @@ export function CodeView({
   const [hoveredTokenIdx, setHoveredTokenIdx] = useState<number | null>(null);
   const [editorCursorLine, setEditorCursorLine] = useState<number>(1);
   const highlightPreRef = useRef<HTMLPreElement | null>(null);
+  const lineGutterRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const formattedPttf = useMemo(
     () =>
@@ -336,20 +338,51 @@ export function CodeView({
       return draftCode.split(/\r?\n/).map((line, i) => {
         const lineNum = i + 1;
         const isCursorLine = lineNum === editorCursorLine;
+        const matchedLine = parsedDraft.draftLines[i];
+        const canUseStructuredTokens =
+          matchedLine &&
+          matchedLine.tokens.map((t) => t.text).join("") === line;
+        const isSelected =
+          Boolean(selectedButtonId) &&
+          matchedLine?.buttonId === selectedButtonId;
+
         return (
           <div
             key={i}
             className={cn(
-              isCursorLine && "pb:bg-white/10 pb:rounded-xs",
+              "pb:rounded pb:px-1",
+              isCursorLine
+                ? "pb:bg-white/10 pb:ring-1 pb:ring-peerbots-teal/60"
+                : isSelected
+                  ? "pb:bg-peerbots-teal/15"
+                  : "",
             )}
           >
             {line.length === 0
               ? " "
-              : highlightJsonRaw(line).map((seg, j) => (
-                  <span key={j} className={seg.className}>
-                    {seg.text}
-                  </span>
-                ))}
+              : canUseStructuredTokens
+                ? matchedLine.tokens.map((tok, j) => {
+                    const isTokenHovered =
+                      isCursorLine && hoveredTokenIdx === j;
+                    return (
+                      <span
+                        key={j}
+                        className={cn(
+                          tok.className,
+                          "pb:rounded-xs pb:transition-colors",
+                          isTokenHovered &&
+                            "pb:bg-white/20 pb:underline pb:decoration-peerbots-teal pb:underline-offset-4",
+                        )}
+                      >
+                        {tok.text}
+                      </span>
+                    );
+                  })
+                : highlightJsonRaw(line).map((seg, j) => (
+                    <span key={j} className={seg.className}>
+                      {seg.text}
+                    </span>
+                  ))}
           </div>
         );
       });
@@ -357,6 +390,8 @@ export function CodeView({
 
     return parsedDraft.draftLines.map((line, i) => {
       const isCursorLine = line.lineNumber === editorCursorLine;
+      const isSelected =
+        Boolean(selectedButtonId) && line.buttonId === selectedButtonId;
       const isEmpty =
         line.tokens.length === 0 ||
         line.tokens.every((t) => t.text.length === 0);
@@ -364,20 +399,43 @@ export function CodeView({
         <div
           key={i}
           className={cn(
-            isCursorLine && "pb:bg-white/10 pb:rounded-xs",
+            "pb:rounded pb:px-1",
+            isCursorLine
+              ? "pb:bg-white/10 pb:ring-1 pb:ring-peerbots-teal/60"
+              : isSelected
+                ? "pb:bg-peerbots-teal/15"
+                : "",
           )}
         >
           {isEmpty
             ? " "
-            : line.tokens.map((tok, j) => (
-                <span key={j} className={tok.className}>
-                  {tok.text}
-                </span>
-              ))}
+            : line.tokens.map((tok, j) => {
+                const isTokenHovered = isCursorLine && hoveredTokenIdx === j;
+                return (
+                  <span
+                    key={j}
+                    className={cn(
+                      tok.className,
+                      "pb:rounded-xs pb:transition-colors",
+                      isTokenHovered &&
+                        "pb:bg-white/20 pb:underline pb:decoration-peerbots-teal pb:underline-offset-4",
+                    )}
+                  >
+                    {tok.text}
+                  </span>
+                );
+              })}
         </div>
       );
     });
-  }, [draftCode, format, parsedDraft.draftLines, editorCursorLine]);
+  }, [
+    draftCode,
+    format,
+    parsedDraft.draftLines,
+    editorCursorLine,
+    hoveredTokenIdx,
+    selectedButtonId,
+  ]);
 
   const activeLine: NormalizedLineView | undefined = useMemo(() => {
     if (mode === "edit") {
@@ -816,35 +874,78 @@ export function CodeView({
               </span>
             </div>
 
-            <div className="pb:relative pb:rounded-lg pb:border pb:border-gray-300 pb:bg-[#1e222b] pb:overflow-hidden">
-              <pre
-                ref={highlightPreRef}
+            <div className="pb:flex pb:rounded-lg pb:border pb:border-gray-300 pb:bg-[#1e222b] pb:overflow-hidden">
+              {/* Line Numbers Gutter */}
+              <div
+                ref={lineGutterRef}
                 aria-hidden="true"
-                className="pb:pointer-events-none pb:m-0 pb:p-3 pb:font-mono pb:text-xs sm:pb:text-sm pb:leading-6 pb:whitespace-pre-wrap pb:break-words pb:overflow-hidden pb:min-h-[21rem]"
+                className="pb:w-9 pb:shrink-0 pb:py-3 pb:pr-2 pb:pl-2 pb:font-mono pb:text-xs sm:pb:text-sm pb:leading-6 pb:text-right pb:text-gray-500 pb:select-none pb:overflow-hidden pb:border-r pb:border-gray-800"
               >
-                {highlightedDraftLines}
-              </pre>
-              <textarea
-                aria-label="Template code editor"
-                value={draftCode}
-                onChange={(e) => {
-                  setDraftCode(e.target.value);
-                  updateCursorLine(e.currentTarget);
-                }}
-                onClick={(e) => updateCursorLine(e.currentTarget)}
-                onKeyUp={(e) => updateCursorLine(e.currentTarget)}
-                onSelect={(e) => updateCursorLine(e.currentTarget)}
-                onFocus={(e) => updateCursorLine(e.currentTarget)}
-                onScroll={(e) => {
-                  if (highlightPreRef.current) {
-                    highlightPreRef.current.scrollTop = e.currentTarget.scrollTop;
-                    highlightPreRef.current.scrollLeft = e.currentTarget.scrollLeft;
-                  }
-                }}
-                rows={14}
-                spellCheck={false}
-                className="pb:absolute pb:inset-0 pb:w-full pb:h-full pb:resize-none pb:bg-transparent pb:text-transparent pb:caret-white pb:font-mono pb:text-xs sm:pb:text-sm pb:leading-6 pb:p-3 pb:whitespace-pre-wrap pb:break-words focus:pb:outline-none focus:pb:ring-2 focus:pb:ring-peerbots-teal"
-              />
+                {draftCode.split(/\r?\n/).map((_, idx) => {
+                  const lineNum = idx + 1;
+                  const isActive = lineNum === editorCursorLine;
+                  return (
+                    <div
+                      key={lineNum}
+                      onClick={() => {
+                        const el = textareaRef.current;
+                        if (!el) return;
+                        const lines = el.value.split(/\r?\n/);
+                        let offset = 0;
+                        for (let k = 0; k < idx; k += 1) {
+                          offset += lines[k].length + 1;
+                        }
+                        el.focus();
+                        el.setSelectionRange(offset, offset);
+                        setEditorCursorLine(lineNum);
+                        setHoveredTokenIdx(null);
+                      }}
+                      className={cn(
+                        "pb:cursor-pointer pb:transition-colors",
+                        isActive ? "pb:text-peerbots-teal pb:font-semibold" : "hover:pb:text-gray-300",
+                      )}
+                    >
+                      {lineNum}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="pb:relative pb:flex-1 pb:min-w-0">
+                <pre
+                  ref={highlightPreRef}
+                  aria-hidden="true"
+                  className="pb:pointer-events-none pb:m-0 pb:py-3 pb:px-3 pb:font-mono pb:text-xs sm:pb:text-sm pb:leading-6 pb:whitespace-pre pb:overflow-hidden pb:min-h-[21rem]"
+                >
+                  {highlightedDraftLines}
+                </pre>
+                <textarea
+                  ref={textareaRef}
+                  aria-label="Template code editor"
+                  value={draftCode}
+                  wrap="off"
+                  onChange={(e) => {
+                    setDraftCode(e.target.value);
+                    updateCursorLine(e.currentTarget);
+                  }}
+                  onClick={(e) => updateCursorLine(e.currentTarget)}
+                  onKeyUp={(e) => updateCursorLine(e.currentTarget)}
+                  onSelect={(e) => updateCursorLine(e.currentTarget)}
+                  onFocus={(e) => updateCursorLine(e.currentTarget)}
+                  onScroll={(e) => {
+                    if (highlightPreRef.current) {
+                      highlightPreRef.current.scrollTop = e.currentTarget.scrollTop;
+                      highlightPreRef.current.scrollLeft = e.currentTarget.scrollLeft;
+                    }
+                    if (lineGutterRef.current) {
+                      lineGutterRef.current.scrollTop = e.currentTarget.scrollTop;
+                    }
+                  }}
+                  rows={14}
+                  spellCheck={false}
+                  className="pb:absolute pb:inset-0 pb:w-full pb:h-full pb:resize-none pb:bg-transparent pb:text-transparent pb:caret-white pb:font-mono pb:text-xs sm:pb:text-sm pb:leading-6 pb:py-3 pb:px-4 pb:whitespace-pre pb:overflow-auto focus:pb:outline-none focus:pb:ring-2 focus:pb:ring-peerbots-teal"
+                />
+              </div>
             </div>
 
             {/* Live Cursor Status Bar */}

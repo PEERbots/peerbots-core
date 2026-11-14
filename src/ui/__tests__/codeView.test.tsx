@@ -135,6 +135,19 @@ describe("CodeView", () => {
       within(explainer).getByText(/Log button \(!\)/i),
     ).toBeInTheDocument();
 
+    // Hovering a token in Syntax Breakdown highlights that section in the Edit overlay
+    const logTypeItem = within(explainer)
+      .getByText(/Log button \(!\)/i)
+      .closest("li");
+    expect(logTypeItem).not.toBeNull();
+    fireEvent.mouseEnter(logTypeItem!);
+    const highlightedToken = document.querySelector(
+      "pre span.pb\\:underline",
+    );
+    expect(highlightedToken).not.toBeNull();
+    expect(highlightedToken?.textContent).toBe("! ");
+    fireEvent.mouseLeave(logTypeItem!);
+
     // Shows diagnostics for bad jump & indentation
     fireEvent.change(textarea, {
       target: {
