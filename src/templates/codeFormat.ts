@@ -226,31 +226,33 @@ function formatButtonTokens(
     });
   }
 
-  tokens.push({
-    kind: "bullet",
-    text: "- ",
-    explanation:
-      depth === 0
-        ? "Top-level (root) button."
-        : `Child button under "${parentTitle ?? "parent"}".`,
-  });
+  const isLog = button.type === "Log";
+  if (isLog) {
+    tokens.push({
+      kind: "type",
+      text: "! ",
+      labelColor: button.labelColor,
+      explanation:
+        depth === 0
+          ? "Log button (!): top-level event marker (dashed style with zap icon) without robot speech."
+          : `Log button (!): child event marker under "${parentTitle ?? "parent"}" (dashed style with zap icon) without robot speech.`,
+    });
+  } else {
+    tokens.push({
+      kind: "bullet",
+      text: "- ",
+      explanation:
+        depth === 0
+          ? "Top-level (root) button."
+          : `Child button under "${parentTitle ?? "parent"}".`,
+    });
+  }
 
   if (anchor) {
     tokens.push({
       kind: "anchor",
       text: `${anchor} `,
       explanation: `Anchor "${anchor}": other lines can jump here using "-> ${anchor}".`,
-    });
-  }
-
-  const isLog = button.type === "Log";
-  if (isLog) {
-    tokens.push({
-      kind: "type",
-      text: "[Log] ",
-      labelColor: button.labelColor,
-      explanation:
-        'Log button: records a user/session event (dashed style with zap icon) without robot speech.',
     });
   }
 
@@ -673,17 +675,28 @@ function parseColorToken(
 }
 
 /**
- * Parses Peerbots Template Text Format (PTTF) back into a {@link Template}
- * with `buttons`, `hierarchy` (including cycles/shared targets), and diagnostics.
+ * Result returned by {@link analyzeTemplateCode}, including line-by-line
+ * syntax tokens and live button previews aligned 1:1 with the input text.
  */
-export function parseCodeToTemplate(
+export interface AnalyzedTemplateCodeResult extends ParsedTemplateCodeResult {
+  /** Line-by-line structured tokens and explanations matching the raw input lines 1:1. */
+  lines: FormattedCodeLine[];
+}
+
+/**
+ * Parses Peerbots Template Text Format (PTTF) into a {@link Template} while
+ * preserving exact 1:1 line tokens, button previews, and explanations for every
+ * input line (used by {@link CodeView} in both Edit and Inspect modes).
+ */
+export function analyzeTemplateCode(
   code: string,
   options: ParseTemplateCodeOptions = {},
-): ParsedTemplateCodeResult {
+): AnalyzedTemplateCodeResult {
   const defaultColor = options.defaultColor ?? DEFAULT_COLOR;
   const diagnostics: CodeDiagnostic[] = [];
   const buttons: Record<string, RobotControlButton> = {};
   const hierarchy: TemplateHierarchy = { root: [] };
+  const lines: FormattedCodeLine[] = [];
 
   let parsedTitle = options.title ?? "Untitled Template";
   let sawHeaderTitle = false;
@@ -695,6 +708,7 @@ export function parseCodeToTemplate(
     parentId: string | "root";
     anchor: string;
     lineNumber: number;
+    lineIdx: number;
   }[] = [];
 
   // Stack of active ancestor button IDs by depth: stack[depth] = buttonId
@@ -706,41 +720,95 @@ export function parseCodeToTemplate(
     const lineNumber = idx + 1;
     const rawLine = rawLines[idx];
     const trimmed = rawLine.trim();
+    const tokens: FormattedCodeToken[] = [];
 
-    if (!trimmed) continue;
+    const leadingMatch = rawLine.match(/^([ \t]*)/);
+    const exactIndent = leadingMatch ? leadingMatch[1] : "";
+    const leadingNormalized = exactIndent.replace(/\t/g, "  ");
+    let depth = Math.floor(leadingNormalized.length / 2);
+
+    if (!trimmed) {
+      if (rawLine.length > 0) {
+        tokens.push({
+          kind: "indent",
+          text: rawLine,
+          explanation: "Blank line.",
+        });
+      }
+      lines.push({
+        lineNumber,
+        raw: rawLine,
+        kind: "comment",
+        depth: 0,
+        tokens,
+        summary: "Blank line",
+      });
+      continue;
+    }
 
     // Comment lines
     if (trimmed.startsWith("//")) {
+      if (exactIndent.length > 0) {
+        tokens.push({
+          kind: "indent",
+          text: exactIndent,
+          explanation: "Leading indentation.",
+        });
+      }
       const commentBody = trimmed.slice(2).trim();
       if (!sawHeaderTitle && commentBody) {
         parsedTitle = commentBody;
         sawHeaderTitle = true;
       }
+      tokens.push({
+        kind: "comment",
+        text: rawLine.slice(exactIndent.length),
+        explanation: commentBody
+          ? `Comment: "${commentBody}".`
+          : "Comment line.",
+      });
+      lines.push({
+        lineNumber,
+        raw: rawLine,
+        kind: "comment",
+        depth: 0,
+        tokens,
+        summary: commentBody ? `Comment: "${commentBody}"` : "Comment line",
+      });
       continue;
     }
 
     // Section headers
     if (trimmed.startsWith("##")) {
+      if (exactIndent.length > 0) {
+        tokens.push({
+          kind: "indent",
+          text: exactIndent,
+          explanation: "Leading indentation.",
+        });
+      }
       const sectionName = trimmed.slice(2).trim().toLowerCase();
       inUnlinkedSection = sectionName === "unlinked";
       depthStack.length = 0;
+      tokens.push({
+        kind: "section",
+        text: rawLine.slice(exactIndent.length),
+        explanation: inUnlinkedSection
+          ? "Buttons in this section exist in the template but are not connected to the root menu."
+          : `Section header: "${trimmed.slice(2).trim()}".`,
+      });
+      lines.push({
+        lineNumber,
+        raw: rawLine,
+        kind: "section",
+        depth: 0,
+        tokens,
+        summary: inUnlinkedSection
+          ? "Unlinked buttons section (not shown in root menu)"
+          : `Section "${trimmed.slice(2).trim()}"`,
+      });
       continue;
     }
-
-    // Measure indentation (2 spaces or 1 tab = 1 depth level)
-    const leadingMatch = rawLine.match(/^([ \t]*)/);
-    const leadingRaw = leadingMatch ? leadingMatch[1].replace(/\t/g, "  ") : "";
-    let depth = Math.floor(leadingRaw.length / 2);
-
-    // Strip optional bullet prefix `- ` or `* `
-    let content = trimmed;
-    if (content.startsWith("- ") || content.startsWith("* ")) {
-      content = content.slice(2).trim();
-    } else if (content === "-" || content === "*") {
-      continue;
-    }
-
-    if (!content) continue;
 
     if (!inUnlinkedSection && depth > depthStack.length) {
       diagnostics.push({
@@ -756,41 +824,155 @@ export function parseCodeToTemplate(
       : depth === 0
         ? "root"
         : depthStack[depth - 1];
+    const parentTitle =
+      parentId !== "root" ? buttons[parentId]?.details.title : undefined;
+
+    if (exactIndent.length > 0) {
+      tokens.push({
+        kind: "indent",
+        text: exactIndent,
+        explanation: parentTitle
+          ? `Indented ${leadingNormalized.length} spaces: nested inside "${parentTitle}".`
+          : `Indented ${leadingNormalized.length} spaces (depth ${depth}).`,
+      });
+    }
+
+    let pos = exactIndent.length;
+    let isLog = false;
+
+    // Strip optional bullet prefix `- `, `* `, or `!` (Log)
+    const afterIndent = rawLine.slice(pos);
+    const bulletMatch = afterIndent.match(/^([-*][ \t]+)/);
+    const emptyBulletMatch = afterIndent.match(/^([-*])$/);
+    const logBulletMatch = afterIndent.match(/^(!+[ \t]*)/);
+
+    if (bulletMatch) {
+      tokens.push({
+        kind: "bullet",
+        text: bulletMatch[1],
+        explanation:
+          depth === 0
+            ? "Top-level (root) button."
+            : `Child button under "${parentTitle ?? "parent"}".`,
+      });
+      pos += bulletMatch[1].length;
+    } else if (emptyBulletMatch) {
+      tokens.push({
+        kind: "bullet",
+        text: emptyBulletMatch[1],
+        explanation: "Empty bullet item.",
+      });
+      lines.push({
+        lineNumber,
+        raw: rawLine,
+        kind: "comment",
+        depth,
+        tokens,
+        summary: "Empty bullet item (type a button title)",
+      });
+      continue;
+    } else if (logBulletMatch && afterIndent.startsWith("!")) {
+      isLog = true;
+      tokens.push({
+        kind: "type",
+        text: logBulletMatch[1],
+        explanation:
+          depth === 0
+            ? "Log button (!): top-level event marker (dashed style with zap icon) without robot speech."
+            : `Log button (!): child event marker under "${parentTitle ?? "parent"}" (dashed style with zap icon) without robot speech.`,
+      });
+      pos += logBulletMatch[1].length;
+      if (rawLine.slice(pos).trim().length === 0) {
+        if (pos < rawLine.length) {
+          tokens.push({
+            kind: "indent",
+            text: rawLine.slice(pos),
+            explanation: "Trailing whitespace.",
+          });
+        }
+        lines.push({
+          lineNumber,
+          raw: rawLine,
+          kind: "comment",
+          depth,
+          tokens,
+          summary: "Log button (!) — type an event title",
+        });
+        continue;
+      }
+    }
 
     // Check for jump line: `-> #anchor`
-    if (content.startsWith("->")) {
-      const targetRef = content.slice(2).trim();
+    const restAfterBullet = rawLine.slice(pos);
+    if (restAfterBullet.trimStart().startsWith("->")) {
+      const targetRef = restAfterBullet.trim().slice(2).trim();
       const anchorKey = targetRef.startsWith("#")
         ? targetRef.toLowerCase()
         : `#${targetRef.toLowerCase()}`;
-      pendingJumps.push({ parentId, anchor: anchorKey, lineNumber });
+      tokens.push({
+        kind: "jump",
+        text: restAfterBullet,
+        explanation: `Jump reference to "${anchorKey}".`,
+      });
+      const lineIdx = lines.length;
+      lines.push({
+        lineNumber,
+        raw: rawLine,
+        kind: "jump",
+        depth,
+        parentTitle,
+        anchor: anchorKey,
+        tokens,
+        summary: `Jump to ${anchorKey}`,
+      });
+      pendingJumps.push({ parentId, anchor: anchorKey, lineNumber, lineIdx });
       continue;
     }
 
     // Optional leading `#anchor`
     let anchor: string | undefined;
-    const anchorMatch = content.match(/^(#[a-zA-Z0-9_-]+)\s+(.*)$/);
+    const anchorMatch = rawLine.slice(pos).match(/^(#[a-zA-Z0-9_-]+)([ \t]+)(.*)$/);
     if (anchorMatch) {
       anchor = anchorMatch[1].toLowerCase();
-      content = anchorMatch[2].trim();
+      tokens.push({
+        kind: "anchor",
+        text: anchorMatch[1] + anchorMatch[2],
+        explanation: `Anchor "${anchor}": other lines can jump here using "-> ${anchor}".`,
+      });
+      pos += anchorMatch[1].length + anchorMatch[2].length;
     }
 
-    let isLog = false;
     let labelColor: PeerbotsColor = defaultColor;
     let robotColor: PeerbotsColor = defaultColor;
     let emotion: Emotion = DEFAULT_EMOTION;
 
     // Parse leading bracket tokens `[...]` in any order
-    while (content.startsWith("[")) {
-      const closeIdx = content.indexOf("]");
+    while (rawLine.slice(pos).startsWith("[")) {
+      const slice = rawLine.slice(pos);
+      const closeIdx = slice.indexOf("]");
       if (closeIdx <= 0) break;
-      const inner = content.slice(1, closeIdx).trim();
+      const inner = slice.slice(1, closeIdx).trim();
       const lower = inner.toLowerCase();
+      const trailingSpaceMatch = slice.slice(closeIdx + 1).match(/^([ \t]*)/);
+      const trailingSpace = trailingSpaceMatch ? trailingSpaceMatch[1] : "";
+      const tokenText = slice.slice(0, closeIdx + 1) + trailingSpace;
 
       if (lower === "log") {
         isLog = true;
+        tokens.push({
+          kind: "type",
+          text: tokenText,
+          explanation:
+            'Log button ([Log] alias): records a user/session event (dashed style with zap icon) without robot speech. Prefer starting the line with "!".',
+        });
       } else if (EMOTION_LOOKUP.has(lower)) {
         emotion = EMOTION_LOOKUP.get(lower)!;
+        tokens.push({
+          kind: "emotion",
+          text: tokenText,
+          emotion,
+          explanation: `Robot facial expression: ${emotion}.`,
+        });
       } else {
         const colorRes = parseColorToken(
           inner,
@@ -801,75 +983,163 @@ export function parseCodeToTemplate(
         if (colorRes.matched) {
           if (colorRes.labelColor) labelColor = colorRes.labelColor;
           if (colorRes.robotColor) robotColor = colorRes.robotColor;
+          tokens.push({
+            kind: "colors",
+            text: tokenText,
+            labelColor: colorRes.labelColor ?? labelColor,
+            robotColor: colorRes.robotColor,
+            explanation: `Colors: button ${colorRes.labelColor ?? labelColor}${colorRes.robotColor ? ` • robot face ${colorRes.robotColor}` : ""}.`,
+          });
         } else {
           diagnostics.push({
             lineNumber,
             severity: "warning",
             message: `Unrecognized bracket token "[${inner}]" ignored.`,
           });
+          tokens.push({
+            kind: "title",
+            text: tokenText,
+            explanation: `Unrecognized bracket token "[${inner}]" (ignored).`,
+          });
         }
       }
 
-      content = content.slice(closeIdx + 1).trim();
+      pos += tokenText.length;
     }
 
     // Parse optional leading ASCII emoticon (`:)`, `:(`, etc.)
+    const afterBrackets = rawLine.slice(pos);
     for (const { prefix, emotion: mappedEmotion } of EXTRA_EMOTION_PREFIXES) {
-      if (content.startsWith(prefix)) {
+      if (afterBrackets.startsWith(prefix)) {
         emotion = mappedEmotion;
-        content = content.slice(prefix.length).trim();
+        const spaceMatch = afterBrackets.slice(prefix.length).match(/^([ \t]*)/);
+        const spaceAfter = spaceMatch ? spaceMatch[1] : "";
+        const tokenText = prefix + spaceAfter;
+        tokens.push({
+          kind: "emotion",
+          text: tokenText,
+          emotion,
+          explanation: `Robot facial expression: ${emotion}.`,
+        });
+        pos += tokenText.length;
         break;
       }
     }
 
     // Parse optional trailing `{ ... }` metadata
     let metadata: MetaData | undefined;
-    if (content.endsWith("}")) {
-      const openBrace = content.lastIndexOf("{");
-      if (openBrace > 0) {
-        const candidate = content.slice(openBrace);
+    let bodyEnd = rawLine.length;
+    const trimmedRight = rawLine.slice(pos).replace(/[ \t]+$/, "");
+    if (trimmedRight.endsWith("}")) {
+      const openBraceInTrimmed = trimmedRight.lastIndexOf("{");
+      if (openBraceInTrimmed > 0) {
+        const candidate = trimmedRight.slice(openBraceInTrimmed);
         const parsedMeta = parseMetadataBlock(candidate);
         if (parsedMeta) {
           metadata = parsedMeta;
-          content = content.slice(0, openBrace).trim();
+          // Include preceding spaces before `{` in the metadata token
+          const beforeBrace = trimmedRight.slice(0, openBraceInTrimmed);
+          const trimmedBeforeBrace = beforeBrace.replace(/[ \t]+$/, "");
+          bodyEnd = pos + trimmedBeforeBrace.length;
         }
       }
     }
 
     // Parse Title | Speech (or fallback Title: Speech)
-    let title = content;
-    let speech = content;
-    const pipeIdx = content.indexOf("|");
-    if (pipeIdx > 0) {
-      title = content.slice(0, pipeIdx).trim();
-      const rhs = content.slice(pipeIdx + 1).trim();
+    const body = rawLine.slice(pos, bodyEnd);
+    let title = body.trim();
+    let speech = title;
+
+    const pipeMatch = body.match(/^(.*?)([ \t]*\|[ \t]*)(.*)$/);
+    if (pipeMatch && pipeMatch[1].trim().length > 0) {
+      title = pipeMatch[1].trim();
+      const rhs = pipeMatch[3].trim();
       speech = rhs.length > 0 ? rhs : title;
-    } else {
-      const colonIdx = content.indexOf(":");
-      if (colonIdx > 0) {
-        const lhs = content.slice(0, colonIdx).trim();
-        const rhs = content.slice(colonIdx + 1).trim();
-        if (lhs.length > 0 && rhs.length > 0) {
-          title = lhs;
-          speech = rhs;
-        }
+      tokens.push({
+        kind: "title",
+        text: pipeMatch[1],
+        explanation: `Button label shown on screen: "${title}".`,
+      });
+      tokens.push({
+        kind: "separator",
+        text: pipeMatch[2],
+        explanation: isLog
+          ? "Separates the button title from the logged event notes."
+          : "Separates the button label from what the robot actually speaks.",
+      });
+      if (pipeMatch[3].length > 0) {
+        tokens.push({
+          kind: "speech",
+          text: pipeMatch[3],
+          explanation: isLog
+            ? `Event notes recorded when clicked: "${speech}".`
+            : `Robot speaks aloud: "${speech}".`,
+        });
       }
+    } else {
+      const colonMatch = body.match(/^([^:]+?)([ \t]*:[ \t]*)(.+)$/);
+      if (
+        colonMatch &&
+        colonMatch[1].trim().length > 0 &&
+        colonMatch[3].trim().length > 0
+      ) {
+        title = colonMatch[1].trim();
+        speech = colonMatch[3].trim();
+        tokens.push({
+          kind: "title",
+          text: colonMatch[1],
+          explanation: `Button label shown on screen: "${title}".`,
+        });
+        tokens.push({
+          kind: "separator",
+          text: colonMatch[2],
+          explanation: isLog
+            ? "Separates the button title from the logged event notes."
+            : "Separates the button label from what the robot actually speaks.",
+        });
+        tokens.push({
+          kind: "speech",
+          text: colonMatch[3],
+          explanation: isLog
+            ? `Event notes recorded when clicked: "${speech}".`
+            : `Robot speaks aloud: "${speech}".`,
+        });
+      } else if (body.length > 0) {
+        tokens.push({
+          kind: "title",
+          text: body,
+          explanation: `Button label shown on screen: "${title}".`,
+        });
+      }
+    }
+
+    if (bodyEnd < rawLine.length) {
+      const metaText = rawLine.slice(bodyEnd);
+      tokens.push({
+        kind: "metadata",
+        text: metaText,
+        explanation: `Custom metadata attached to this button: ${metaText.trim()}.`,
+      });
     }
 
     const buttonId = String(idCounter);
     idCounter += 1;
 
+    let createdButton: RobotControlButton;
     if (isLog) {
       const logDetails: LoggedEvent = {
         title,
         ...(speech !== title ? { details: speech } : {}),
         ...(metadata ? { metadata } : {}),
       };
-      buttons[buttonId] = {
+      createdButton = {
         type: "Log",
         labelColor,
         details: logDetails,
       };
+      // Propagate labelColor onto the `! ` type token if present
+      const typeTok = tokens.find((t) => t.kind === "type");
+      if (typeTok) typeTok.labelColor = labelColor;
     } else {
       const msgDetails: Message = {
         title,
@@ -878,12 +1148,13 @@ export function parseCodeToTemplate(
         emotion,
         ...(metadata ? { metadata } : {}),
       };
-      buttons[buttonId] = {
+      createdButton = {
         type: "Message",
         labelColor,
         details: msgDetails,
       };
     }
+    buttons[buttonId] = createdButton;
 
     if (anchor) {
       if (anchorToId.has(anchor)) {
@@ -906,6 +1177,31 @@ export function parseCodeToTemplate(
       depthStack.length = depth + 1;
       depthStack[depth] = buttonId;
     }
+
+    const summaryParts: string[] = [
+      isLog ? `Log button "${title}"` : `Message button "${title}"`,
+    ];
+    if (parentTitle) summaryParts.push(`under "${parentTitle}"`);
+    if (!isLog) {
+      summaryParts.push(`face: ${robotColor} / ${emotion}`);
+    }
+    summaryParts.push(`label: ${labelColor}`);
+    if (speech !== title && !isLog) {
+      summaryParts.push(`speaks "${speech}"`);
+    }
+
+    lines.push({
+      lineNumber,
+      raw: rawLine,
+      kind: "button",
+      depth,
+      buttonId,
+      button: createdButton,
+      parentTitle,
+      anchor,
+      tokens,
+      summary: summaryParts.join(" • "),
+    });
   }
 
   // Resolve `-> #anchor` jumps (supporting both back-edges and forward-references)
@@ -925,6 +1221,17 @@ export function parseCodeToTemplate(
       if (!hierarchy[jump.parentId]) hierarchy[jump.parentId] = [];
       hierarchy[jump.parentId].push(targetId);
     }
+    const targetBtn = buttons[targetId];
+    const lineEntry = lines[jump.lineIdx];
+    if (lineEntry && targetBtn) {
+      lineEntry.buttonId = targetId;
+      lineEntry.button = targetBtn;
+      lineEntry.summary = `Jump to "${targetBtn.details.title}" (${jump.anchor})`;
+      const jumpTok = lineEntry.tokens.find((t) => t.kind === "jump");
+      if (jumpTok) {
+        jumpTok.explanation = `Links to "${targetBtn.details.title}" (${jump.anchor}).`;
+      }
+    }
   }
 
   const template: Template = {
@@ -935,6 +1242,18 @@ export function parseCodeToTemplate(
     hierarchy,
   };
 
+  return { template, diagnostics, lines };
+}
+
+/**
+ * Parses Peerbots Template Text Format (PTTF) back into a {@link Template}
+ * with `buttons`, `hierarchy` (including cycles/shared targets), and diagnostics.
+ */
+export function parseCodeToTemplate(
+  code: string,
+  options: ParseTemplateCodeOptions = {},
+): ParsedTemplateCodeResult {
+  const { template, diagnostics } = analyzeTemplateCode(code, options);
   return { template, diagnostics };
 }
 

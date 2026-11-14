@@ -96,7 +96,7 @@ describe("CodeView", () => {
     expect(results.violations).toEqual([]);
   });
 
-  it("supports Edit mode, Format button, diagnostics, and Apply Changes", () => {
+  it("supports Edit mode with live syntax highlighting, live explainer, Format button, diagnostics, and Apply Changes", () => {
     const onTemplateChange = vi.fn();
     const template = makeCyclicTemplate();
 
@@ -112,14 +112,37 @@ describe("CodeView", () => {
       "Template code editor",
     ) as HTMLTextAreaElement;
     expect(textarea.value).toContain("Say Hello | Hello friend!");
+    expect(textarea.value).toContain("! [Grey] Wave Logged | Child waved back");
 
+    // Explainer aside is visible in Edit mode too
+    const explainer = screen.getByLabelText("Interactive code explainer");
+    expect(
+      within(explainer).getByText("What This Produces"),
+    ).toBeInTheDocument();
+
+    // Typing a Log line with `!` and moving cursor to it updates the live explainer
+    const nextText = "// Updated\n! [Purple] Break Logged | Requested break";
+    fireEvent.change(textarea, {
+      target: {
+        value: nextText,
+        selectionStart: nextText.length,
+      },
+    });
+    expect(
+      within(explainer).getByRole("button", { name: "Break Logged" }),
+    ).toBeInTheDocument();
+    expect(
+      within(explainer).getByText(/Log button \(!\)/i),
+    ).toBeInTheDocument();
+
+    // Shows diagnostics for bad jump & indentation
     fireEvent.change(textarea, {
       target: {
         value: "// Updated\n  :) Hi there\n    -> #missing",
+        selectionStart: 0,
       },
     });
 
-    // Shows diagnostics for bad jump & indentation
     const diagnostics = screen.getByRole("status", {
       name: "Code diagnostics",
     });
@@ -129,6 +152,7 @@ describe("CodeView", () => {
     fireEvent.change(textarea, {
       target: {
         value: "// Updated\n[Green -> Red] :) Hi | Hello!",
+        selectionStart: 0,
       },
     });
 

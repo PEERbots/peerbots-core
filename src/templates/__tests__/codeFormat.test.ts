@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  analyzeTemplateCode,
   formatTemplateToCode,
   parseCodeToTemplate,
   serializeTemplateToCode,
@@ -160,7 +161,7 @@ describe("Template Code Format (PTTF)", () => {
     const formatted = formatTemplateToCode(complex);
     expect(formatted.code).toContain("[-> Yellow] [Concerned]");
     expect(formatted.code).toContain('{ goal: "Empathy", score: 2 }');
-    expect(formatted.code).toContain("[Log] [Grey] Session Marker | Child initiated greeting");
+    expect(formatted.code).toContain("! [Grey] Session Marker | Child initiated greeting");
     expect(formatted.code).toContain("## Unlinked");
     expect(formatted.code).toContain("- [Pink] Spare Button");
 
@@ -185,6 +186,28 @@ describe("Template Code Format (PTTF)", () => {
       expect(msgBtn.details.color).toBe("Yellow");
       expect(msgBtn.details.metadata).toEqual({ goal: "Empathy", score: 2 });
     }
+  });
+
+  it("still parses legacy [Log] bracket syntax and preserves exact 1:1 line tokens in analyzeTemplateCode", () => {
+    const raw = [
+      "// Session",
+      "- [Log] [Grey] Legacy Log | Event details",
+      "  ! [Purple] Nested Log | Child event",
+    ].join("\n");
+
+    const { template, lines, diagnostics } = analyzeTemplateCode(raw);
+    expect(diagnostics).toEqual([]);
+    expect(Object.keys(template.buttons)).toHaveLength(2);
+    expect(lines).toHaveLength(3);
+
+    const rawLines = raw.split("\n");
+    lines.forEach((line, idx) => {
+      expect(line.tokens.map((t) => t.text).join("")).toBe(rawLines[idx]);
+    });
+
+    expect(lines[1].button?.type).toBe("Log");
+    expect(lines[2].button?.type).toBe("Log");
+    expect(lines[2].depth).toBe(1);
   });
 
   it("supports layman plain-text input with colon Title: Speech and emits diagnostics for bad jumps", () => {

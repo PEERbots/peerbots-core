@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  analyzeTemplateCode,
   formatTemplateToCode,
   formatTemplateToJsonCode,
-  parseCodeToTemplate,
   type CodeDiagnostic,
   type CodeTokenKind,
   type FormattedCodeLine,
@@ -43,7 +43,7 @@ export interface CodeViewProps {
   defaultFormat?: "shorthand" | "json";
   /** Initial view mode (@default "inspect") */
   defaultMode?: "inspect" | "edit";
-  /** Whether hover/focus explainers are enabled in inspect mode (@default true) */
+  /** Whether hover/focus explainers are enabled (@default true) */
   defaultShowExplainer?: boolean;
   /** Additional container classes */
   className?: string;
@@ -60,7 +60,7 @@ const PTTF_TOKEN_CLASSES: Record<CodeTokenKind, string> = {
   title: "pb:text-gray-100 pb:font-medium",
   separator: "pb:text-gray-500",
   speech: "pb:text-sky-200 pb:italic",
-  metadata: "pb:text-purple-300 pb:text-xs",
+  metadata: "pb:text-purple-300",
   section: "pb:text-amber-400 pb:font-bold",
   comment: "pb:text-gray-400 pb:italic",
 };
@@ -221,6 +221,7 @@ export function CodeView({
     null,
   );
   const [hoveredTokenIdx, setHoveredTokenIdx] = useState<number | null>(null);
+  const [editorCursorLine, setEditorCursorLine] = useState<number>(1);
   const highlightPreRef = useRef<HTMLPreElement | null>(null);
 
   const formattedPttf = useMemo(
@@ -260,9 +261,10 @@ export function CodeView({
     diagnostics: CodeDiagnostic[];
     buttonCount: number;
     rootCount: number;
+    draftLines: NormalizedLineView[];
   } => {
     if (format === "shorthand") {
-      const res = parseCodeToTemplate(draftCode, {
+      const res = analyzeTemplateCode(draftCode, {
         id: template.id,
         title: template.title,
         description: template.description,
@@ -272,6 +274,7 @@ export function CodeView({
         diagnostics: res.diagnostics,
         buttonCount: Object.keys(res.template.buttons).length,
         rootCount: res.template.hierarchy.root.length,
+        draftLines: normalizePttfLines(res.lines),
       };
     }
 
@@ -289,6 +292,7 @@ export function CodeView({
           ],
           buttonCount: 0,
           rootCount: 0,
+          draftLines: [],
         };
       }
       const nextTemplate: Template = {
@@ -301,11 +305,13 @@ export function CodeView({
           root: Array.isArray(obj.hierarchy.root) ? obj.hierarchy.root : [],
         },
       };
+      const jsonFormatted = formatTemplateToJsonCode(nextTemplate);
       return {
         template: nextTemplate,
         diagnostics: [],
         buttonCount: Object.keys(nextTemplate.buttons).length,
         rootCount: nextTemplate.hierarchy.root.length,
+        draftLines: normalizeJsonLines(jsonFormatted.lines),
       };
     } catch (err) {
       return {
@@ -320,70 +326,67 @@ export function CodeView({
         ],
         buttonCount: 0,
         rootCount: 0,
+        draftLines: [],
       };
     }
   }, [draftCode, format, template]);
 
   const highlightedDraftLines = useMemo(() => {
     if (format === "json") {
-      return draftCode.split(/\r?\n/).map((line, i) => (
-        <div key={i}>
-          {line.length === 0
+      return draftCode.split(/\r?\n/).map((line, i) => {
+        const lineNum = i + 1;
+        const isCursorLine = lineNum === editorCursorLine;
+        return (
+          <div
+            key={i}
+            className={cn(
+              isCursorLine && "pb:bg-white/10 pb:rounded-xs",
+            )}
+          >
+            {line.length === 0
+              ? " "
+              : highlightJsonRaw(line).map((seg, j) => (
+                  <span key={j} className={seg.className}>
+                    {seg.text}
+                  </span>
+                ))}
+          </div>
+        );
+      });
+    }
+
+    return parsedDraft.draftLines.map((line, i) => {
+      const isCursorLine = line.lineNumber === editorCursorLine;
+      const isEmpty =
+        line.tokens.length === 0 ||
+        line.tokens.every((t) => t.text.length === 0);
+      return (
+        <div
+          key={i}
+          className={cn(
+            isCursorLine && "pb:bg-white/10 pb:rounded-xs",
+          )}
+        >
+          {isEmpty
             ? " "
-            : highlightJsonRaw(line).map((seg, j) => (
-                <span key={j} className={seg.className}>
-                  {seg.text}
+            : line.tokens.map((tok, j) => (
+                <span key={j} className={tok.className}>
+                  {tok.text}
                 </span>
               ))}
         </div>
-      ));
-    }
-    const parsed = parseCodeToTemplate(draftCode, {
-      id: template.id,
-      title: template.title,
-    });
-    const formatted = formatTemplateToCode(parsed.template, {
-      includeHeaderComment: false,
-    });
-    const rawLines = draftCode.split(/\r?\n/);
-    let btnLineIdx = 0;
-    return rawLines.map((raw, i) => {
-      const trimmed = raw.trim();
-      if (!trimmed) return <div key={i}> </div>;
-      if (trimmed.startsWith("//")) {
-        return (
-          <div key={i} className={PTTF_TOKEN_CLASSES.comment}>
-            {raw}
-          </div>
-        );
-      }
-      if (trimmed.startsWith("##")) {
-        return (
-          <div key={i} className={PTTF_TOKEN_CLASSES.section}>
-            {raw}
-          </div>
-        );
-      }
-      const matchLine = formatted.lines[btnLineIdx];
-      btnLineIdx += 1;
-      if (!matchLine) {
-        return (
-          <div key={i} className="pb:text-gray-200">
-            {raw}
-          </div>
-        );
-      }
-      // Preserve user's exact raw text while coloring key PTTF prefixes if simple,
-      // or render raw if edited mid-word so caret alignment never drifts!
-      return (
-        <div key={i} className="pb:text-gray-100">
-          {raw}
-        </div>
       );
     });
-  }, [draftCode, format, template.id, template.title]);
+  }, [draftCode, format, parsedDraft.draftLines, editorCursorLine]);
 
   const activeLine: NormalizedLineView | undefined = useMemo(() => {
+    if (mode === "edit") {
+      return (
+        parsedDraft.draftLines.find((l) => l.lineNumber === editorCursorLine) ??
+        parsedDraft.draftLines.find((l) => Boolean(l.button)) ??
+        parsedDraft.draftLines[0]
+      );
+    }
     if (hoveredLineNumber !== null) {
       return normalizedLines.find((l) => l.lineNumber === hoveredLineNumber);
     }
@@ -391,12 +394,26 @@ export function CodeView({
       return normalizedLines.find((l) => l.buttonId === selectedButtonId);
     }
     return normalizedLines.find((l) => Boolean(l.button)) ?? normalizedLines[0];
-  }, [normalizedLines, hoveredLineNumber, selectedButtonId]);
+  }, [
+    mode,
+    parsedDraft.draftLines,
+    editorCursorLine,
+    normalizedLines,
+    hoveredLineNumber,
+    selectedButtonId,
+  ]);
 
   const activeToken = useMemo(() => {
     if (!activeLine || hoveredTokenIdx === null) return undefined;
     return activeLine.tokens[hoveredTokenIdx];
   }, [activeLine, hoveredTokenIdx]);
+
+  const updateCursorLine = (el: HTMLTextAreaElement) => {
+    const pos = el.selectionStart ?? 0;
+    const line = el.value.slice(0, pos).split(/\r?\n/).length;
+    setEditorCursorLine(line);
+    setHoveredTokenIdx(null);
+  };
 
   const handleCopy = async () => {
     const textToCopy = mode === "edit" ? draftCode : activeCode;
@@ -431,6 +448,7 @@ export function CodeView({
     setFormat(nextFormat);
     setHoveredLineNumber(null);
     setHoveredTokenIdx(null);
+    setEditorCursorLine(1);
     setDraftCode(
       nextFormat === "shorthand" ? formattedPttf.code : formattedJson.code,
     );
@@ -538,37 +556,34 @@ export function CodeView({
             </div>
           )}
 
-          {mode === "inspect" && (
-            <>
-              <button
-                type="button"
-                onClick={() => setShowExplainer((prev) => !prev)}
-                aria-pressed={showExplainer}
-                className={cn(
-                  "pb:px-2.5 pb:py-1 pb:text-xs pb:font-medium pb:rounded-lg pb:border pb:transition-colors pb:cursor-pointer",
-                  showExplainer
-                    ? "pb:border-peerbots-teal pb:bg-peerbots-teal/10 pb:text-teal-800"
-                    : "pb:border-gray-300 pb:bg-white pb:text-gray-700 pb:hover:bg-gray-100",
-                )}
-              >
-                Explainer {showExplainer ? "On" : "Off"}
-              </button>
-              {format === "shorthand" && (
-                <button
-                  type="button"
-                  onClick={() => setShowAllAnchors((prev) => !prev)}
-                  aria-pressed={showAllAnchors}
-                  className={cn(
-                    "pb:px-2.5 pb:py-1 pb:text-xs pb:font-medium pb:rounded-lg pb:border pb:transition-colors pb:cursor-pointer",
-                    showAllAnchors
-                      ? "pb:border-amber-400 pb:bg-amber-50 pb:text-amber-900"
-                      : "pb:border-gray-300 pb:bg-white pb:text-gray-700 pb:hover:bg-gray-100",
-                  )}
-                >
-                  {showAllAnchors ? "Hide #anchors" : "Show #anchors"}
-                </button>
+          <button
+            type="button"
+            onClick={() => setShowExplainer((prev) => !prev)}
+            aria-pressed={showExplainer}
+            className={cn(
+              "pb:px-2.5 pb:py-1 pb:text-xs pb:font-medium pb:rounded-lg pb:border pb:transition-colors pb:cursor-pointer",
+              showExplainer
+                ? "pb:border-peerbots-teal pb:bg-peerbots-teal/10 pb:text-teal-800"
+                : "pb:border-gray-300 pb:bg-white pb:text-gray-700 pb:hover:bg-gray-100",
+            )}
+          >
+            Explainer {showExplainer ? "On" : "Off"}
+          </button>
+
+          {mode === "inspect" && format === "shorthand" && (
+            <button
+              type="button"
+              onClick={() => setShowAllAnchors((prev) => !prev)}
+              aria-pressed={showAllAnchors}
+              className={cn(
+                "pb:px-2.5 pb:py-1 pb:text-xs pb:font-medium pb:rounded-lg pb:border pb:transition-colors pb:cursor-pointer",
+                showAllAnchors
+                  ? "pb:border-amber-400 pb:bg-amber-50 pb:text-amber-900"
+                  : "pb:border-gray-300 pb:bg-white pb:text-gray-700 pb:hover:bg-gray-100",
               )}
-            </>
+            >
+              {showAllAnchors ? "Hide #anchors" : "Show #anchors"}
+            </button>
           )}
 
           {mode === "edit" && (
@@ -746,222 +761,313 @@ export function CodeView({
 
           {/* Interactive Hover Explainer & Live Button Preview */}
           {showExplainer && (
-            <aside
-              aria-label="Interactive code explainer"
-              className="lg:pb:col-span-5 pb:bg-gray-50 pb:border-t lg:pb:border-t-0 lg:pb:border-l pb:border-gray-200 pb:p-4 pb:flex pb:flex-col pb:gap-4"
-            >
-              <div className="pb:flex pb:items-center pb:justify-between">
-                <h3 className="pb:text-xs pb:font-bold pb:uppercase pb:tracking-wider pb:text-gray-500">
-                  What This Produces
-                </h3>
-                {activeLine && (
-                  <span className="pb:text-xs pb:text-gray-500">
-                    Line {activeLine.lineNumber}
-                    {format === "shorthand" ? ` • Depth ${activeLine.depth}` : ""}
-                  </span>
-                )}
-              </div>
-
-              {activeLine ? (
-                <>
-                  {activeLine.button && (
-                    <div className="pb:rounded-xl pb:bg-white pb:border pb:border-gray-200 pb:p-3 pb:flex pb:flex-col pb:items-center pb:gap-2">
-                      {activeLine.kind === "jump" && (
-                        <div className="pb:inline-flex pb:items-center pb:gap-1.5 pb:text-xs pb:font-medium pb:px-2.5 pb:py-0.5 pb:rounded-full pb:bg-cyan-50 pb:text-cyan-800 pb:border pb:border-cyan-200">
-                          <Icon name="arrowPath" className="pb:w-3.5 pb:h-3.5" />
-                          <span>
-                            {activeLine.isCycle
-                              ? `Loops back to ${activeLine.anchor}`
-                              : `Jumps to ${activeLine.anchor}`}
-                          </span>
-                        </div>
-                      )}
-
-                      <PeerbotsButton
-                        button={activeLine.button}
-                        logIcon={logIcon}
-                        emotionIcons={emotionIcons}
-                        emotionLabels={emotionLabels}
-                        onClick={() => {
-                          if (
-                            !disabled &&
-                            onButtonAction &&
-                            activeLine.buttonId &&
-                            activeLine.button
-                          ) {
-                            onButtonAction(
-                              activeLine.button,
-                              activeLine.buttonId,
-                              { type: "CLICK" },
-                            );
-                          }
-                        }}
-                      />
-
-                      {activeLine.button.type === "Message" ? (
-                        <p className="pb:text-xs pb:text-gray-600 pb:text-center">
-                          Robot speaks:{" "}
-                          <span className="pb:font-medium pb:text-gray-900">
-                            &ldquo;{activeLine.button.details.speech}&rdquo;
-                          </span>
-                        </p>
-                      ) : (
-                        <p className="pb:text-xs pb:text-gray-600 pb:text-center">
-                          Logs event
-                          {activeLine.button.details.details
-                            ? `: "${activeLine.button.details.details}"`
-                            : " (no robot speech)"}
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="pb:flex pb:flex-col pb:gap-1.5">
-                    <div className="pb:text-xs pb:font-semibold pb:text-gray-700">
-                      Syntax Breakdown
-                    </div>
-                    <ul className="pb:flex pb:flex-col pb:gap-1.5">
-                      {activeLine.tokens
-                        .filter(
-                          (t) =>
-                            t.kind !== "bullet" &&
-                            t.kind !== "separator" &&
-                            t.kind !== "punctuation" &&
-                            t.kind !== "indent",
-                        )
-                        .map((tok, idx) => {
-                          const originalIdx = activeLine.tokens.indexOf(tok);
-                          const isHighlighted = hoveredTokenIdx === originalIdx;
-                          return (
-                            <li
-                              key={idx}
-                              onMouseEnter={() => setHoveredTokenIdx(originalIdx)}
-                              onMouseLeave={() => setHoveredTokenIdx(null)}
-                              className={cn(
-                                "pb:flex pb:items-start pb:gap-2 pb:p-2 pb:rounded-lg pb:border pb:text-xs pb:transition-colors",
-                                isHighlighted
-                                  ? "pb:bg-peerbots-teal/10 pb:border-peerbots-teal"
-                                  : "pb:bg-white pb:border-gray-200",
-                              )}
-                            >
-                              <TokenColorSwatches
-                                labelColor={tok.labelColor}
-                                robotColor={tok.robotColor}
-                              />
-                              <div className="pb:min-w-0 pb:flex-1">
-                                <div className="pb:flex pb:items-center pb:gap-1.5">
-                                  <span className="pb:font-semibold pb:text-gray-900">
-                                    {TOKEN_BADGE_LABELS[tok.kind]}
-                                  </span>
-                                  <code className="pb:px-1 pb:py-0.5 pb:rounded pb:bg-gray-100 pb:text-gray-800 pb:font-mono pb:text-[11px] pb:truncate">
-                                    {tok.text.trim() || `${tok.text.length} spaces`}
-                                  </code>
-                                </div>
-                                <p className="pb:text-gray-600 pb:mt-0.5">
-                                  {tok.explanation}
-                                </p>
-                              </div>
-                            </li>
-                          );
-                        })}
-                    </ul>
-                  </div>
-                </>
-              ) : (
-                <p className="pb:text-xs pb:text-gray-500">
-                  Hover or focus any line on the left to preview its button and
-                  see what each symbol means.
-                </p>
-              )}
-            </aside>
+            <CodeExplainerAside
+              activeLine={activeLine}
+              format={format}
+              disabled={disabled}
+              logIcon={logIcon}
+              emotionIcons={emotionIcons}
+              emotionLabels={emotionLabels}
+              hoveredTokenIdx={hoveredTokenIdx}
+              onHoverToken={setHoveredTokenIdx}
+              onButtonAction={onButtonAction}
+              emptyHint="Hover or focus any line on the left to preview its button and see what each symbol means."
+            />
           )}
         </div>
       ) : (
-        /* Edit & Format Mode with Layered Syntax Highlighting */
-        <div className="pb:p-4 pb:flex pb:flex-col pb:gap-3">
-          <div className="pb:flex pb:flex-wrap pb:items-center pb:justify-between pb:gap-2 pb:text-xs pb:text-gray-600">
-            {format === "shorthand" ? (
-              <span>
-                Indent with 2 spaces for child buttons. Use{" "}
-                <code className="pb:px-1 pb:bg-gray-100 pb:rounded">[Label -&gt; Robot]</code>{" "}
-                for colors,{" "}
-                <code className="pb:px-1 pb:bg-gray-100 pb:rounded">:)</code> for
-                emotion, and{" "}
-                <code className="pb:px-1 pb:bg-gray-100 pb:rounded">#tag</code> /{" "}
-                <code className="pb:px-1 pb:bg-gray-100 pb:rounded">-&gt; #tag</code>{" "}
-                for loops.
-              </span>
-            ) : (
-              <span>
-                Edit raw <code className="pb:px-1 pb:bg-gray-100 pb:rounded">Template</code> JSON
-                (<code className="pb:px-1 pb:bg-gray-100 pb:rounded">buttons</code> &amp;{" "}
-                <code className="pb:px-1 pb:bg-gray-100 pb:rounded">hierarchy</code>). Click{" "}
-                <strong>Format</strong> to pretty-print.
-              </span>
+        /* Edit & Format Mode with Layered Syntax Highlighting + Live Explainer */
+        <div
+          className={cn(
+            "pb:grid pb:grid-cols-1",
+            showExplainer && "lg:pb:grid-cols-12",
+          )}
+        >
+          <div
+            className={cn(
+              "pb:p-4 pb:flex pb:flex-col pb:gap-3",
+              showExplainer ? "lg:pb:col-span-7" : "pb:col-span-1",
             )}
-            <span className="pb:font-medium pb:text-gray-700">
-              {parsedDraft.buttonCount} buttons • {parsedDraft.rootCount} root
-            </span>
-          </div>
-
-          <div className="pb:relative pb:rounded-lg pb:border pb:border-gray-300 pb:bg-[#1e222b] pb:overflow-hidden">
-            <pre
-              ref={highlightPreRef}
-              aria-hidden="true"
-              className="pb:pointer-events-none pb:m-0 pb:p-3 pb:font-mono pb:text-xs sm:pb:text-sm pb:leading-6 pb:whitespace-pre-wrap pb:break-words pb:overflow-hidden pb:min-h-[21rem]"
-            >
-              {highlightedDraftLines}
-            </pre>
-            <textarea
-              aria-label="Template code editor"
-              value={draftCode}
-              onChange={(e) => setDraftCode(e.target.value)}
-              onScroll={(e) => {
-                if (highlightPreRef.current) {
-                  highlightPreRef.current.scrollTop = e.currentTarget.scrollTop;
-                  highlightPreRef.current.scrollLeft = e.currentTarget.scrollLeft;
-                }
-              }}
-              rows={14}
-              spellCheck={false}
-              className="pb:absolute pb:inset-0 pb:w-full pb:h-full pb:resize-none pb:bg-transparent pb:text-transparent pb:caret-white pb:font-mono pb:text-xs sm:pb:text-sm pb:leading-6 pb:p-3 pb:whitespace-pre-wrap pb:break-words focus:pb:outline-none focus:pb:ring-2 focus:pb:ring-peerbots-teal"
-            />
-          </div>
-
-          {parsedDraft.diagnostics.length > 0 && (
-            <div
-              role="status"
-              aria-label="Code diagnostics"
-              className="pb:flex pb:flex-col pb:gap-1.5"
-            >
-              {parsedDraft.diagnostics.map((diag, idx) => (
-                <div
-                  key={idx}
-                  className={cn(
-                    "pb:flex pb:items-center pb:gap-2 pb:px-3 pb:py-1.5 pb:rounded-lg pb:text-xs pb:border",
-                    diag.severity === "error"
-                      ? "pb:bg-red-50 pb:border-red-200 pb:text-red-800"
-                      : "pb:bg-amber-50 pb:border-amber-200 pb:text-amber-900",
-                  )}
-                >
-                  <Icon
-                    name={
-                      diag.severity === "error"
-                        ? "xCircle"
-                        : "exclamationTriangle"
-                    }
-                    className="pb:w-4 pb:h-4 pb:shrink-0"
-                  />
-                  <span>
-                    <strong>Line {diag.lineNumber}:</strong> {diag.message}
-                  </span>
-                </div>
-              ))}
+          >
+            <div className="pb:flex pb:flex-wrap pb:items-center pb:justify-between pb:gap-2 pb:text-xs pb:text-gray-600">
+              {format === "shorthand" ? (
+                <span>
+                  Start a line with{" "}
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">!</code> for a Log
+                  button, indent 2 spaces for children, use{" "}
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">[Label -&gt; Robot]</code>{" "}
+                  for colors,{" "}
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">:)</code> for
+                  emotion, and{" "}
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">#tag</code> /{" "}
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">-&gt; #tag</code>{" "}
+                  for loops.
+                </span>
+              ) : (
+                <span>
+                  Edit raw <code className="pb:px-1 pb:bg-gray-100 pb:rounded">Template</code> JSON
+                  (<code className="pb:px-1 pb:bg-gray-100 pb:rounded">buttons</code> &amp;{" "}
+                  <code className="pb:px-1 pb:bg-gray-100 pb:rounded">hierarchy</code>). Click{" "}
+                  <strong>Format</strong> to pretty-print.
+                </span>
+              )}
+              <span className="pb:font-medium pb:text-gray-700">
+                {parsedDraft.buttonCount} buttons • {parsedDraft.rootCount} root
+              </span>
             </div>
+
+            <div className="pb:relative pb:rounded-lg pb:border pb:border-gray-300 pb:bg-[#1e222b] pb:overflow-hidden">
+              <pre
+                ref={highlightPreRef}
+                aria-hidden="true"
+                className="pb:pointer-events-none pb:m-0 pb:p-3 pb:font-mono pb:text-xs sm:pb:text-sm pb:leading-6 pb:whitespace-pre-wrap pb:break-words pb:overflow-hidden pb:min-h-[21rem]"
+              >
+                {highlightedDraftLines}
+              </pre>
+              <textarea
+                aria-label="Template code editor"
+                value={draftCode}
+                onChange={(e) => {
+                  setDraftCode(e.target.value);
+                  updateCursorLine(e.currentTarget);
+                }}
+                onClick={(e) => updateCursorLine(e.currentTarget)}
+                onKeyUp={(e) => updateCursorLine(e.currentTarget)}
+                onSelect={(e) => updateCursorLine(e.currentTarget)}
+                onFocus={(e) => updateCursorLine(e.currentTarget)}
+                onScroll={(e) => {
+                  if (highlightPreRef.current) {
+                    highlightPreRef.current.scrollTop = e.currentTarget.scrollTop;
+                    highlightPreRef.current.scrollLeft = e.currentTarget.scrollLeft;
+                  }
+                }}
+                rows={14}
+                spellCheck={false}
+                className="pb:absolute pb:inset-0 pb:w-full pb:h-full pb:resize-none pb:bg-transparent pb:text-transparent pb:caret-white pb:font-mono pb:text-xs sm:pb:text-sm pb:leading-6 pb:p-3 pb:whitespace-pre-wrap pb:break-words focus:pb:outline-none focus:pb:ring-2 focus:pb:ring-peerbots-teal"
+              />
+            </div>
+
+            {/* Live Cursor Status Bar */}
+            {showExplainer && activeLine && (
+              <div
+                aria-live="polite"
+                className="pb:px-3 pb:py-2 pb:rounded-lg pb:bg-[#1e222b] pb:font-sans pb:text-xs pb:text-gray-300 pb:flex pb:items-center pb:gap-2"
+              >
+                <span className="pb:px-1.5 pb:py-0.5 pb:rounded pb:bg-peerbots-teal/20 pb:text-peerbots-teal pb:font-semibold pb:shrink-0">
+                  {activeToken
+                    ? TOKEN_BADGE_LABELS[activeToken.kind]
+                    : `Line ${activeLine.lineNumber}`}
+                </span>
+                <span className="pb:truncate">
+                  {activeToken ? activeToken.explanation : activeLine.summary}
+                </span>
+              </div>
+            )}
+
+            {parsedDraft.diagnostics.length > 0 && (
+              <div
+                role="status"
+                aria-label="Code diagnostics"
+                className="pb:flex pb:flex-col pb:gap-1.5"
+              >
+                {parsedDraft.diagnostics.map((diag, idx) => (
+                  <div
+                    key={idx}
+                    className={cn(
+                      "pb:flex pb:items-center pb:gap-2 pb:px-3 pb:py-1.5 pb:rounded-lg pb:text-xs pb:border",
+                      diag.severity === "error"
+                        ? "pb:bg-red-50 pb:border-red-200 pb:text-red-800"
+                        : "pb:bg-amber-50 pb:border-amber-200 pb:text-amber-900",
+                    )}
+                  >
+                    <Icon
+                      name={
+                        diag.severity === "error"
+                          ? "xCircle"
+                          : "exclamationTriangle"
+                      }
+                      className="pb:w-4 pb:h-4 pb:shrink-0"
+                    />
+                    <span>
+                      <strong>Line {diag.lineNumber}:</strong> {diag.message}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {showExplainer && (
+            <CodeExplainerAside
+              activeLine={activeLine}
+              format={format}
+              disabled={disabled}
+              logIcon={logIcon}
+              emotionIcons={emotionIcons}
+              emotionLabels={emotionLabels}
+              hoveredTokenIdx={hoveredTokenIdx}
+              onHoverToken={setHoveredTokenIdx}
+              onButtonAction={onButtonAction}
+              emptyHint={
+                format === "json" && !parsedDraft.template
+                  ? "Fix the JSON syntax error to restore the live button preview and breakdown."
+                  : "Place your cursor on any line to preview its button and see what each symbol means."
+              }
+            />
           )}
         </div>
       )}
     </div>
+  );
+}
+
+function CodeExplainerAside({
+  activeLine,
+  format,
+  disabled,
+  logIcon,
+  emotionIcons,
+  emotionLabels,
+  hoveredTokenIdx,
+  onHoverToken,
+  onButtonAction,
+  emptyHint,
+}: {
+  activeLine: NormalizedLineView | undefined;
+  format: "shorthand" | "json";
+  disabled: boolean;
+  logIcon: IconName;
+  emotionIcons?: Partial<Record<PeerbotsEmotion, string | React.ReactNode>>;
+  emotionLabels?: Partial<Record<PeerbotsEmotion, string>>;
+  hoveredTokenIdx: number | null;
+  onHoverToken: (idx: number | null) => void;
+  onButtonAction?: PeerbotsButtonActionHandler;
+  emptyHint: string;
+}) {
+  return (
+    <aside
+      aria-label="Interactive code explainer"
+      className="lg:pb:col-span-5 pb:bg-gray-50 pb:border-t lg:pb:border-t-0 lg:pb:border-l pb:border-gray-200 pb:p-4 pb:flex pb:flex-col pb:gap-4"
+    >
+      <div className="pb:flex pb:items-center pb:justify-between">
+        <h3 className="pb:text-xs pb:font-bold pb:uppercase pb:tracking-wider pb:text-gray-500">
+          What This Produces
+        </h3>
+        {activeLine && (
+          <span className="pb:text-xs pb:text-gray-500">
+            Line {activeLine.lineNumber}
+            {format === "shorthand" ? ` • Depth ${activeLine.depth}` : ""}
+          </span>
+        )}
+      </div>
+
+      {activeLine ? (
+        <>
+          {activeLine.button && (
+            <div className="pb:rounded-xl pb:bg-white pb:border pb:border-gray-200 pb:p-3 pb:flex pb:flex-col pb:items-center pb:gap-2">
+              {activeLine.kind === "jump" && (
+                <div className="pb:inline-flex pb:items-center pb:gap-1.5 pb:text-xs pb:font-medium pb:px-2.5 pb:py-0.5 pb:rounded-full pb:bg-cyan-50 pb:text-cyan-800 pb:border pb:border-cyan-200">
+                  <Icon name="arrowPath" className="pb:w-3.5 pb:h-3.5" />
+                  <span>
+                    {activeLine.isCycle
+                      ? `Loops back to ${activeLine.anchor}`
+                      : `Jumps to ${activeLine.anchor}`}
+                  </span>
+                </div>
+              )}
+
+              <PeerbotsButton
+                button={activeLine.button}
+                logIcon={logIcon}
+                emotionIcons={emotionIcons}
+                emotionLabels={emotionLabels}
+                onClick={() => {
+                  if (
+                    !disabled &&
+                    onButtonAction &&
+                    activeLine.buttonId &&
+                    activeLine.button
+                  ) {
+                    onButtonAction(activeLine.button, activeLine.buttonId, {
+                      type: "CLICK",
+                    });
+                  }
+                }}
+              />
+
+              {activeLine.button.type === "Message" ? (
+                <p className="pb:text-xs pb:text-gray-600 pb:text-center">
+                  Robot speaks:{" "}
+                  <span className="pb:font-medium pb:text-gray-900">
+                    &ldquo;{activeLine.button.details.speech}&rdquo;
+                  </span>
+                </p>
+              ) : (
+                <p className="pb:text-xs pb:text-gray-600 pb:text-center">
+                  Logs event
+                  {activeLine.button.details.details
+                    ? `: "${activeLine.button.details.details}"`
+                    : " (no robot speech)"}
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="pb:flex pb:flex-col pb:gap-1.5">
+            <div className="pb:text-xs pb:font-semibold pb:text-gray-700">
+              Syntax Breakdown
+            </div>
+            <ul className="pb:flex pb:flex-col pb:gap-1.5">
+              {activeLine.tokens
+                .filter(
+                  (t) =>
+                    t.kind !== "bullet" &&
+                    t.kind !== "separator" &&
+                    t.kind !== "punctuation" &&
+                    t.kind !== "indent",
+                )
+                .map((tok, idx) => {
+                  const originalIdx = activeLine.tokens.indexOf(tok);
+                  const isHighlighted = hoveredTokenIdx === originalIdx;
+                  return (
+                    <li
+                      key={idx}
+                      onMouseEnter={() => onHoverToken(originalIdx)}
+                      onMouseLeave={() => onHoverToken(null)}
+                      className={cn(
+                        "pb:flex pb:items-start pb:gap-2 pb:p-2 pb:rounded-lg pb:border pb:text-xs pb:transition-colors",
+                        isHighlighted
+                          ? "pb:bg-peerbots-teal/10 pb:border-peerbots-teal"
+                          : "pb:bg-white pb:border-gray-200",
+                      )}
+                    >
+                      <TokenColorSwatches
+                        labelColor={tok.labelColor}
+                        robotColor={tok.robotColor}
+                      />
+                      <div className="pb:min-w-0 pb:flex-1">
+                        <div className="pb:flex pb:items-center pb:gap-1.5">
+                          <span className="pb:font-semibold pb:text-gray-900">
+                            {TOKEN_BADGE_LABELS[tok.kind]}
+                          </span>
+                          <code className="pb:px-1 pb:py-0.5 pb:rounded pb:bg-gray-100 pb:text-gray-800 pb:font-mono pb:text-[11px] pb:truncate">
+                            {tok.text.trim() || `${tok.text.length} spaces`}
+                          </code>
+                        </div>
+                        <p className="pb:text-gray-600 pb:mt-0.5">
+                          {tok.explanation}
+                        </p>
+                      </div>
+                    </li>
+                  );
+                })}
+            </ul>
+          </div>
+        </>
+      ) : (
+        <p className="pb:text-xs pb:text-gray-500">{emptyHint}</p>
+      )}
+    </aside>
   );
 }
 

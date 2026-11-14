@@ -29,7 +29,7 @@ Each non-empty line in PTTF represents either a **button definition**, a **jump 
 ### 2.1 Line Structure (Button Definition)
 
 ```text
-[indent][- ] [#anchor] [[Log]] [[LabelColor -> RobotColor]] [emotion] Title [| Speech] [{ metadata }]
+[indent][- | !] [#anchor] [[LabelColor -> RobotColor]] [emotion] Title [| Speech] [{ metadata }]
 ```
 
 Every part except `Title` is optional:
@@ -37,9 +37,8 @@ Every part except `Title` is optional:
 | Element | Syntax | Default if Omitted | Example |
 | :--- | :--- | :--- | :--- |
 | **Indent** | `2 spaces` per depth level | Depth `0` (`root`) | `  - Hello` (child of previous depth `0` line) |
-| **Bullet** | `- ` (optional on depth 0, standard on format) | — | `- Who can show me a sad face` |
+| **Bullet / Type** | `- ` for `Message`, `! ` for `Log` (optional `- ` on depth 0; legacy `[Log]` also accepted) | `"Message"` | `! Session started` |
 | **Anchor** | `#slug` (letters, digits, `-`, `_`) | Auto-generated only if needed for a jump | `#sad-q` |
-| **Type** | `[Log]` (case-insensitive) | `"Message"` | `[Log] Session started` |
 | **Colors** | `[LabelColor]` / `[-> RobotColor]` / `[LabelColor -> RobotColor]` | `Light Blue` for both | `[Green -> Blue]` |
 | **Emotion** | `:)`, `:(`, `:/`, `:o`, `:z` or `[Emotion]` | `"Neutral"` | `:)`, `[Concerned]` |
 | **Title & Speech** | `Title \| Speech` (or `Title: Speech` if no `\|`) | `speech = title` | `Greeting \| Hello there!` |
@@ -53,7 +52,7 @@ Peerbots buttons have **two** independent colors from the canonical 11-color pal
 - **`[Green]`** → Sets `labelColor = "Green"`, keeps robot `color = "Light Blue"`.
 - **`[-> Red]`** → Keeps `labelColor = "Light Blue"`, sets robot `color = "Red"`.
 - **`[Green -> Red]`** → Sets `labelColor = "Green"` and robot `color = "Red"`.
-- For `[Log]` buttons, `[Log, Grey]` or `[Log] [Grey]` sets `labelColor = "Grey"` (Log buttons have no robot face color).
+- For `!` (`Log`) buttons, `! [Grey] Session Marker` (or legacy `- [Log] [Grey]`) sets `labelColor = "Grey"` (Log buttons have no robot face color).
 
 Color names are matched case-insensitively during parsing and emitted in canonical Title Case during formatting.
 
@@ -108,7 +107,7 @@ Supported `PeerbotsEmotion` values:
   - [-> Light Blue] Light Blue
   - [-> Red] Red
   - [-> Purple] Purple
-- [Log] [Grey] Session Marker | Child initiated greeting
+! [Grey] Session Marker | Child initiated greeting
 ```
 
 ---
@@ -120,4 +119,4 @@ In `@peerbots/core`, `CodeView` (`src/ui/patterns/control-views/CodeView.tsx`) c
 - **Inspect Mode + Interactive Hover / Focus Explainer:** Hovering or focusing any line or token (in either Shorthand or JSON) displays:
   1. A **live `PeerbotsButton` preview** showing the exact button appearance (label color, robot face badge, emotion icon, or `Log` zap badge).
   2. A **plain-English breakdown** of each token on that line (e.g., *"Button color: Green • Robot face: Red"*, *"Nested inside 'Who can show me a sad face'"*, *"Jumps back to 'Who can show me a sad face' (loop)"*, or JSON key explanations).
-- **Edit & Format Mode:** Allows editing Shorthand or JSON directly with layered syntax highlighting, clicking **Format** to tidy/canonicalize it, viewing live parse diagnostics, and applying changes back to the `Template`.
+- **Edit & Format Mode with Live Explainability:** Allows editing Shorthand or JSON directly with full token-level syntax highlighting, cursor-line tracking that keeps the **live `PeerbotsButton` preview and Syntax Breakdown** updated as you type, clicking **Format** to tidy/canonicalize it, viewing live parse diagnostics, and applying changes back to the `Template`.
