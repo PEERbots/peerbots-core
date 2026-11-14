@@ -196,15 +196,23 @@ export const DefaultGrid: Story = {
 };
 
 export const MixedMessageAndLogButtons: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Showcases `Message` buttons (solid fill + top-right Robot Face badge) alongside Option 1 `Log` buttons (tinted surface + dashed border + top-left `zap` badge). Right-click any button to open the concise inline Edit Popover.",
+      },
+    },
+  },
   render: function Render() {
     const base = createButtonGridTemplate();
-    const mixedTemplate: Template = {
+    const initialTemplate: Template = {
       ...base,
       buttons: {
         ...base.buttons,
         "log-joint-attention": {
           type: "Log",
-          labelColor: "Grey",
+          labelColor: "Green",
           details: {
             title: "Log Joint Attention",
             details: "Child looked at robot and partner",
@@ -212,7 +220,7 @@ export const MixedMessageAndLogButtons: Story = {
         },
         "log-turn-complete": {
           type: "Log",
-          labelColor: "White",
+          labelColor: "Purple",
           details: {
             title: "Log Turn Complete",
             details: "Completed turn-taking prompt",
@@ -229,6 +237,7 @@ export const MixedMessageAndLogButtons: Story = {
         ],
       },
     };
+    const [template, setTemplate] = useState<Template>(initialTemplate);
     const [selectedId, setSelectedId] = useState<string | null>(
       "log-joint-attention",
     );
@@ -237,12 +246,13 @@ export const MixedMessageAndLogButtons: Story = {
     return (
       <div>
         <LastRobotPreview
-          button={selectedId ? mixedTemplate.buttons[selectedId] : undefined}
+          button={selectedId ? template.buttons[selectedId] : undefined}
           clickCount={clicks}
         />
         <ButtonView
-          template={mixedTemplate}
+          template={template}
           selectedButtonId={selectedId}
+          onTemplateChange={setTemplate}
           onButtonAction={(_btn, buttonId, action) => {
             if (action.type === "SELECT") setSelectedId(buttonId);
             if (action.type === "CLICK") setClicks((c) => c + 1);

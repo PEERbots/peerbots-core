@@ -11,6 +11,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { FlowView } from "../../flow/FlowView";
 import { moveButtonInHierarchy } from "../../templates/reordering";
 import type { Template } from "../../templates/types";
+import { BatchButtonEditPanel } from "../patterns/control-views/ButtonEditPopoverContent";
 import { ButtonView } from "../patterns/control-views/ButtonView";
 import { TableView } from "../patterns/control-views/TableView";
 import { applyControlActionToTemplate } from "../patterns/control-views/applyControlAction";
@@ -716,10 +717,155 @@ describe("Control Views Suite (ButtonView, TableView, FlowView)", () => {
         { type: "CLICK" },
       );
 
+      // Selection toolbar shows Edit and + Add, without a Delete button
+      expect(
+        screen.getByRole("button", { name: /Edit/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /delete/i }),
+      ).not.toBeInTheDocument();
+
       // Toggle layout direction from TB to LR via TabRadio
       const lrToggle = screen.getByRole("button", { name: /Left-Right/i });
       fireEvent.click(lrToggle);
       expect(onDirectionChange).toHaveBeenCalledWith("LR");
+    });
+
+    it("renders modeless Select/Pan drag toggle, + Message / + Log / Auto-Layout toolbar, and creates new root nodes", () => {
+      const onTemplateChange = vi.fn();
+      const template = makeRichTemplate();
+
+      render(
+        <FlowView
+          template={template}
+          onTemplateChange={onTemplateChange}
+          onButtonAction={() => undefined}
+        />,
+      );
+
+      // Option 1 Log button uses dashed border and zap badge SVG
+      const logBtn = screen.getByRole("button", { name: "Session Marker" });
+      expect(logBtn.className).toContain("pb:border-dashed");
+      expect(logBtn.querySelector("svg")).not.toBeNull();
+
+      // Modeless drag toggle (↖ Select / ✋ Pan)
+      const selectBtn = screen.getByRole("button", { name: /Select/i });
+      const panBtn = screen.getByRole("button", { name: /Pan/i });
+      expect(selectBtn).toHaveAttribute("aria-pressed", "true");
+      fireEvent.click(panBtn);
+      expect(panBtn).toHaveAttribute("aria-pressed", "true");
+
+      // + Add creates a new root Message button in template (no + Msg / + Log clutter)
+      expect(
+        screen.queryByRole("button", { name: "+ Message" }),
+      ).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: "+ Add" }));
+      expect(onTemplateChange).toHaveBeenCalledTimes(1);
+      const nextTemplate = onTemplateChange.mock.calls[0][0] as Template;
+      expect(Object.keys(nextTemplate.buttons).length).toBe(
+        Object.keys(template.buttons).length + 1,
+      );
+      expect(nextTemplate.hierarchy.root.length).toBe(
+        template.hierarchy.root.length + 1,
+      );
+    });
+  });
+
+  describe("ButtonView Right-Click Edit Popover & BatchButtonEditPanel", () => {
+    it("opens the concise Edit Popover on right-click in ButtonView using exact ControlLabels and Sync Speech with Title", () => {
+      const onButtonAction = vi.fn();
+      const onTemplateChange = vi.fn();
+      const template = makeRichTemplate();
+
+      render(
+        <ButtonView
+          template={template}
+          onTemplateChange={onTemplateChange}
+          onButtonAction={onButtonAction}
+        />,
+      );
+
+      const helloBtn = screen.getByRole("button", { name: "Hello" });
+      fireEvent.contextMenu(helloBtn);
+
+      // Exact ControlLabels: Title, Sync Speech with Title, Speech phrase, Label Color, Robot Color, Emotion
+      expect(screen.getByText("Sync Speech with Title")).toBeInTheDocument();
+      expect(screen.getByText("Label Color")).toBeInTheDocument();
+      expect(screen.getByText("Robot Color")).toBeInTheDocument();
+      expect(screen.getByText("Emotion")).toBeInTheDocument();
+      expect(
+        screen.getByRole("textbox", { name: "Speech phrase" }),
+      ).toBeInTheDocument();
+
+      const titleInput = screen.getByRole("textbox", { name: "Title" });
+      expect(titleInput).toHaveValue("Hello");
+      fireEvent.change(titleInput, { target: { value: "Warm Hello" } });
+
+      expect(onTemplateChange).toHaveBeenCalledTimes(1);
+      const updated = onTemplateChange.mock.calls[0][0] as Template;
+      expect(updated.buttons["btn-1"].details.title).toBe("Warm Hello");
+
+      // Toggle Sync Speech with Title ON and verify speech syncs to title
+      const syncSwitch = screen.getByRole("switch", {
+        name: /Sync/i,
+      });
+      fireEvent.click(syncSwitch);
+      expect(onTemplateChange).toHaveBeenCalledTimes(2);
+      const synced = onTemplateChange.mock.calls[1][0] as Template;
+      const syncedBtn = synced.buttons["btn-1"];
+      expect(syncedBtn.type).toBe("Message");
+      if (syncedBtn.type === "Message") {
+        expect(syncedBtn.details.speech).toBe("Hello");
+      }
+
+      const deleteBtn = screen.getByRole("button", { name: "Delete button" });
+      expect(deleteBtn).toHaveTextContent("Delete");
+      expect(deleteBtn.className).toContain("pb:bg-red-50");
+      expect(deleteBtn.className).toContain("pb:text-red-800");
+
+      fireEvent.click(
+        screen.getByRole("button", { name: "Close edit popover" }),
+      );
+      expect(
+        screen.queryByRole("textbox", { name: "Title" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("shows scoped controls in BatchButtonEditPanel for mixed Message + Log selection", () => {
+      const template = makeRichTemplate();
+      const onApplyLabelColor = vi.fn();
+      const onApplyFaceColor = vi.fn();
+      const onApplyEmotion = vi.fn();
+      const onClearSelection = vi.fn();
+
+      render(
+        <BatchButtonEditPanel
+          selectedButtons={[
+            { buttonId: "btn-1", button: template.buttons["btn-1"] },
+            { buttonId: "btn-log", button: template.buttons["btn-log"] },
+          ]}
+          onApplyLabelColor={onApplyLabelColor}
+          onApplyFaceColor={onApplyFaceColor}
+          onApplyEmotion={onApplyEmotion}
+          onClearSelection={onClearSelection}
+        />,
+      );
+
+      expect(screen.getByText("1 Message · 1 Log")).toBeInTheDocument();
+      expect(screen.getByText("(All 2)")).toBeInTheDocument();
+      expect(screen.getAllByText("(1 Message)")).toHaveLength(2);
+
+      fireEvent.click(
+        screen.getByRole("radio", { name: "Label Color Orange" }),
+      );
+      expect(onApplyLabelColor).toHaveBeenCalledWith("Orange");
+
+      fireEvent.click(
+        within(
+          screen.getByRole("radiogroup", { name: "Emotion" }),
+        ).getByRole("radio", { name: "Select emotion Surprised" }),
+      );
+      expect(onApplyEmotion).toHaveBeenCalledWith("Surprised");
     });
   });
 });

@@ -18,7 +18,7 @@ const meta: Meta<typeof FlowView> = {
     docs: {
       description: {
         component:
-          "Interactive conversation hierarchy graph editor for Peerbots templates powered by `@xyflow/react` and `@dagrejs/dagre` (imported from `@peerbots/core/flow`). Supports automatic Top-to-Bottom (`TB`) and Left-to-Right (`LR`) Dagre layout, node selection/triggering, and live parent→child connection editing.",
+          "Modeless interactive conversation hierarchy graph editor for Peerbots templates powered by `@xyflow/react` and `@dagrejs/dagre` (`@peerbots/core/flow`). Supports simultaneous two-finger scroll panning, pinch/Ctrl+scroll zoom, `Space`+drag panning, marquee/`Shift`-click multi-select with selection-aware Batch Editing, double-click / `✎ Edit` inline popovers, sticky manual drag coordinates, sibling drag-reordering, and converging DAG + unlinked orphan layout.",
       },
     },
   },
@@ -29,74 +29,93 @@ type Story = StoryObj<typeof FlowView>;
 
 const createConversationTreeTemplate = (): Template => ({
   id: "conversation-tree",
-  title: "Multi-Branch Check-In Tree",
-  description: "Branching follow-up prompts based on student response",
+  title: "Emotional Check-In (Message ↔ User Intent Flow)",
+  description:
+    "Branching conversation using Message (Robot Action) and Log (User Intent) nodes with converging follow-ups",
   buttons: {
-    "node-greet": {
+    "m-greet": {
       type: "Message",
       labelColor: "Light Blue",
       details: {
         title: "Morning Greeting",
-        speech: "Good morning! How are you feeling today?",
+        speech: "Good morning! How is your body feeling today?",
         color: "Yellow",
         emotion: "Happy",
       },
     },
-    "node-happy": {
+    "l-excited": {
+      type: "Log",
+      labelColor: "Green",
+      details: {
+        title: "Student: Excited",
+        details: "Smiles, bounces, or shares high energy",
+      },
+    },
+    "l-worried": {
+      type: "Log",
+      labelColor: "Purple",
+      details: {
+        title: "Student: Worried",
+        details: "Covers ears, looks away, or says nervous",
+      },
+    },
+    "l-break": {
+      type: "Log",
+      labelColor: "Orange",
+      details: {
+        title: "Requests a Break",
+        details: "Spontaneous root user intent at any point",
+      },
+    },
+    "m-game": {
       type: "Message",
       labelColor: "Green",
       details: {
-        title: "Feeling Great!",
-        speech: "Yay! Tell me one thing you are excited about today!",
+        title: "Start Listening Game",
+        speech: "Awesome energy! Let us pick our first game together.",
         color: "Green",
         emotion: "Surprised",
       },
     },
-    "node-tired": {
+    "m-breathe": {
       type: "Message",
-      labelColor: "Pink",
+      labelColor: "Blue",
       details: {
-        title: "Feeling Tired",
-        speech: "I feel sleepy sometimes too. Want a gentle stretch?",
-        color: "Pink",
-        emotion: "Sleepy",
-      },
-    },
-    "node-worried": {
-      type: "Message",
-      labelColor: "Purple",
-      details: {
-        title: "Feeling Worried",
-        speech: "Thank you for telling me. Let us take three calm breaths.",
+        title: "3 Calm Belly Breaths",
+        speech: "Thank you for telling me. Let us take three slow breaths.",
         color: "Blue",
         emotion: "Concerned",
       },
     },
-    "node-activity": {
+    "m-quiet": {
       type: "Message",
       labelColor: "Orange",
       details: {
-        title: "Start Activity",
-        speech: "Awesome! Let us pick our first game together.",
-        color: "Orange",
-        emotion: "Happy",
+        title: "Quiet Break Time",
+        speech: "Asking for a break is super smart! Take your time.",
+        color: "Pink",
+        emotion: "Sleepy",
       },
     },
-    "node-log": {
-      type: "Log",
-      labelColor: "Grey",
+    "m-praise": {
+      type: "Message",
+      labelColor: "Yellow",
       details: {
-        title: "Log Check-In",
-        details: "Recorded student check-in branch",
+        title: "Great Job!",
+        speech: "You did a wonderful job listening to your body!",
+        color: "Yellow",
+        emotion: "Happy",
       },
     },
   },
   hierarchy: {
-    root: ["node-greet"],
-    "node-greet": ["node-happy", "node-tired", "node-worried"],
-    "node-happy": ["node-activity"],
-    "node-tired": ["node-activity"],
-    "node-worried": ["node-log"],
+    root: ["m-greet", "l-break"],
+    "m-greet": ["l-excited", "l-worried"],
+    "l-excited": ["m-game"],
+    "l-worried": ["m-breathe"],
+    "l-break": ["m-quiet"],
+    "m-game": ["m-praise"],
+    "m-breathe": ["m-praise"],
   },
 });
 
@@ -144,7 +163,7 @@ function FlowRobotPreviewBanner({
           <div>
             <div className="pb:flex pb:items-center pb:gap-2">
               <span className="pb:text-xs pb:font-bold pb:text-gray-900">
-                Last Robot Action Preview:
+                Active Node:
               </span>
               <span
                 className="pb:rounded-md pb:border pb:border-black/15 pb:px-2 pb:py-0.5 pb:text-xs pb:font-semibold"
@@ -152,98 +171,35 @@ function FlowRobotPreviewBanner({
               >
                 {button.details.title}
               </span>
+              <span className="pb:text-[11px] pb:font-semibold pb:text-teal-800">
+                ({button.type})
+              </span>
             </div>
             <p className="pb:mt-0.5 pb:text-xs pb:text-gray-800">
               {button.type === "Message"
-                ? `Speech: "${button.details.speech}"`
-                : `Log details: "${button.details.details}"`}
+                ? `Robot speaks: "${button.details.speech}"`
+                : `User Intent / Log: "${button.details.details ?? ""}"`}
             </p>
           </div>
         </div>
       ) : (
         <span className="pb:text-xs pb:text-gray-700">
-          Click any graph node to preview its robot response.
+          Click a node to trigger, Shift/box-drag to multi-select, or double-click / click ✎ Edit to edit inline.
         </span>
       )}
-      <span className="pb:rounded-md pb:border pb:border-gray-200 pb:bg-white pb:px-2.5 pb:py-1 pb:font-mono pb:text-[11px] pb:text-gray-700">
+      <span className="pb:rounded-md pb:border pb:border-gray-200 pb:bg-white pb:px-2.5 pb:py-1 pb:font-mono pb:text-xs pb:text-gray-700">
         {lastEvent}
       </span>
     </div>
   );
 }
 
-export const TopToBottomHierarchy: Story = {
-  render: function Render() {
-    const [template, setTemplate] = useState<Template>(
-      createConversationTreeTemplate,
-    );
-    const [selectedId, setSelectedId] = useState<string | null>("node-greet");
-    const [lastEvent, setLastEvent] = useState<string>("Layout: TB");
-
-    return (
-      <div className="pb:w-full">
-        <FlowRobotPreviewBanner
-          button={selectedId ? template.buttons[selectedId] : undefined}
-          lastEvent={lastEvent}
-        />
-        <div className="pb:h-[500px] pb:w-full pb:rounded-xl pb:border pb:border-gray-200 pb:overflow-hidden">
-          <FlowView
-            template={template}
-            selectedButtonId={selectedId}
-            defaultDirection="TB"
-            onButtonAction={(_btn, buttonId, action) => {
-              setLastEvent(`${action.type} (${buttonId})`);
-              if (action.type === "SELECT" || action.type === "CLICK") {
-                setSelectedId(buttonId);
-                return;
-              }
-              setTemplate((prev) =>
-                applyControlActionToTemplate(prev, buttonId, action),
-              );
-            }}
-          />
-        </div>
-      </div>
-    );
-  },
-};
-
-export const LeftToRightHierarchy: Story = {
-  render: function Render() {
-    const [template] = useState<Template>(createConversationTreeTemplate);
-    const [selectedId, setSelectedId] = useState<string | null>("node-happy");
-    const [lastEvent, setLastEvent] = useState<string>("Layout: LR");
-
-    return (
-      <div className="pb:w-full">
-        <FlowRobotPreviewBanner
-          button={selectedId ? template.buttons[selectedId] : undefined}
-          lastEvent={lastEvent}
-        />
-        <div className="pb:h-[500px] pb:w-full pb:rounded-xl pb:border pb:border-gray-200 pb:overflow-hidden">
-          <FlowView
-            template={template}
-            selectedButtonId={selectedId}
-            defaultDirection="LR"
-            onButtonAction={(_btn, buttonId, action) => {
-              setLastEvent(`${action.type} (${buttonId})`);
-              if (action.type === "SELECT" || action.type === "CLICK") {
-                setSelectedId(buttonId);
-              }
-            }}
-          />
-        </div>
-      </div>
-    );
-  },
-};
-
-export const MultiBranchConversationTree: Story = {
+export const ModelessAuthoringFlow: Story = {
   parameters: {
     docs: {
       description: {
         story:
-          "Supports live node triggering plus connecting handles (`onAddConnection`) and deleting selected edges with Backspace/Delete (`onRemoveConnection`).",
+          "Modeless canvas supporting simultaneous trackpad scroll-pan, marquee/`Shift` multi-select (opening the Batch Edit Popover for 2+ nodes), double-click / `✎ Edit` inline editing, `+ Message`/`+ Log` creation, sticky drag positions, and edge wiring.",
       },
     },
   },
@@ -251,9 +207,9 @@ export const MultiBranchConversationTree: Story = {
     const [template, setTemplate] = useState<Template>(
       createConversationTreeTemplate,
     );
-    const [selectedId, setSelectedId] = useState<string | null>("node-greet");
+    const [selectedId, setSelectedId] = useState<string | null>("m-greet");
     const [lastEvent, setLastEvent] = useState<string>(
-      "Drag between handles to connect nodes",
+      "Box-drag or Shift+Click for Batch Edit · Double-click to Edit",
     );
 
     return (
@@ -262,11 +218,13 @@ export const MultiBranchConversationTree: Story = {
           button={selectedId ? template.buttons[selectedId] : undefined}
           lastEvent={lastEvent}
         />
-        <div className="pb:h-[540px] pb:w-full pb:rounded-xl pb:border pb:border-gray-200 pb:overflow-hidden">
+        <div className="pb:h-[580px] pb:w-full pb:rounded-xl pb:border pb:border-gray-200 pb:overflow-hidden">
           <FlowView
             template={template}
             selectedButtonId={selectedId}
             defaultDirection="TB"
+            showMiniMap
+            onTemplateChange={(nextTemplate) => setTemplate(nextTemplate)}
             onButtonAction={(_btn, buttonId, action) => {
               setLastEvent(`${action.type} (${buttonId})`);
               if (action.type === "SELECT" || action.type === "CLICK") {
@@ -276,32 +234,6 @@ export const MultiBranchConversationTree: Story = {
               setTemplate((prev) =>
                 applyControlActionToTemplate(prev, buttonId, action),
               );
-            }}
-            onAddConnection={(sourceId, targetId) => {
-              setLastEvent(`Connected ${sourceId} -> ${targetId}`);
-              setTemplate((prev) => {
-                const existing = prev.hierarchy[sourceId] ?? [];
-                if (existing.includes(targetId)) return prev;
-                return {
-                  ...prev,
-                  hierarchy: {
-                    ...prev.hierarchy,
-                    [sourceId]: [...existing, targetId],
-                  },
-                };
-              });
-            }}
-            onRemoveConnection={(sourceId, targetId) => {
-              setLastEvent(`Removed ${sourceId} -> ${targetId}`);
-              setTemplate((prev) => ({
-                ...prev,
-                hierarchy: {
-                  ...prev.hierarchy,
-                  [sourceId]: (prev.hierarchy[sourceId] ?? []).filter(
-                    (id) => id !== targetId,
-                  ),
-                },
-              }));
             }}
           />
         </div>
@@ -315,7 +247,7 @@ export const ReadOnlyFlow: Story = {
     <div className="pb:h-[480px] pb:w-full pb:rounded-xl pb:border pb:border-gray-200 pb:overflow-hidden">
       <FlowView
         template={createConversationTreeTemplate()}
-        selectedButtonId="node-greet"
+        selectedButtonId="m-greet"
         disabled
         onButtonAction={() => undefined}
       />
