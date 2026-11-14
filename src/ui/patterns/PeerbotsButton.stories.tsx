@@ -57,21 +57,19 @@ export const Variations: Story = {
         },
       },
       {
-        type: "Message",
-        labelColor: "Black",
+        type: "Log",
+        labelColor: "Green",
         details: {
-          title: "Rest Mode",
-          speech: "Time for a quick rest.",
-          color: "Grey",
-          emotion: "Sleepy",
+          title: "Student: Excited",
+          details: "Child smiled and initiated turn-taking",
         },
       },
       {
         type: "Log",
-        labelColor: "Green",
+        labelColor: "Orange",
         details: {
-          title: "Mark Milestone",
-          details: "Child initiated turn-taking independently",
+          title: "Requests a Break",
+          details: "Student tapped break card or asked for quiet time",
         },
       },
     ];
@@ -92,7 +90,7 @@ export const Variations: Story = {
           <span className="pb:text-xs pb:font-bold pb:text-gray-600 pb:block pb:mb-2">
             RTL Layout (Logical Corner Badge Positioning)
           </span>
-          <div className="pb:w-64">
+          <div className="pb:grid pb:grid-cols-2 pb:gap-3">
             <PeerbotsButton
               button={{
                 type: "Message",
@@ -105,6 +103,16 @@ export const Variations: Story = {
                 },
               }}
               selected
+            />
+            <PeerbotsButton
+              button={{
+                type: "Log",
+                labelColor: "Purple",
+                details: {
+                  title: "ملاحظة الجلسة",
+                  details: "استجابة الطالب",
+                },
+              }}
             />
           </div>
         </div>

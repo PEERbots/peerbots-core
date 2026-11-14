@@ -79,8 +79,12 @@ export interface PeerbotsButtonDisplayProps {
   onSyncSpeechChange?: (sync: boolean) => void;
   /** Alias for `onSyncSpeechChange` */
   onSyncTitleSpeechChange?: (sync: boolean) => void;
-  /** Optional batch callback invoked alongside `SAVE` actions during column Apply-All */
+  /** Optional batch callback invoked alongside `SAVE` actions during column Apply-All or FlowView batch edits */
   onBatchSave?: (updates: TableViewBatchSaveEntry[]) => void;
+  /** Optional full-template update callback used by right-click editing in `ButtonView` and in-graph authoring in `FlowView` */
+  onTemplateChange?: (nextTemplate: Template) => void;
+  /** Optional hierarchy update callback used by `FlowView` edge wiring and sibling drag-reordering */
+  onHierarchyChange?: (nextHierarchy: Template["hierarchy"]) => void;
 
   /** Controlled layout direction for `"Flow"` view */
   flowDirection?: FlowDirection;
@@ -92,6 +96,8 @@ export interface PeerbotsButtonDisplayProps {
   onAddConnection?: (sourceButtonId: string, targetButtonId: string) => void;
   /** Callback invoked when deleting a connection edge in `"Flow"` view */
   onRemoveConnection?: (sourceButtonId: string, targetButtonId: string) => void;
+  /** Shows the ReactFlow `<MiniMap>` in `"Flow"` view (@default false) */
+  showFlowMiniMap?: boolean;
 
   /** Disables button clicks, row edits, and flow graph edits */
   disabled?: boolean;
@@ -141,11 +147,14 @@ export function PeerbotsButtonDisplay({
   onSyncSpeechChange,
   onSyncTitleSpeechChange,
   onBatchSave,
+  onTemplateChange,
+  onHierarchyChange,
   flowDirection,
   defaultFlowDirection = "TB",
   onFlowDirectionChange,
   onAddConnection,
   onRemoveConnection,
+  showFlowMiniMap = false,
   disabled = false,
   onButtonAction,
   emotionIcons,
@@ -190,8 +199,10 @@ export function PeerbotsButtonDisplay({
         selectedButtonIds={selectedButtonIds ?? multiSelectedButtonIds}
         disabled={disabled}
         onButtonAction={onButtonAction}
+        onTemplateChange={onTemplateChange}
         emotionIcons={emotionIcons}
         emotionLabels={emotionLabels}
+        colorLabels={colorLabels}
         labels={labels}
         className={!showViewSwitcher ? className : undefined}
       />
@@ -236,14 +247,19 @@ export function PeerbotsButtonDisplay({
           template={template}
           selectedButtonId={selectedButtonId}
           onButtonAction={onButtonAction}
+          onTemplateChange={onTemplateChange}
+          onHierarchyChange={onHierarchyChange}
           onAddConnection={onAddConnection}
           onRemoveConnection={onRemoveConnection}
+          onBatchSave={onBatchSave}
           disabled={disabled}
           direction={flowDirection}
           defaultDirection={defaultFlowDirection}
           onDirectionChange={onFlowDirectionChange}
+          showMiniMap={showFlowMiniMap}
           emotionIcons={emotionIcons}
           emotionLabels={emotionLabels}
+          colorLabels={colorLabels}
           labels={labels}
           className={!showViewSwitcher ? className : undefined}
         />

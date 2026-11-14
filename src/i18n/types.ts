@@ -287,6 +287,56 @@ export interface ControlLabels {
   emptyTemplateTitle: string;
   /** Empty-state helper text when a template contains zero buttons. */
   emptyTemplateDescription: string;
+  /** Heading for the docked button editor panel. */
+  editButton?: string;
+  /** Empty-state text when no button is selected in the editor panel. */
+  noButtonSelected?: string;
+  /** Section label for sibling reorder controls in the button editor panel. */
+  reorderButton?: string;
+  /** Button label for moving a button earlier among siblings. */
+  moveBackwards?: string;
+  /** Button label for moving a button later among siblings. */
+  moveForwards?: string;
+  /** Heading for the template analytics panel. */
+  analyzeTemplate?: string;
+  /** Empty-state text when no template is selected in the analytics panel. */
+  noTemplateSelected?: string;
+  /** Section heading for title and speech metrics in the analytics panel. */
+  titleAndSpeech?: string;
+  /** Summary text for total button count (`"{count} buttons"`). */
+  buttonCount?: string;
+  /** Summary text for Message button count (`"{count} Messages"`). */
+  messagesDistribution?: string;
+  /** Summary text for Log button count (`"{count} Logs"`). */
+  logsDistribution?: string;
+  /** Label for the character-length threshold slider in template analytics. */
+  tooLongThreshold?: string;
+  /** Metric card heading for title character length. */
+  titleLength?: string;
+  /** Metric card heading for speech character length. */
+  speechLength?: string;
+  /** Formatted average metric (`"Avg: {val}"`). */
+  average?: string;
+  /** Formatted over-threshold count (`"{val} too long"`). */
+  tooLong?: string;
+  /** Reference line label on length histograms. */
+  tooLongLabel?: string;
+  /** Switch label for keeping Log button `details` synced with `title`. */
+  syncDetailsWithTitle?: string;
+  /** Tooltip for the button title field. */
+  buttonTitleTooltip?: string;
+  /** Tooltip for the robot speech phrase field. */
+  speechTooltip?: string;
+  /** Tooltip for the log event details field. */
+  detailsTooltip?: string;
+  /** Tooltip for the robot color selector. */
+  robotColorTooltip?: string;
+  /** Tooltip for the button label color selector. */
+  labelColorTooltip?: string;
+  /** Tooltip for the robot facial emotion selector. */
+  emotionTooltip?: string;
+  /** Tooltip for the analytics "too long" threshold slider. */
+  tooLongThresholdTooltip?: string;
 }
 
 /**
@@ -324,6 +374,31 @@ export const DEFAULT_CONTROL_LABELS: ControlLabels = {
   flowView: "Flow",
   emptyTemplateTitle: "No buttons in template",
   emptyTemplateDescription: "Add buttons to this template to preview and edit them.",
+  editButton: "Edit Button",
+  noButtonSelected: "Select a button to edit its properties.",
+  reorderButton: "Reorder",
+  moveBackwards: "Backwards",
+  moveForwards: "Forwards",
+  analyzeTemplate: "Analyze Template",
+  noTemplateSelected: "No template selected.",
+  titleAndSpeech: "Title & Speech",
+  buttonCount: "{count} buttons",
+  messagesDistribution: "{count} Messages",
+  logsDistribution: "{count} Logs",
+  tooLongThreshold: "Too long threshold (chars)",
+  titleLength: "Title Length",
+  speechLength: "Speech Length",
+  average: "Avg: {val}",
+  tooLong: "{val} too long",
+  tooLongLabel: "Too Long",
+  syncDetailsWithTitle: "Sync Details with Title",
+  buttonTitleTooltip: "The text that appears on the button.",
+  speechTooltip: "The text spoken by the robot.",
+  detailsTooltip: "Extra information that is logged.",
+  robotColorTooltip: "The color expressed by the robot (face or light color).",
+  labelColorTooltip: "The button's color.",
+  emotionTooltip: "The facial expression of the robot.",
+  tooLongThresholdTooltip: "The number of characters that counts as 'too long'.",
 };
 
 /**

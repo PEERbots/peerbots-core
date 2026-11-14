@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { RobotControlButton, Template } from "../../templates/types";
-import { templateToFlowElements } from "../flowHelpers";
+import {
+  addHierarchyConnection,
+  removeHierarchyConnection,
+  reorderHierarchySiblingsFromPositions,
+  templateToFlowElements,
+  toggleRootButtonInHierarchy,
+} from "../flowHelpers";
 
 const makeButton = (title: string): RobotControlButton => ({
   type: "Message",
@@ -79,7 +85,7 @@ describe("templateToFlowElements", () => {
     expect(nodes[0].type).toBe("peerbotsButton");
   });
 
-  it("uses straight edge type with arrow markers", () => {
+  it("uses uniform smoothstep edge type with arrow markers", () => {
     const template: Template = {
       title: "EdgeType",
       buttons: {
@@ -90,7 +96,7 @@ describe("templateToFlowElements", () => {
     };
     const { edges } = templateToFlowElements(template);
     expect(edges).toHaveLength(1);
-    expect(edges[0].type).toBe("straight");
+    expect(edges[0].type).toBe("smoothstep");
     expect(edges[0].markerEnd).toBeDefined();
   });
 
@@ -278,6 +284,117 @@ describe("templateToFlowElements", () => {
         expect(Number.isFinite(node.position.x)).toBe(true);
         expect(Number.isFinite(node.position.y)).toBe(true);
       }
+    });
+
+    it("preserves unlinked buttons in template.buttons as isUnlinked instead of dropping them", () => {
+      const template: Template = {
+        title: "UnlinkedSafety",
+        buttons: {
+          root1: makeButton("Root 1"),
+          orphan: makeButton("Orphan Button"),
+        },
+        hierarchy: { root: ["root1"] },
+      };
+
+      const { nodes, edges } = templateToFlowElements(template, "TB");
+      expect(edges).toHaveLength(0);
+      expect(nodes).toHaveLength(2);
+      const rootNode = nodes.find((n) => n.id === "root1")!;
+      const orphanNode = nodes.find((n) => n.id === "orphan")!;
+      expect(rootNode.data.isRoot).toBe(true);
+      expect(rootNode.data.isUnlinked).toBe(false);
+      expect(orphanNode.data.isRoot).toBe(false);
+      expect(orphanNode.data.isUnlinked).toBe(true);
+    });
+  });
+
+  describe("multi-reference DAGs, cycles, singleton packing, and authoring helpers", () => {
+    it("handles converging root branches, dual root+child membership, and retry loops cleanly", () => {
+      const template: Template = {
+        title: "ConvergingDAG",
+        buttons: {
+          r1: makeButton("Ask Question"),
+          r2: makeButton("Quick Praise"),
+          hint: makeButton("Give Hint"),
+          praise: makeButton("Great Job!"),
+        },
+        hierarchy: {
+          root: ["r1", "r2", "praise"],
+          r1: ["hint", "praise"],
+          hint: ["r1"], // retry cycle back to r1
+          r2: ["praise"], // second parent converging on praise
+        },
+      };
+
+      const { nodes, edges } = templateToFlowElements(template, "TB");
+      expect(nodes).toHaveLength(4);
+      expect(edges).toHaveLength(4);
+      const r1 = nodes.find((n) => n.id === "r1")!;
+      const praise = nodes.find((n) => n.id === "praise")!;
+      // Shared root+child button "praise" still flows downstream below its parent r1
+      expect(r1.position.y).toBeLessThan(praise.position.y);
+      expect(praise.data.isRoot).toBe(true);
+    });
+
+    it("packs many standalone root singletons into a bounded multi-column grid", () => {
+      const buttons: Record<string, RobotControlButton> = {};
+      const root: string[] = [];
+      for (let i = 1; i <= 8; i++) {
+        const id = `s-${i}`;
+        buttons[id] = makeButton(`Button ${i}`);
+        root.push(id);
+      }
+      const { nodes } = templateToFlowElements(
+        { title: "Grid", buttons, hierarchy: { root } },
+        "TB",
+      );
+      const uniqueY = new Set(nodes.map((n) => n.position.y));
+      expect(uniqueY.size).toBe(2); // 8 singletons in 4 columns = 2 rows
+    });
+
+    it("reorders only affected hierarchy sibling arrays by canvas axis on drag", () => {
+      const hierarchy = {
+        root: ["a", "b", "c"],
+        a: ["x", "y"],
+      };
+      const positions = new Map([
+        ["a", { x: 100, y: 0 }],
+        ["b", { x: 400, y: 0 }],
+        ["c", { x: 250, y: 0 }], // dragged c between a and b
+        ["x", { x: 0, y: 120 }],
+        ["y", { x: 200, y: 120 }],
+      ]);
+
+      const updated = reorderHierarchySiblingsFromPositions(
+        hierarchy,
+        ["c"],
+        positions,
+        "TB",
+      );
+      expect(updated?.root).toEqual(["a", "c", "b"]);
+      expect(updated?.a).toEqual(["x", "y"]);
+
+      expect(
+        reorderHierarchySiblingsFromPositions(hierarchy, ["c"], positions, "TB"),
+      ).not.toBeNull();
+    });
+
+    it("adds, removes, and toggles root connections immutably", () => {
+      const base = { root: ["a"], a: ["b"] };
+      const added = addHierarchyConnection(base, "a", "c");
+      expect(added.a).toEqual(["b", "c"]);
+      expect(addHierarchyConnection(added, "a", "a")).toBe(added); // self-loop blocked
+      expect(addHierarchyConnection(added, "a", "c")).toBe(added); // dup blocked
+
+      const removed = removeHierarchyConnection(added, "a", "b");
+      expect(removed.a).toEqual(["c"]);
+      const removedLast = removeHierarchyConnection(removed, "a", "c");
+      expect(removedLast.a).toBeUndefined();
+
+      const toggledOff = toggleRootButtonInHierarchy(base, "a");
+      expect(toggledOff.root).toEqual([]);
+      const toggledOn = toggleRootButtonInHierarchy(toggledOff, "a");
+      expect(toggledOn.root).toEqual(["a"]);
     });
   });
 });
