@@ -12,10 +12,10 @@ import type {
 } from "../../../templates/types";
 import { Button } from "../../forms/Button";
 import { EmotionSelector } from "../../forms/EmotionSelector";
+import { Field } from "../../forms/Field";
 import { Input } from "../../forms/Input";
 import { PeerbotsColorSelector } from "../../forms/PeerbotsColorSelector";
 import { Switch } from "../../forms/Switch";
-import { TextArea } from "../../forms/TextArea";
 import { Icon } from "../../foundations/Icon";
 import { PeerbotsButton } from "../PeerbotsButton";
 import { cn } from "../../utils";
@@ -60,9 +60,7 @@ export interface SingleButtonEditPanelProps {
  */
 export function SingleButtonEditPanel({
   button,
-  isRoot,
   onSave,
-  onToggleRoot,
   onAddChild,
   onDuplicate,
   onMove,
@@ -91,9 +89,13 @@ export function SingleButtonEditPanel({
   const syncSwitchId = useId();
   const [uncontrolledSync, setUncontrolledSync] = useState<boolean>(() => {
     if (defaultSyncSpeech !== undefined) return defaultSyncSpeech;
-    if (button.type !== "Message") return true;
+    if (button.type === "Message") {
+      return (
+        !button.details.speech || button.details.speech === button.details.title
+      );
+    }
     return (
-      !button.details.speech || button.details.speech === button.details.title
+      !button.details.details || button.details.details === button.details.title
     );
   });
   const isSyncControlled = syncSpeech !== undefined;
@@ -104,11 +106,22 @@ export function SingleButtonEditPanel({
       setUncontrolledSync(nextSync);
     }
     onSyncSpeechChange?.(nextSync);
-    if (nextSync && button.type === "Message") {
-      if (button.details.speech !== button.details.title) {
+    if (nextSync) {
+      if (
+        button.type === "Message" &&
+        button.details.speech !== button.details.title
+      ) {
         onSave({
           ...button,
           details: { ...button.details, speech: button.details.title },
+        });
+      } else if (
+        button.type === "Log" &&
+        button.details.details !== button.details.title
+      ) {
+        onSave({
+          ...button,
+          details: { ...button.details, details: button.details.title },
         });
       }
     }
@@ -158,19 +171,23 @@ export function SingleButtonEditPanel({
     } else {
       onSave({
         ...button,
-        details: { ...button.details, title },
+        details: {
+          ...button.details,
+          title,
+          ...(syncActive ? { details: title } : {}),
+        },
       });
     }
   };
 
   const handleSpeechOrDetailsChange = (value: string) => {
-    if (button.type === "Message") {
-      if (syncActive && value !== button.details.title) {
-        if (!isSyncControlled) {
-          setUncontrolledSync(false);
-        }
-        onSyncSpeechChange?.(false);
+    if (syncActive && value !== button.details.title) {
+      if (!isSyncControlled) {
+        setUncontrolledSync(false);
       }
+      onSyncSpeechChange?.(false);
+    }
+    if (button.type === "Message") {
       onSave({
         ...button,
         details: { ...button.details, speech: value },
@@ -246,22 +263,6 @@ export function SingleButtonEditPanel({
         </div>
 
         <div className="pb:flex pb:items-center pb:gap-1.5">
-          {onToggleRoot && isRoot !== undefined && (
-            <button
-              type="button"
-              onClick={() => onToggleRoot(!isRoot)}
-              aria-pressed={isRoot}
-              className={cn(
-                "pb:px-2 pb:py-1 pb:rounded-md pb:text-[11px] pb:font-semibold pb:border pb:cursor-pointer pb:transition-colors",
-                isRoot
-                  ? "pb:bg-teal-50 pb:border-teal-300 pb:text-teal-800"
-                  : "pb:bg-gray-50 pb:border-gray-200 pb:text-gray-600 pb:hover:bg-gray-100",
-              )}
-              title="Toggle whether this button is a top-level root entry"
-            >
-              Root
-            </button>
-          )}
           {onClose && (
             <button
               type="button"
@@ -276,46 +277,54 @@ export function SingleButtonEditPanel({
       </div>
 
       {/* Title */}
-      <label className="pb:flex pb:flex-col pb:gap-1">
-        <span className="pb:text-[11px] pb:font-semibold pb:text-gray-600">
-          {resolvedLabels.buttonTitle}
-        </span>
+      <Field
+        label={resolvedLabels.buttonTitle}
+        tooltip={resolvedLabels.buttonTitleTooltip}
+        labelPlacement="top"
+      >
         <Input
           size="sm"
           value={button.details.title}
           placeholder={resolvedLabels.buttonTitle}
           onChange={(e) => handleTitleChange(e.target.value)}
         />
-      </label>
+      </Field>
 
-      {/* Sync Speech with Title Switch (Messages) */}
-      {button.type === "Message" && (
-        <div className="pb:flex pb:items-center pb:justify-between pb:gap-2 pb:py-0.5">
-          <label
-            htmlFor={syncSwitchId}
-            className="pb:text-[11px] pb:font-semibold pb:text-gray-600 pb:cursor-pointer pb:select-none"
-          >
-            {resolvedLabels.syncSpeechWithTitle}
-          </label>
-          <Switch
-            id={syncSwitchId}
-            name="syncSpeechWithTitle"
-            aria-label={resolvedLabels.syncTitleSpeechAria}
-            checked={syncActive}
-            onChange={(checked) => handleToggleSync(Boolean(checked))}
-          />
-        </div>
-      )}
+      {/* Sync Speech/Details with Title Switch */}
+      <div className="pb:flex pb:items-center pb:justify-between pb:gap-2 pb:py-0.5">
+        <label
+          htmlFor={syncSwitchId}
+          className="pb:text-[11px] pb:font-semibold pb:text-gray-600 pb:cursor-pointer pb:select-none"
+        >
+          {button.type === "Message"
+            ? resolvedLabels.syncSpeechWithTitle
+            : (resolvedLabels.syncDetailsWithTitle ?? "Sync Details with Title")}
+        </label>
+        <Switch
+          id={syncSwitchId}
+          name="syncSpeechWithTitle"
+          aria-label={resolvedLabels.syncTitleSpeechAria}
+          checked={syncActive}
+          onChange={(checked) => handleToggleSync(Boolean(checked))}
+        />
+      </div>
 
       {/* Speech phrase or Event details */}
-      <label className="pb:flex pb:flex-col pb:gap-1">
-        <span className="pb:text-[11px] pb:font-semibold pb:text-gray-600">
-          {button.type === "Message"
+      <Field
+        label={
+          button.type === "Message"
             ? resolvedLabels.speech
-            : resolvedLabels.details}
-        </span>
-        <TextArea
-          rows={2}
+            : resolvedLabels.details
+        }
+        tooltip={
+          button.type === "Message"
+            ? resolvedLabels.speechTooltip
+            : resolvedLabels.detailsTooltip
+        }
+        labelPlacement="top"
+      >
+        <Input
+          size="sm"
           value={
             button.type === "Message"
               ? button.details.speech
@@ -327,29 +336,16 @@ export function SingleButtonEditPanel({
               : resolvedLabels.details
           }
           onChange={(e) => handleSpeechOrDetailsChange(e.target.value)}
-          className="pb:text-xs pb:min-h-[52px] pb:py-1.5"
         />
-      </label>
-
-      {/* Label Color */}
-      <div className="pb:flex pb:flex-col pb:gap-1">
-        <span className="pb:text-[11px] pb:font-semibold pb:text-gray-600">
-          {resolvedLabels.labelColor}
-        </span>
-        <PeerbotsColorSelector
-          size="sm"
-          selectedColor={button.labelColor}
-          ariaLabelPrefix={resolvedLabels.labelColor}
-          onColorSelect={(labelColor) => onSave({ ...button, labelColor })}
-        />
-      </div>
+      </Field>
 
       {/* Robot Color (own row, Messages only) */}
       {button.type === "Message" && (
-        <div className="pb:flex pb:flex-col pb:gap-1">
-          <span className="pb:text-[11px] pb:font-semibold pb:text-gray-600">
-            {resolvedLabels.robotColor}
-          </span>
+        <Field
+          label={resolvedLabels.robotColor}
+          tooltip={resolvedLabels.robotColorTooltip}
+          labelPlacement="top"
+        >
           <PeerbotsColorSelector
             size="sm"
             selectedColor={button.details.color}
@@ -361,15 +357,30 @@ export function SingleButtonEditPanel({
               })
             }
           />
-        </div>
+        </Field>
       )}
+
+      {/* Label Color */}
+      <Field
+        label={resolvedLabels.labelColor}
+        tooltip={resolvedLabels.labelColorTooltip}
+        labelPlacement="top"
+      >
+        <PeerbotsColorSelector
+          size="sm"
+          selectedColor={button.labelColor}
+          ariaLabelPrefix={resolvedLabels.labelColor}
+          onColorSelect={(labelColor) => onSave({ ...button, labelColor })}
+        />
+      </Field>
 
       {/* Emotion (own row, Messages only) */}
       {button.type === "Message" && (
-        <div className="pb:flex pb:flex-col pb:gap-1">
-          <span className="pb:text-[11px] pb:font-semibold pb:text-gray-600">
-            {resolvedLabels.emotion}
-          </span>
+        <Field
+          label={resolvedLabels.emotion}
+          tooltip={resolvedLabels.emotionTooltip}
+          labelPlacement="top"
+        >
           <EmotionSelector
             size="sm"
             selectedEmotion={button.details.emotion}
@@ -383,7 +394,7 @@ export function SingleButtonEditPanel({
               })
             }
           />
-        </div>
+        </Field>
       )}
 
       {/* Sibling reorder controls */}

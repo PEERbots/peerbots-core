@@ -321,6 +321,22 @@ export interface ControlLabels {
   tooLong?: string;
   /** Reference line label on length histograms. */
   tooLongLabel?: string;
+  /** Switch label for keeping Log button `details` synced with `title`. */
+  syncDetailsWithTitle?: string;
+  /** Tooltip for the button title field. */
+  buttonTitleTooltip?: string;
+  /** Tooltip for the robot speech phrase field. */
+  speechTooltip?: string;
+  /** Tooltip for the log event details field. */
+  detailsTooltip?: string;
+  /** Tooltip for the robot color selector. */
+  robotColorTooltip?: string;
+  /** Tooltip for the button label color selector. */
+  labelColorTooltip?: string;
+  /** Tooltip for the robot facial emotion selector. */
+  emotionTooltip?: string;
+  /** Tooltip for the analytics "too long" threshold slider. */
+  tooLongThresholdTooltip?: string;
 }
 
 /**
@@ -375,6 +391,14 @@ export const DEFAULT_CONTROL_LABELS: ControlLabels = {
   average: "Avg: {val}",
   tooLong: "{val} too long",
   tooLongLabel: "Too Long",
+  syncDetailsWithTitle: "Sync Details with Title",
+  buttonTitleTooltip: "The text that appears on the button.",
+  speechTooltip: "The text spoken by the robot.",
+  detailsTooltip: "Extra information that is logged.",
+  robotColorTooltip: "The color expressed by the robot (face or light color).",
+  labelColorTooltip: "The button's color.",
+  emotionTooltip: "The facial expression of the robot.",
+  tooLongThresholdTooltip: "The number of characters that counts as 'too long'.",
 };
 
 /**

@@ -57,7 +57,8 @@ function interpolateTemplate(
   values: Record<string, string | number>,
 ): string {
   return Object.entries(values).reduce(
-    (acc, [key, val]) => acc.replace(`{${key}}`, String(val)),
+    (acc, [key, val]) =>
+      acc.replace(`{{${key}}}`, String(val)).replace(`{${key}}`, String(val)),
     template,
   );
 }
@@ -249,6 +250,7 @@ export function TemplateAnalysisPanel({
           <Field
             label={resolvedLabels.tooLongThreshold ?? "Too long threshold (chars)"}
             labelPlacement="top"
+            tooltip={resolvedLabels.tooLongThresholdTooltip}
           >
             <div className="pb:flex pb:items-center pb:gap-2">
               <Slider
