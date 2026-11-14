@@ -14,7 +14,7 @@ import { applyControlActionToTemplate } from "./control-views/applyControlAction
 import type { PeerbotsControlAction } from "./control-views/types";
 
 const meta: Meta<typeof PeerbotsButtonDisplay> = {
-  title: "Patterns/Template Views/PeerbotsButtonDisplay",
+  title: "Templates/PeerbotsButtonDisplay",
   component: PeerbotsButtonDisplay,
   tags: ["autodocs"],
   parameters: {

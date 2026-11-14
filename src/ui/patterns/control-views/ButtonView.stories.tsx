@@ -9,7 +9,7 @@ import {
 import { ButtonView } from "./ButtonView";
 
 const meta: Meta<typeof ButtonView> = {
-  title: "Patterns/Template Views/ButtonView",
+  title: "Templates/Views/ButtonView",
   component: ButtonView,
   tags: ["autodocs"],
   parameters: {

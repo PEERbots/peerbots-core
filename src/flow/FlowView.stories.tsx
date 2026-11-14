@@ -10,7 +10,7 @@ import { applyControlActionToTemplate } from "../ui/patterns/control-views/apply
 import { FlowView } from "./FlowView";
 
 const meta: Meta<typeof FlowView> = {
-  title: "Patterns/Template Views/FlowView",
+  title: "Templates/Views/FlowView",
   component: FlowView,
   tags: ["autodocs"],
   parameters: {

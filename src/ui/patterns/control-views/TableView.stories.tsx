@@ -11,7 +11,7 @@ import { applyControlActionToTemplate } from "./applyControlAction";
 import type { PeerbotsControlAction } from "./types";
 
 const meta: Meta<typeof TableView> = {
-  title: "Patterns/Template Views/TableView",
+  title: "Templates/Views/TableView",
   component: TableView,
   tags: ["autodocs"],
   parameters: {

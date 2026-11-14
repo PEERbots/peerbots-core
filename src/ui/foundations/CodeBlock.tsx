@@ -55,7 +55,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
       )}
     >
       {/* Window Header Bar (Only in window variant) */}
-      {isWindow ? (
+      {isWindow && (
         <div className="pb:flex pb:items-center pb:justify-between pb:px-4 pb:py-3 pb:bg-[#161920] pb:border-b pb:border-gray-800/80">
           <div className="pb:flex pb:items-center pb:gap-2">
             <span className="pb:w-3 pb:h-3 pb:rounded-full pb:bg-red-500/80 pb:inline-block" />
@@ -96,53 +96,79 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
             )}
           </div>
         </div>
-      ) : (
-        /* Floating Copy & Language badge for default / simple variant */
-        (showCopyButton || language) && (
-          <div className="pb:absolute pb:top-3 pb:end-3 pb:flex pb:items-center pb:gap-2 pb:z-10">
-            {language && (
-              <span className="pb:text-[11px] pb:uppercase pb:font-bold pb:text-gray-200 pb:bg-gray-800/80 pb:px-2 pb:py-0.5 pb:rounded-md pb:select-none">
-                {language}
-              </span>
-            )}
-            {showCopyButton && (
-              <button
-                type="button"
-                onClick={handleCopy}
-                className="pb:p-1.5 pb:rounded-md pb:bg-gray-800/70 pb:hover:bg-gray-700 pb:text-gray-300 pb:hover:text-white pb:transition-all pb:duration-150 pb:cursor-pointer pb:border pb:border-gray-700/50"
-                aria-label="Copy code to clipboard"
-                title={copied ? "Copied!" : "Copy code"}
-              >
-                {copied ? (
-                  <Icon name="check" className="pb:w-4 pb:h-4 pb:text-peerbots-teal" />
-                ) : (
-                  <Icon name="clipboard" className="pb:w-4 pb:h-4" />
-                )}
-              </button>
-            )}
-          </div>
-        )
       )}
 
-      {/* Code Block Body */}
-      <div className="pb:p-4 sm:pb:p-5 pb:overflow-x-auto pb:text-sm sm:pb:text-base pb:leading-relaxed">
-        <pre className="pb:font-mono pb:m-0">
-          <code>
-            {showLineNumbers ? (
-              codeLines.map((line, idx) => (
-                <div key={idx} className="pb:table-row">
-                  <span className="pb:table-cell pb:pe-4 pb:text-end pb:select-none pb:text-gray-400 pb:text-xs">
-                    {idx + 1}
-                  </span>
-                  <span className="pb:table-cell">{line}</span>
-                </div>
-              ))
-            ) : (
-              code
+      {/* Code Block Body (+ non-overlapping controls for default / flat variants) */}
+      {isWindow ? (
+        <div className="pb:p-4 sm:pb:p-5 pb:overflow-x-auto pb:text-sm sm:pb:text-base pb:leading-relaxed">
+          <pre className="pb:font-mono pb:m-0">
+            <code>
+              {showLineNumbers ? (
+                codeLines.map((line, idx) => (
+                  <div key={idx} className="pb:table-row">
+                    <span className="pb:table-cell pb:pe-4 pb:text-end pb:select-none pb:text-gray-400 pb:text-xs">
+                      {idx + 1}
+                    </span>
+                    <span className="pb:table-cell">{line}</span>
+                  </div>
+                ))
+              ) : (
+                code
+              )}
+            </code>
+          </pre>
+        </div>
+      ) : (
+        <div className="pb:flex pb:items-start pb:justify-between pb:gap-3">
+          <div
+            className={cn(
+              "pb:flex-1 pb:min-w-0 pb:py-4 sm:pb:py-5 pb:ps-4 sm:pb:ps-5 pb:overflow-x-auto pb:text-sm sm:pb:text-base pb:leading-relaxed",
+              showCopyButton || language ? "pb:pe-1" : "pb:pe-4 sm:pb:pe-5",
             )}
-          </code>
-        </pre>
-      </div>
+          >
+            <pre className="pb:font-mono pb:m-0">
+              <code>
+                {showLineNumbers ? (
+                  codeLines.map((line, idx) => (
+                    <div key={idx} className="pb:table-row">
+                      <span className="pb:table-cell pb:pe-4 pb:text-end pb:select-none pb:text-gray-400 pb:text-xs">
+                        {idx + 1}
+                      </span>
+                      <span className="pb:table-cell">{line}</span>
+                    </div>
+                  ))
+                ) : (
+                  code
+                )}
+              </code>
+            </pre>
+          </div>
+          {(showCopyButton || language) && (
+            <div className="pb:shrink-0 pb:flex pb:items-center pb:gap-2 pb:pt-3 pb:pe-3">
+              {language && (
+                <span className="pb:text-[11px] pb:uppercase pb:font-bold pb:text-gray-200 pb:bg-gray-800/80 pb:px-2 pb:py-0.5 pb:rounded-md pb:select-none">
+                  {language}
+                </span>
+              )}
+              {showCopyButton && (
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  className="pb:p-1.5 pb:rounded-md pb:bg-gray-800/70 pb:hover:bg-gray-700 pb:text-gray-300 pb:hover:text-white pb:transition-all pb:duration-150 pb:cursor-pointer pb:border pb:border-gray-700/50"
+                  aria-label="Copy code to clipboard"
+                  title={copied ? "Copied!" : "Copy code"}
+                >
+                  {copied ? (
+                    <Icon name="check" className="pb:w-4 pb:h-4 pb:text-peerbots-teal" />
+                  ) : (
+                    <Icon name="clipboard" className="pb:w-4 pb:h-4" />
+                  )}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
