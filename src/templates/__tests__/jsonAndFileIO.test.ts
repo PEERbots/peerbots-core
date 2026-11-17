@@ -523,6 +523,17 @@ describe("parseTemplatePttf, serializeTemplatePttf, and .pttf auto-detection", (
     const fromCsv = parseTemplateText(EXAMPLE_MODERN_PALETTE_CSV);
     expect(fromCsv).toHaveLength(1);
     expect(Object.keys(fromCsv[0].buttons).length).toBeGreaterThan(0);
+
+    const multilineCsvWithDashLine = [
+      "title,speech,color,emotion",
+      '"Greeting","Hello!',
+      '- Nice to meet you!",Green,Happy',
+    ].join("\n");
+    const fromMultilineCsv = parseTemplateText(multilineCsvWithDashLine);
+    expect(fromMultilineCsv).toHaveLength(1);
+    expect(Object.values(fromMultilineCsv[0].buttons)[0].details.title).toBe(
+      "Greeting",
+    );
   });
 
   it("throws descriptive errors on invalid PTTF diagnostics or empty PTTF", () => {

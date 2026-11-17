@@ -768,21 +768,28 @@ export function parseTemplateCsv(
   return [normalized];
 }
 
+function isPttfSyntaxLine(line: string): boolean {
+  return (
+    line.startsWith("//") ||
+    line.startsWith("- ") ||
+    line.startsWith("! ") ||
+    line.startsWith("-> #") ||
+    line.startsWith("## ") ||
+    /^\[[^\]]+\]/.test(line)
+  );
+}
+
 function looksLikePttfText(trimmed: string): boolean {
   const lines = trimmed
     .split(/\r?\n/)
     .map((l) => l.trim())
     .filter((l) => l.length > 0);
   if (lines.length === 0) return false;
-  return lines.some(
-    (line) =>
-      line.startsWith("//") ||
-      line.startsWith("- ") ||
-      line.startsWith("! ") ||
-      line.startsWith("-> #") ||
-      line.startsWith("## ") ||
-      /^\[[^\]]+\]/.test(line),
-  );
+  const firstLine = lines[0];
+  if (firstLine.includes(",") && !isPttfSyntaxLine(firstLine)) {
+    return false;
+  }
+  return lines.some(isPttfSyntaxLine);
 }
 
 /**
