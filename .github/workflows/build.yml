@@ -13,7 +13,8 @@ concurrency:
 jobs:
   build:
     name: Build & Lint
-    runs-on: ubuntu-latest
+    # Pinned to ubuntu-24.04 because Playwright 1.58.2 does not support ubuntu26.04-x64 (ubuntu-latest).
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
