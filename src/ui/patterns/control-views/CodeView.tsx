@@ -1,10 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-  analyzeTemplateCode,
   formatTemplateToCode,
   formatTemplateToJsonCode,
   getCodeAutocompleteContext,
-  type CodeDiagnostic,
 } from "../../../templates/codeFormat";
 import type { PeerbotsEmotion, Template } from "../../../templates/types";
 import { EmptyState } from "../../feedback/EmptyState";
@@ -20,10 +18,10 @@ import {
   adaptAutocompleteContext,
   adaptJsonLines,
   adaptPttfLines,
-  highlightJsonRaw,
   type ExplainedPttfLine,
 } from "./code-view/pttfAdapter";
 import { PttfButtonPreview } from "./code-view/PttfButtonPreview";
+import { useCodeViewDraft } from "./code-view/useCodeViewDraft";
 import type { PeerbotsButtonActionHandler } from "./types";
 
 export interface CodeViewProps {
@@ -151,214 +149,15 @@ export function CodeView({
     }
   };
 
-  const parsedDraft = useMemo((): {
-    template: Template | null;
-    diagnostics: CodeDiagnostic[];
-    buttonCount: number;
-    rootCount: number;
-    draftLines: ExplainedPttfLine[];
-  } => {
-    if (format === "shorthand") {
-      const res = analyzeTemplateCode(draftCode, {
-        id: template.id,
-        title: template.title,
-        description: template.description,
-      });
-      return {
-        template: res.template,
-        diagnostics: res.diagnostics,
-        buttonCount: Object.keys(res.template.buttons).length,
-        rootCount: res.template.hierarchy.root.length,
-        draftLines: adaptPttfLines(res.lines, selectedButtonId),
-      };
-    }
-
-    try {
-      const obj = JSON.parse(draftCode) as Partial<Template>;
-      if (!obj || typeof obj !== "object" || !obj.buttons || !obj.hierarchy) {
-        return {
-          template: null,
-          diagnostics: [
-            {
-              lineNumber: 1,
-              severity: "error",
-              message: 'JSON must include "buttons" and "hierarchy" objects.',
-            },
-          ],
-          buttonCount: 0,
-          rootCount: 0,
-          draftLines: [],
-        };
-      }
-      const nextTemplate: Template = {
-        ...template,
-        ...obj,
-        title: typeof obj.title === "string" ? obj.title : template.title,
-        buttons: obj.buttons,
-        hierarchy: {
-          ...obj.hierarchy,
-          root: Array.isArray(obj.hierarchy.root) ? obj.hierarchy.root : [],
-        },
-      };
-      const jsonFormatted = formatTemplateToJsonCode(nextTemplate);
-      return {
-        template: nextTemplate,
-        diagnostics: [],
-        buttonCount: Object.keys(nextTemplate.buttons).length,
-        rootCount: nextTemplate.hierarchy.root.length,
-        draftLines: adaptJsonLines(jsonFormatted.lines, selectedButtonId),
-      };
-    } catch (err) {
-      return {
-        template: null,
-        diagnostics: [
-          {
-            lineNumber: 1,
-            severity: "error",
-            message:
-              err instanceof Error
-                ? `Invalid JSON: ${err.message}`
-                : "Invalid JSON.",
-          },
-        ],
-        buttonCount: 0,
-        rootCount: 0,
-        draftLines: [],
-      };
-    }
-  }, [draftCode, format, template, selectedButtonId]);
-
-  const diagnosticsByLine = useMemo(() => {
-    const map = new Map<number, CodeDiagnostic[]>();
-    for (const diag of parsedDraft.diagnostics) {
-      const existing = map.get(diag.lineNumber) ?? [];
-      existing.push(diag);
-      map.set(diag.lineNumber, existing);
-    }
-    return map;
-  }, [parsedDraft.diagnostics]);
-
-  const highlightedDraftLines = useMemo(() => {
-    if (format === "json") {
-      return draftCode.split(/\r?\n/).map((line, i) => {
-        const lineNum = i + 1;
-        const isCursorLine = lineNum === editorCursorLine;
-        const matchedLine = parsedDraft.draftLines[i];
-        const canUseStructuredTokens =
-          matchedLine &&
-          matchedLine.tokens.map((t) => t.text).join("") === line;
-        const isSelected = Boolean(matchedLine?.isSelected);
-        const lineDiags = diagnosticsByLine.get(lineNum) ?? [];
-        const hasError = lineDiags.some((d) => d.severity === "error");
-        const hasWarning = lineDiags.some((d) => d.severity === "warning");
-
-        return (
-          <div
-            key={i}
-            className={cn(
-              "pb:rounded pb:px-1",
-              isCursorLine
-                ? hasError
-                  ? "pb:bg-red-500/15 pb:ring-1 pb:ring-red-400/70"
-                  : hasWarning
-                    ? "pb:bg-amber-500/15 pb:ring-1 pb:ring-amber-400/70"
-                    : "pb:bg-white/10 pb:ring-1 pb:ring-peerbots-teal/60"
-                : hasError
-                  ? "pb:bg-red-500/10"
-                  : hasWarning
-                    ? "pb:bg-amber-500/10"
-                    : isSelected
-                      ? "pb:bg-peerbots-teal/15"
-                      : "",
-            )}
-          >
-            {line.length === 0
-              ? " "
-              : canUseStructuredTokens
-                ? matchedLine.tokens.map((tok, j) => {
-                    const isTokenHovered =
-                      isCursorLine && hoveredTokenIdx === j;
-                    return (
-                      <span
-                        key={j}
-                        className={cn(
-                          tok.className,
-                          "pb:rounded-xs pb:transition-colors",
-                          isTokenHovered &&
-                            "pb:bg-white/20 pb:underline pb:decoration-peerbots-teal pb:underline-offset-4",
-                        )}
-                      >
-                        {tok.text}
-                      </span>
-                    );
-                  })
-                : highlightJsonRaw(line).map((seg, j) => (
-                    <span key={j} className={seg.className}>
-                      {seg.text}
-                    </span>
-                  ))}
-          </div>
-        );
-      });
-    }
-
-    return parsedDraft.draftLines.map((line, i) => {
-      const isCursorLine = line.lineNumber === editorCursorLine;
-      const lineDiags = diagnosticsByLine.get(line.lineNumber) ?? [];
-      const hasError = lineDiags.some((d) => d.severity === "error");
-      const hasWarning = lineDiags.some((d) => d.severity === "warning");
-      const isEmpty =
-        line.tokens.length === 0 ||
-        line.tokens.every((t) => t.text.length === 0);
-      return (
-        <div
-          key={i}
-          className={cn(
-            "pb:rounded pb:px-1",
-            isCursorLine
-              ? hasError
-                ? "pb:bg-red-500/15 pb:ring-1 pb:ring-red-400/70"
-                : hasWarning
-                  ? "pb:bg-amber-500/15 pb:ring-1 pb:ring-amber-400/70"
-                  : "pb:bg-white/10 pb:ring-1 pb:ring-peerbots-teal/60"
-              : hasError
-                ? "pb:bg-red-500/10"
-                : hasWarning
-                  ? "pb:bg-amber-500/10"
-                  : line.isSelected
-                    ? "pb:bg-peerbots-teal/15"
-                    : "",
-          )}
-        >
-          {isEmpty
-            ? " "
-            : line.tokens.map((tok, j) => {
-                const isTokenHovered = isCursorLine && hoveredTokenIdx === j;
-                return (
-                  <span
-                    key={j}
-                    className={cn(
-                      tok.className,
-                      "pb:rounded-xs pb:transition-colors",
-                      isTokenHovered &&
-                        "pb:bg-white/20 pb:underline pb:decoration-peerbots-teal pb:underline-offset-4",
-                    )}
-                  >
-                    {tok.text}
-                  </span>
-                );
-              })}
-        </div>
-      );
+  const { parsedDraft, diagnosticsByLine, highlightedDraftLines } =
+    useCodeViewDraft({
+      draftCode,
+      format,
+      template,
+      selectedButtonId,
+      editorCursorLine,
+      hoveredTokenIdx,
     });
-  }, [
-    draftCode,
-    format,
-    parsedDraft.draftLines,
-    diagnosticsByLine,
-    editorCursorLine,
-    hoveredTokenIdx,
-  ]);
 
   const activeLine: ExplainedPttfLine | undefined = useMemo(() => {
     if (isEditable) {
