@@ -931,3 +931,58 @@ export async function parseTemplateFile(
   const content = await readFileAsText(file);
   return parseTemplateText(content, file.name, options);
 }
+
+function triggerBrowserDownload(
+  content: string,
+  mimeType: string,
+  fileName: string,
+): void {
+  if (typeof document === "undefined" || typeof Blob === "undefined") {
+    return;
+  }
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Triggers a browser file download of a canonical `Template` serialized as pretty-printed JSON.
+ */
+export function exportTemplateAsJson<TRef>(
+  template: Template<TRef>,
+  fileName?: string,
+): void {
+  const safeBase = (template.title || "template").trim() || "template";
+  const resolvedName = fileName?.trim()
+    ? fileName.trim().endsWith(".json")
+      ? fileName.trim()
+      : `${fileName.trim()}.json`
+    : `${safeBase}.json`;
+  const json = serializeTemplateJson(template, true);
+  triggerBrowserDownload(json, "application/json", resolvedName);
+}
+
+/**
+ * Converts a canonical `Template` to a `Palette` and triggers a browser file download as CSV.
+ */
+export function exportTemplateAsPaletteCsv(
+  template: Template,
+  options?: SerializePaletteCsvOptions & { fileName?: string },
+): void {
+  const palette = convertTemplateToPalette(template);
+  const csv = convertPaletteToCSV(palette, options);
+  const safeBase = (palette.title || "palette").trim() || "palette";
+  const resolvedName = options?.fileName?.trim()
+    ? options.fileName.trim().endsWith(".csv")
+      ? options.fileName.trim()
+      : `${options.fileName.trim()}.csv`
+    : `${safeBase}_palette.csv`;
+  triggerBrowserDownload(csv, "text/csv;charset=utf-8;", resolvedName);
+}
+

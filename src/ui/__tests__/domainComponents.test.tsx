@@ -18,8 +18,9 @@ import {
   PeerbotsEmotionIcon,
 } from "../forms/EmotionSelector";
 import { LanguageSelector } from "../forms/LanguageSelector";
-import { SearchInput } from "../forms";
+import { FieldGroup, SearchInput } from "../forms";
 import { VoiceSelector } from "../forms/VoiceSelector";
+import { PageHeader } from "../layout";
 import { PeerbotsButton } from "../patterns/PeerbotsButton";
 import { PeerbotsButtonDisplay } from "../patterns/PeerbotsButtonDisplay";
 import {
@@ -317,6 +318,20 @@ describe("Domain UI Components", () => {
       );
       expect(sidebarCollapsedHtml).toContain("EN");
       expect(sidebarCollapsedHtml).toContain("β");
+      expect(sidebarCollapsedHtml).toContain("Beta");
+
+      const sidebarCollapsedNewHtml = renderToString(
+        <LanguageSelector
+          value="es"
+          variant="sidebar"
+          isCollapsed
+          badge="new"
+          onChange={() => undefined}
+        />,
+      );
+      expect(sidebarCollapsedNewHtml).toContain("ES");
+      expect(sidebarCollapsedNewHtml).toContain("★");
+      expect(sidebarCollapsedNewHtml).toContain("New");
     });
 
     it("handles language selection across default and popover menu variants", () => {
@@ -754,4 +769,43 @@ describe("Domain UI Components", () => {
       expect(onSearch).toHaveBeenLastCalledWith("");
     });
   });
+
+  describe("FieldGroup & PageHeader", () => {
+    it("renders FieldGroup with role='group', aria-labelledby, icon, and description", () => {
+      render(
+        <FieldGroup
+          id="custom-fg"
+          label="Speech Rate"
+          icon={<span data-testid="fg-icon">*</span>}
+          description="Speed multiplier"
+        >
+          <input aria-label="Slider input" defaultValue="1" />
+        </FieldGroup>,
+      );
+      const group = screen.getByRole("group", { name: /Speech Rate/i });
+      expect(group).toHaveAttribute("aria-labelledby", "custom-fg");
+      expect(screen.getByTestId("fg-icon")).toBeInTheDocument();
+      expect(screen.getByText("Speed multiplier")).toBeInTheDocument();
+    });
+
+    it("renders PageHeader with semantic h1, optional description, and actions", () => {
+      render(
+        <PageHeader
+          title="Template Manager"
+          description="Create and organize robot templates"
+          actions={<button type="button">New Template</button>}
+        />,
+      );
+      expect(
+        screen.getByRole("heading", { level: 1, name: "Template Manager" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("Create and organize robot templates"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "New Template" }),
+      ).toBeInTheDocument();
+    });
+  });
 });
+

@@ -2,6 +2,7 @@ export * from "./Card";
 export * from "./Accordion";
 export * from "./BasePanel";
 export * from "./Collapsible";
+export * from "./PageHeader";
 export * from "./Separator";
 export * from "./SettingsPanel";
 export * from "./Table";

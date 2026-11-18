@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   EXAMPLE_AGENT_FLAT_TEMPLATE_JSON,
   EXAMPLE_LEGACY_PALETTE_CSV,
@@ -12,6 +12,8 @@ import {
   blankTemplate,
   convertPaletteToCSV,
   convertTemplateToPalette,
+  exportTemplateAsJson,
+  exportTemplateAsPaletteCsv,
   extractMessageButtons,
   parsePaletteCsv,
   parseTemplateFile,
@@ -560,4 +562,68 @@ describe("parseTemplatePttf, serializeTemplatePttf, and .pttf auto-detection", (
     expect(parsed[0].title).toBe(EXAMPLE_STARTER_SOCIAL_TEMPLATE.title);
   });
 });
+
+describe("exportTemplateAsJson & exportTemplateAsPaletteCsv browser download helpers", () => {
+  it("triggers anchor download with .json and .csv filenames and revokes object URLs", () => {
+    const createObjectURL = vi
+      .spyOn(URL, "createObjectURL")
+      .mockReturnValue("blob:mock-url");
+    const revokeObjectURL = vi
+      .spyOn(URL, "revokeObjectURL")
+      .mockImplementation(() => undefined);
+
+    const downloads: { href: string; download: string }[] = [];
+    const origCreateElement = document.createElement.bind(document);
+    const createElementSpy = vi
+      .spyOn(document, "createElement")
+      .mockImplementation(((tagName: string) => {
+        const el = origCreateElement(tagName);
+        if (tagName.toLowerCase() === "a") {
+          vi.spyOn(el as HTMLAnchorElement, "click").mockImplementation(() => {
+            downloads.push({
+              href: (el as HTMLAnchorElement).href,
+              download: (el as HTMLAnchorElement).download,
+            });
+          });
+        }
+        return el;
+      }) as typeof document.createElement);
+
+    try {
+      exportTemplateAsJson(EXAMPLE_STARTER_SOCIAL_TEMPLATE);
+      exportTemplateAsJson(EXAMPLE_STARTER_SOCIAL_TEMPLATE, "custom-name");
+      exportTemplateAsPaletteCsv(EXAMPLE_STARTER_SOCIAL_TEMPLATE);
+      exportTemplateAsPaletteCsv(EXAMPLE_STARTER_SOCIAL_TEMPLATE, {
+        format: "legacy",
+        fileName: "legacy-export.csv",
+      });
+
+      expect(downloads).toEqual([
+        {
+          href: "blob:mock-url",
+          download: `${EXAMPLE_STARTER_SOCIAL_TEMPLATE.title}.json`,
+        },
+        {
+          href: "blob:mock-url",
+          download: "custom-name.json",
+        },
+        {
+          href: "blob:mock-url",
+          download: `${EXAMPLE_STARTER_SOCIAL_TEMPLATE.title}_palette.csv`,
+        },
+        {
+          href: "blob:mock-url",
+          download: "legacy-export.csv",
+        },
+      ]);
+      expect(createObjectURL).toHaveBeenCalledTimes(4);
+      expect(revokeObjectURL).toHaveBeenCalledTimes(4);
+    } finally {
+      createElementSpy.mockRestore();
+      createObjectURL.mockRestore();
+      revokeObjectURL.mockRestore();
+    }
+  });
+});
+
 
