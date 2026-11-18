@@ -782,6 +782,31 @@ describe("serializeCollectionJson, isCollectionJson, and parseCollectionJson", (
         { sourcePrice: 19.99 },
       ),
     ).toThrow(/Cannot export a copy of a paid marketplace content collection/i);
+
+    // Single template checks
+    expect(
+      isPaidMarketplaceCopy({
+        copyOf: { id: "market-paid-tpl-1" },
+        sourcePrice: 19.99,
+      }),
+    ).toBe(true);
+    expect(
+      canExportCollection({
+        copyOf: { id: "market-paid-tpl-1" },
+        sourcePrice: 19.99,
+      }),
+    ).toBe(false);
+    expect(
+      isPaidMarketplaceCopy({
+        copyOf: { id: "market-free-tpl-1" },
+        sourcePrice: 0,
+      }),
+    ).toBe(false);
+    expect(
+      isPaidMarketplaceCopy({
+        sourcePrice: 25,
+      }),
+    ).toBe(false);
   });
 });
 

@@ -991,7 +991,7 @@ export function exportTemplateAsPaletteCsv(
 
 /**
  * Input shape accepted by {@link isPaidMarketplaceCopy} and {@link canExportCollection}.
- * Supports both full {@link Content} records and {@link ExportedContentCollection} objects with optional provenance metadata.
+ * Supports full {@link Content} records, {@link ExportedContentCollection} objects, and single {@link Template} objects with optional provenance metadata.
  */
 export type ExportableCollectionSubject<TRef = unknown> =
   | Pick<Content<TRef>, "data">
@@ -999,13 +999,17 @@ export type ExportableCollectionSubject<TRef = unknown> =
       copyOf?: TRef;
       price?: number;
       templatesInfo?: Array<Pick<TemplateInfo<TRef>, "copyOf">>;
+    })
+  | (Pick<Template<TRef>, "copyOf" | "sourceContentId"> & {
+      price?: number;
+      sourcePrice?: number;
     });
 
 /**
- * Returns `true` when the given content collection is a copy of a paid (non-free) Marketplace item
- * (`price > 0` on the collection or `sourcePrice > 0`, combined with collection-level or template-level `copyOf` provenance).
+ * Returns `true` when the given content collection or template is a copy of a paid (non-free) Marketplace item
+ * (`price > 0` or `sourcePrice > 0`, combined with `copyOf` or `sourceContentId` provenance).
  *
- * Original collections authored by the user (`!copyOf` and no copied templates) return `false` even when priced for sale.
+ * Original collections or templates authored by the user (`!copyOf` and no copied templates) return `false` even when priced for sale.
  */
 export function isPaidMarketplaceCopy<TRef = unknown>(
   subject: ExportableCollectionSubject<TRef>,
@@ -1020,23 +1024,38 @@ export function isPaidMarketplaceCopy<TRef = unknown>(
     return isCopy && effectivePrice > 0;
   }
 
-  const col = subject as ExportedContentCollection<TRef> & {
-    copyOf?: TRef;
+  if ("templates" in subject && Array.isArray(subject.templates)) {
+    const col = subject as ExportedContentCollection<TRef> & {
+      copyOf?: TRef;
+      price?: number;
+      templatesInfo?: Array<Pick<TemplateInfo<TRef>, "copyOf">>;
+    };
+    const isCopy =
+      Boolean(col.copyOf) ||
+      Boolean(col.templates?.some((t) => Boolean(t.copyOf))) ||
+      Boolean(col.templatesInfo?.some((t) => Boolean(t.copyOf)));
+    const effectivePrice =
+      typeof sourcePrice === "number" ? sourcePrice : (col.price ?? 0);
+    return isCopy && effectivePrice > 0;
+  }
+
+  const tpl = subject as Pick<Template<TRef>, "copyOf" | "sourceContentId"> & {
     price?: number;
-    templatesInfo?: Array<Pick<TemplateInfo<TRef>, "copyOf">>;
+    sourcePrice?: number;
   };
-  const isCopy =
-    Boolean(col.copyOf) ||
-    Boolean(col.templates?.some((t) => Boolean(t.copyOf))) ||
-    Boolean(col.templatesInfo?.some((t) => Boolean(t.copyOf)));
+  const isCopy = Boolean(tpl.copyOf) || Boolean(tpl.sourceContentId);
   const effectivePrice =
-    typeof sourcePrice === "number" ? sourcePrice : (col.price ?? 0);
+    typeof sourcePrice === "number"
+      ? sourcePrice
+      : typeof tpl.sourcePrice === "number"
+        ? tpl.sourcePrice
+        : (tpl.price ?? 0);
   return isCopy && effectivePrice > 0;
 }
 
 /**
- * Returns `true` when a content collection is allowed to be exported as JSON
- * (i.e., it is not a copy of a paid Marketplace collection).
+ * Returns `true` when a content collection or template is allowed to be exported
+ * (i.e., it is not a copy of a paid Marketplace item).
  */
 export function canExportCollection<TRef = unknown>(
   subject: ExportableCollectionSubject<TRef>,

@@ -46,6 +46,7 @@ const IMMUTABLE_TEMPLATE_KEYS = [
   "copyOf",
   "copyDate",
   "sourceContentId",
+  "sourcePrice",
 ] as const;
 
 function preserveTemplateIdentityAndAssociation(
@@ -78,6 +79,9 @@ function preserveTemplateIdentityAndAssociation(
     ...(original.copyDate !== undefined ? { copyDate: original.copyDate } : {}),
     ...(original.sourceContentId !== undefined
       ? { sourceContentId: original.sourceContentId }
+      : {}),
+    ...(original.sourcePrice !== undefined
+      ? { sourcePrice: original.sourcePrice }
       : {}),
   };
 }

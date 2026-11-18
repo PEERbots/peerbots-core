@@ -32,6 +32,7 @@ export function formatTemplateToJsonCode(template: Template): {
     copyOf: _copyOf,
     copyDate: _copyDate,
     sourceContentId: _sourceContentId,
+    sourcePrice: _sourcePrice,
     ...editableTemplate
   } = template;
   const code = JSON.stringify(editableTemplate, null, 2);

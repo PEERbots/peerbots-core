@@ -262,6 +262,8 @@ export type Template<TRef = ProvenanceRef> = {
   copyDate?: Date;
   /** Optional identifier of the originating content package when imported or remixed. */
   sourceContentId?: string;
+  /** Optional catalog price of the originating content package when copied from the Marketplace. */
+  sourcePrice?: number;
 };
 
 /**
