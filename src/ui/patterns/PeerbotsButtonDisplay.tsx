@@ -120,8 +120,11 @@ export interface PeerbotsButtonDisplayProps {
   className?: string;
 }
 
+const FLOW_ENTRYPOINT = "@peerbots/core/flow";
 const LazyFlowView = React.lazy(() =>
-  import("@peerbots/core/flow").then((mod) => ({ default: mod.FlowView })),
+  import(/* @vite-ignore */ FLOW_ENTRYPOINT).then(
+    (mod: typeof import("@peerbots/core/flow")) => ({ default: mod.FlowView }),
+  ),
 );
 
 /**
