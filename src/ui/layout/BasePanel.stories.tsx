@@ -5,7 +5,7 @@ import { Text } from "../foundations/Typography";
 import { BasePanel } from "./BasePanel";
 
 const meta: Meta<typeof BasePanel> = {
-  title: "Layout/BasePanel",
+  title: "Templates/Panels/BasePanel",
   component: BasePanel,
   tags: ["autodocs"],
   parameters: {

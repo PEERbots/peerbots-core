@@ -52,6 +52,8 @@ export interface ButtonViewProps {
   labels?: Partial<
     Pick<ControlLabels, "emptyTemplateTitle" | "emptyTemplateDescription">
   >;
+  /** Grid column layout (`"responsive"` uses 1/2/4 cols by breakpoint) (@default "responsive") */
+  columns?: "responsive" | 1 | 2 | 3 | 4;
   /** Additional grid container classes */
   className?: string;
 }
@@ -77,6 +79,7 @@ export function ButtonView({
   emptyTitle,
   emptyDescription,
   labels,
+  columns = "responsive",
   className,
 }: ButtonViewProps) {
   const { labels: contextLabels } = usePeerbotsI18n();
@@ -132,11 +135,23 @@ export function ButtonView({
     );
   }
 
+  const columnClasses: Record<
+    NonNullable<ButtonViewProps["columns"]>,
+    string
+  > = {
+    responsive: "pb:grid-cols-1 pb:sm:grid-cols-2 pb:md:grid-cols-4",
+    1: "pb:grid-cols-1",
+    2: "pb:grid-cols-2",
+    3: "pb:grid-cols-3",
+    4: "pb:grid-cols-4",
+  };
+
   return (
     <>
       <div
         className={cn(
-          "pb:grid pb:grid-cols-1 sm:pb:grid-cols-2 md:pb:grid-cols-4 pb:gap-2.5 pb:p-2",
+          "pb:grid pb:gap-2.5 pb:p-2",
+          columnClasses[columns],
           className,
         )}
       >

@@ -256,16 +256,22 @@ export function LanguageSelector({
               className,
             )}
           >
-            {badgeType &&
-              renderBadge("pb:absolute pb:-top-1 pb:-end-1 pb:z-10 pb:scale-75")}
             <Icon
               name="globe"
               size="sm"
               aria-hidden="true"
               className="pb:w-4 pb:h-4 pb:text-gray-700"
             />
-            <span className="pb:text-[9px] pb:leading-none pb:text-center pb:mt-0.5 pb:uppercase pb:font-semibold">
-              {value.toUpperCase()}
+            <span className="pb:inline-flex pb:items-center pb:justify-center pb:gap-0.5 pb:text-[9px] pb:leading-none pb:text-center pb:mt-0.5 pb:uppercase pb:font-semibold">
+              <span>{value.toUpperCase()}</span>
+              {badgeType === "beta" && (
+                <span
+                  aria-label={resolvedLabels.beta}
+                  className="pb:text-amber-800 pb:font-bold pb:normal-case"
+                >
+                  β
+                </span>
+              )}
             </span>
           </button>
         }

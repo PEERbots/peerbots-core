@@ -78,7 +78,7 @@ export const PasswordInput = React.forwardRef<
             onClick={handleToggle}
             aria-label={isRevealed ? hidePasswordLabel : showPasswordLabel}
             aria-pressed={isRevealed}
-            className="pb:inline-flex pb:items-center pb:justify-center pb:rounded pb:p-0.5 pb:text-gray-500 hover:pb:text-gray-800 pb:focus-visible:outline-2 pb:focus-visible:outline-offset-1 pb:focus-visible:outline-peerbots-darkteal pb:cursor-pointer pb:disabled:opacity-50 pb:disabled:cursor-not-allowed"
+            className="pb:pointer-events-auto pb:inline-flex pb:items-center pb:justify-center pb:rounded pb:p-0.5 pb:text-gray-500 pb:hover:text-gray-800 pb:focus-visible:outline-2 pb:focus-visible:outline-offset-1 pb:focus-visible:outline-peerbots-darkteal pb:cursor-pointer pb:disabled:opacity-50 pb:disabled:cursor-not-allowed"
           >
             <Icon
               name={isRevealed ? "eyeSlash" : "eye"}

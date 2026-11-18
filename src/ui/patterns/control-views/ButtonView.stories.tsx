@@ -284,6 +284,46 @@ export const DisabledState: Story = {
   ),
 };
 
+export const ColumnVariations: Story = {
+  render: () => {
+    const template = createButtonGridTemplate();
+    return (
+      <div className="pb:space-y-6">
+        <div>
+          <p className="pb:mb-1 pb:px-2 pb:text-xs pb:font-semibold pb:uppercase pb:tracking-wider pb:text-gray-500">
+            2 Columns
+          </p>
+          <ButtonView
+            template={template}
+            columns={2}
+            onButtonAction={() => undefined}
+          />
+        </div>
+        <div>
+          <p className="pb:mb-1 pb:px-2 pb:text-xs pb:font-semibold pb:uppercase pb:tracking-wider pb:text-gray-500">
+            3 Columns
+          </p>
+          <ButtonView
+            template={template}
+            columns={3}
+            onButtonAction={() => undefined}
+          />
+        </div>
+        <div>
+          <p className="pb:mb-1 pb:px-2 pb:text-xs pb:font-semibold pb:uppercase pb:tracking-wider pb:text-gray-500">
+            4 Columns
+          </p>
+          <ButtonView
+            template={template}
+            columns={4}
+            onButtonAction={() => undefined}
+          />
+        </div>
+      </div>
+    );
+  },
+};
+
 export const EmptyState: Story = {
   render: () => (
     <ButtonView
