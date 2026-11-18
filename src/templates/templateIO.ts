@@ -24,6 +24,7 @@ import {
 import { formatTemplateToCode } from "./pttf/format";
 import { analyzeTemplateCode } from "./pttf/parse";
 import type {
+  Content,
   ExportedContentCollection,
   LoggedEvent,
   Message,
@@ -33,6 +34,7 @@ import type {
   RobotControlButton,
   Template,
   TemplateHierarchy,
+  TemplateInfo,
 } from "./types";
 
 export {
@@ -988,6 +990,62 @@ export function exportTemplateAsPaletteCsv(
 }
 
 /**
+ * Input shape accepted by {@link isPaidMarketplaceCopy} and {@link canExportCollection}.
+ * Supports both full {@link Content} records and {@link ExportedContentCollection} objects with optional provenance metadata.
+ */
+export type ExportableCollectionSubject<TRef = unknown> =
+  | Pick<Content<TRef>, "data">
+  | (ExportedContentCollection<TRef> & {
+      copyOf?: TRef;
+      price?: number;
+      templatesInfo?: Array<Pick<TemplateInfo<TRef>, "copyOf">>;
+    });
+
+/**
+ * Returns `true` when the given content collection is a copy of a paid (non-free) Marketplace item
+ * (`price > 0` on the collection or `sourcePrice > 0`, combined with collection-level or template-level `copyOf` provenance).
+ *
+ * Original collections authored by the user (`!copyOf` and no copied templates) return `false` even when priced for sale.
+ */
+export function isPaidMarketplaceCopy<TRef = unknown>(
+  subject: ExportableCollectionSubject<TRef>,
+  sourcePrice?: number,
+): boolean {
+  if ("data" in subject && subject.data) {
+    const isCopy =
+      Boolean(subject.data.copyOf) ||
+      Boolean(subject.data.templatesInfo?.some((t) => Boolean(t.copyOf)));
+    const effectivePrice =
+      typeof sourcePrice === "number" ? sourcePrice : (subject.data.price ?? 0);
+    return isCopy && effectivePrice > 0;
+  }
+
+  const col = subject as ExportedContentCollection<TRef> & {
+    copyOf?: TRef;
+    price?: number;
+    templatesInfo?: Array<Pick<TemplateInfo<TRef>, "copyOf">>;
+  };
+  const isCopy =
+    Boolean(col.copyOf) ||
+    Boolean(col.templates?.some((t) => Boolean(t.copyOf))) ||
+    Boolean(col.templatesInfo?.some((t) => Boolean(t.copyOf)));
+  const effectivePrice =
+    typeof sourcePrice === "number" ? sourcePrice : (col.price ?? 0);
+  return isCopy && effectivePrice > 0;
+}
+
+/**
+ * Returns `true` when a content collection is allowed to be exported as JSON
+ * (i.e., it is not a copy of a paid Marketplace collection).
+ */
+export function canExportCollection<TRef = unknown>(
+  subject: ExportableCollectionSubject<TRef>,
+  sourcePrice?: number,
+): boolean {
+  return !isPaidMarketplaceCopy(subject, sourcePrice);
+}
+
+/**
  * Options for serializing a content collection via {@link serializeCollectionJson} or {@link exportCollectionAsJson}.
  */
 export interface SerializeCollectionJsonOptions {
@@ -999,15 +1057,30 @@ export interface SerializeCollectionJsonOptions {
    * is clean and portable across accounts.
    */
   stripDatabaseMetadata?: boolean;
+  /**
+   * Optional price of the upstream Marketplace source collection (when known), used to block
+   * exporting copies of paid Marketplace collections.
+   */
+  sourcePrice?: number;
 }
 
 /**
  * Serializes a content collection (`{ name, description, templates }`) into a single JSON string.
+ * Throws an error if the collection is a copy of a paid Marketplace item (`price > 0`).
  */
 export function serializeCollectionJson<TRef>(
-  collection: ExportedContentCollection<TRef>,
+  collection: ExportedContentCollection<TRef> & {
+    copyOf?: TRef;
+    price?: number;
+    templatesInfo?: Array<Pick<TemplateInfo<TRef>, "copyOf">>;
+  },
   options?: SerializeCollectionJsonOptions,
 ): string {
+  if (isPaidMarketplaceCopy(collection, options?.sourcePrice)) {
+    throw new Error(
+      "Cannot export a copy of a paid marketplace content collection.",
+    );
+  }
   const pretty = options?.pretty ?? true;
   const stripDatabaseMetadata = options?.stripDatabaseMetadata ?? true;
   const name = firstNonEmptyString(collection.name) || "Untitled Collection";
@@ -1037,9 +1110,14 @@ export function serializeCollectionJson<TRef>(
 
 /**
  * Triggers a browser file download of a content collection serialized as a single `.json` file.
+ * Throws an error if the collection is a copy of a paid Marketplace item (`price > 0`).
  */
 export function exportCollectionAsJson<TRef>(
-  collection: ExportedContentCollection<TRef>,
+  collection: ExportedContentCollection<TRef> & {
+    copyOf?: TRef;
+    price?: number;
+    templatesInfo?: Array<Pick<TemplateInfo<TRef>, "copyOf">>;
+  },
   options?: SerializeCollectionJsonOptions & { fileName?: string },
 ): void {
   const safeBase =

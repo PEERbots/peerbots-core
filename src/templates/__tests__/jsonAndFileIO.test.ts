@@ -10,6 +10,7 @@ import {
   EXAMPLE_STARTER_SOCIAL_TEMPLATE,
   MAX_TEMPLATE_FILE_BYTES,
   blankTemplate,
+  canExportCollection,
   convertPaletteToCSV,
   convertTemplateToPalette,
   exportCollectionAsJson,
@@ -17,6 +18,7 @@ import {
   exportTemplateAsPaletteCsv,
   extractMessageButtons,
   isCollectionJson,
+  isPaidMarketplaceCopy,
   parseCollectionJson,
   parsePaletteCsv,
   parseTemplateFile,
@@ -709,7 +711,80 @@ describe("serializeCollectionJson, isCollectionJson, and parseCollectionJson", (
     expect(parsed.templates[0].id).toBe("db-tpl-1");
     expect(parsed.templates[0].contentID).toBe("content-123");
   });
+
+  it("blocks exporting copies of paid marketplace collections while allowing free copies and authored paid collections", () => {
+    const freeCopyContent = {
+      data: {
+        name: "Free Marketplace Copy",
+        owner: { id: "user-1" },
+        public: false,
+        price: 0,
+        tags: [],
+        trusted: false,
+        copyOf: { id: "market-free-1" },
+        templatesInfo: [{ id: "t1", title: "T1" }],
+      },
+    };
+    expect(isPaidMarketplaceCopy(freeCopyContent)).toBe(false);
+    expect(canExportCollection(freeCopyContent)).toBe(true);
+
+    const authoredPaidContent = {
+      data: {
+        name: "My Own Paid Pack",
+        owner: { id: "user-1" },
+        public: true,
+        price: 24.99,
+        tags: [],
+        trusted: true,
+        templatesInfo: [{ id: "t1", title: "T1" }],
+      },
+    };
+    expect(isPaidMarketplaceCopy(authoredPaidContent)).toBe(false);
+    expect(canExportCollection(authoredPaidContent)).toBe(true);
+
+    const paidCopyContent = {
+      data: {
+        name: "Purchased Paid Copy",
+        owner: { id: "user-1" },
+        public: false,
+        price: 24.99,
+        tags: [],
+        trusted: false,
+        copyOf: { id: "market-paid-1" },
+        templatesInfo: [{ id: "t1", title: "T1" }],
+      },
+    };
+    expect(isPaidMarketplaceCopy(paidCopyContent)).toBe(true);
+    expect(canExportCollection(paidCopyContent)).toBe(false);
+
+    // Also blocks when local price is 0 but upstream sourcePrice > 0
+    expect(isPaidMarketplaceCopy(freeCopyContent, 15)).toBe(true);
+    expect(canExportCollection(freeCopyContent, 15)).toBe(false);
+
+    // Throws when attempting to serialize or export a paid marketplace copy
+    expect(() =>
+      serializeCollectionJson({
+        name: "Purchased Paid Copy",
+        copyOf: { id: "market-paid-1" },
+        price: 24.99,
+        templates: [EXAMPLE_STARTER_SOCIAL_TEMPLATE],
+      }),
+    ).toThrow(/Cannot export a copy of a paid marketplace content collection/i);
+
+    expect(() =>
+      exportCollectionAsJson(
+        {
+          name: "Purchased Paid Copy",
+          copyOf: { id: "market-paid-1" },
+          price: 0,
+          templates: [EXAMPLE_STARTER_SOCIAL_TEMPLATE],
+        },
+        { sourcePrice: 19.99 },
+      ),
+    ).toThrow(/Cannot export a copy of a paid marketplace content collection/i);
+  });
 });
+
 
 
 
