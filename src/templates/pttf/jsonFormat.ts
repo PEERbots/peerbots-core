@@ -25,7 +25,16 @@ export function formatTemplateToJsonCode(template: Template): {
   code: string;
   lines: FormattedJsonLine[];
 } {
-  const code = JSON.stringify(template, null, 2);
+  const {
+    id: _id,
+    contentID: _contentID,
+    contentName: _contentName,
+    copyOf: _copyOf,
+    copyDate: _copyDate,
+    sourceContentId: _sourceContentId,
+    ...editableTemplate
+  } = template;
+  const code = JSON.stringify(editableTemplate, null, 2);
   const rawLines = code.split("\n");
   const lines: FormattedJsonLine[] = [];
 

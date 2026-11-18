@@ -358,7 +358,7 @@ export function CodeView({
       });
       setDraftCode(reformatted.code);
     } else {
-      setDraftCode(JSON.stringify(parsedDraft.template, null, 2));
+      setDraftCode(formatTemplateToJsonCode(parsedDraft.template).code);
     }
   };
 
