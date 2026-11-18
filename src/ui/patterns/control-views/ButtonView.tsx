@@ -34,7 +34,7 @@ export interface ButtonViewProps {
   disabled?: boolean;
   /** Enables opening the concise edit popover on right-click (`onContextMenu`) (@default true) */
   enableContextEdit?: boolean;
-  /** Optional icon name for `"Log"` buttons (@default "pencilSquare") */
+  /** Optional icon name for `"Log"` buttons (@default "pencilNote") */
   logIcon?: IconName;
   /** Optional custom emotion icon overrides */
   emotionIcons?: Partial<Record<PeerbotsEmotion, string | React.ReactNode>>;
@@ -71,7 +71,7 @@ export function ButtonView({
   selectedButtonIds,
   disabled = false,
   enableContextEdit = true,
-  logIcon = "pencilSquare",
+  logIcon = "pencilNote",
   emotionIcons,
   emotionLabels,
   colorLabels,

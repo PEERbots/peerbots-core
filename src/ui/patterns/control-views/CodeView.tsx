@@ -35,7 +35,7 @@ export interface CodeViewProps {
   selectedButtonId?: string | null;
   /** Disables editing and interactive selection when true */
   disabled?: boolean;
-  /** Optional icon name for `"Log"` buttons (@default "pencilSquare") */
+  /** Optional icon name for `"Log"` buttons (@default "pencilNote") */
   logIcon?: IconName;
   /** Optional custom emotion icon overrides */
   emotionIcons?: Partial<Record<PeerbotsEmotion, string | React.ReactNode>>;
@@ -70,7 +70,7 @@ export function CodeView({
   onTemplateChange,
   selectedButtonId = null,
   disabled = false,
-  logIcon = "pencilSquare",
+  logIcon = "pencilNote",
   emotionIcons,
   emotionLabels,
   defaultFormat = "shorthand",

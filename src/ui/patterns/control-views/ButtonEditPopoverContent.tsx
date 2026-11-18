@@ -258,7 +258,7 @@ export function SingleButtonEditPanel({
                 : "pb:text-gray-600 pb:hover:text-gray-900",
             )}
           >
-            <Icon name="pencilSquare" size="sm" aria-hidden="true" />
+            <Icon name="pencilNote" size="sm" aria-hidden="true" />
             {resolvedLabels.log}
           </button>
         </div>
