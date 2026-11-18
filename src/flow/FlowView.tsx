@@ -370,14 +370,18 @@ function FlowViewInner({
   const nodesRef = useRef(nodes);
   nodesRef.current = nodes;
 
-  // Sync structural topology changes into ReactFlow while preserving dragged positions
+  const lastLayoutEpochRef = useRef(layoutEpoch);
+
+  // Sync structural topology changes into ReactFlow while preserving existing/dragged positions
   useEffect(() => {
     const directionChanged =
       lastDirectionRef.current !== null &&
       lastDirectionRef.current !== activeDirection;
+    const explicitAutoLayout = lastLayoutEpochRef.current !== layoutEpoch;
     lastDirectionRef.current = activeDirection;
+    lastLayoutEpochRef.current = layoutEpoch;
 
-    if (directionChanged) {
+    if (directionChanged || explicitAutoLayout) {
       manualPositionsRef.current.clear();
     }
 
@@ -392,11 +396,18 @@ function FlowViewInner({
       const selectedSet = new Set(
         prevNodes.filter((n) => n.selected).map((n) => n.id),
       );
+      const prevPositionById = new Map(
+        prevNodes.map((n) => [n.id, n.position] as const),
+      );
       return computedElements.nodes.map((node) => {
-        const manualPos = manualPositionsRef.current.get(node.id);
+        const preservedPos =
+          directionChanged || explicitAutoLayout
+            ? undefined
+            : (manualPositionsRef.current.get(node.id) ??
+              prevPositionById.get(node.id));
         return {
           ...node,
-          position: manualPos ?? node.position,
+          position: preservedPos ?? node.position,
           selected: selectedSet.has(node.id),
         };
       });

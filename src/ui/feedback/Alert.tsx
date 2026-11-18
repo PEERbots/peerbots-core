@@ -31,6 +31,16 @@ export interface AlertUIProps {
   onClose?: () => void;
   /** Border radius scale */
   radius?: ComponentRadius;
+  /**
+   * Layout placement:
+   * - `"inline"` (default): renders in normal document flow.
+   * - `"floating"`: overlays content without pushing layout down.
+   */
+  placement?: "inline" | "floating";
+  /** Overlay position when `placement="floating"` (@default "top-center"). */
+  position?: "top-center" | "top-end" | "bottom-end";
+  /** Positioning mode when `placement="floating"` (@default "fixed"). Use `"absolute"` inside a `relative` container. */
+  positionStrategy?: "fixed" | "absolute";
   className?: string;
 }
 
@@ -82,6 +92,15 @@ const radiusClasses: Record<ComponentRadius, string> = {
   pill: "pb:rounded-full",
 };
 
+const floatingPositionClasses: Record<
+  NonNullable<AlertUIProps["position"]>,
+  string
+> = {
+  "top-center": "pb:top-4 pb:start-1/2 pb:-translate-x-1/2 pb:max-w-lg",
+  "top-end": "pb:top-4 pb:end-4 pb:max-w-md",
+  "bottom-end": "pb:bottom-4 pb:end-4 pb:max-w-md",
+};
+
 export function Alert({
   color,
   level,
@@ -92,6 +111,9 @@ export function Alert({
   action,
   onClose,
   radius = "2xl",
+  placement = "inline",
+  position = "top-center",
+  positionStrategy = "fixed",
   className,
 }: AlertUIProps) {
   const [visible, setVisible] = useState(true);
@@ -110,12 +132,20 @@ export function Alert({
   };
 
   const body = children || message;
+  const isFloating = placement === "floating";
 
   return (
     <div
       role="alert"
       className={cn(
-        "pb:flex pb:w-full pb:items-start pb:gap-3.5 pb:p-4.5 pb:border pb:shadow-xs pb:transition-all pb:duration-200",
+        "pb:flex pb:w-full pb:items-start pb:gap-3.5 pb:p-4.5 pb:border pb:transition-all pb:duration-200",
+        isFloating
+          ? cn(
+              positionStrategy === "absolute" ? "pb:absolute" : "pb:fixed",
+              "pb:z-50 pb:shadow-xl pb:w-[calc(100%-2rem)]",
+              floatingPositionClasses[position],
+            )
+          : "pb:shadow-xs",
         radiusClasses[radius] || radiusClasses["2xl"],
         colorStyle,
         className,

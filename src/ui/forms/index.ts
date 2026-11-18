@@ -1,6 +1,7 @@
 export * from "./Button";
 export * from "./Input";
 export * from "./SearchInput";
+export * from "./PasswordInput";
 export * from "./Select";
 export * from "./Slider";
 export * from "./SliderWithNumberField";

@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { getLanguageName } from "../../helpers/languageUtils";
 import {
   findMatchingVoice,
@@ -9,6 +9,47 @@ import { usePeerbotsI18n } from "../../i18n";
 import { cn } from "../utils";
 import { Field } from "./Field";
 import { Select } from "./Select";
+
+/**
+ * React hook that subscribes to `window.speechSynthesis.getVoices()` (and `voiceschanged`)
+ * so `<VoiceSelector>` can auto-populate available browser TTS voices when no `voices` prop is passed.
+ */
+export function useSpeechSynthesisVoices(enabled = true): VoiceDescriptor[] {
+  const [browserVoices, setBrowserVoices] = useState<VoiceDescriptor[]>(() => {
+    if (!enabled || typeof window === "undefined" || !("speechSynthesis" in window)) {
+      return [];
+    }
+    return window.speechSynthesis.getVoices().map((v) => ({
+      name: v.name,
+      lang: v.lang,
+      voiceURI: v.voiceURI,
+    }));
+  });
+
+  useEffect(() => {
+    if (!enabled || typeof window === "undefined" || !("speechSynthesis" in window)) {
+      return;
+    }
+    const synth = window.speechSynthesis;
+    const sync = () => {
+      const list = synth.getVoices();
+      setBrowserVoices(
+        list.map((v) => ({
+          name: v.name,
+          lang: v.lang,
+          voiceURI: v.voiceURI,
+        })),
+      );
+    };
+    sync();
+    synth.addEventListener?.("voiceschanged", sync);
+    return () => {
+      synth.removeEventListener?.("voiceschanged", sync);
+    };
+  }, [enabled]);
+
+  return browserVoices;
+}
 
 /**
  * Localized UI labels used by `<VoiceSelector>`.
@@ -38,8 +79,8 @@ export const DEFAULT_VOICE_SELECTOR_LABELS: VoiceSelectorLabels = {
  * Props for `<VoiceSelector>` — paired Language + TTS Voice `<Select>` fields compatible with Web Speech API `SpeechSynthesisVoice` descriptors.
  */
 export interface VoiceSelectorProps {
-  /** Available TTS voice descriptors (e.g. from `window.speechSynthesis.getVoices()`). */
-  voices: readonly VoiceDescriptor[];
+  /** Available TTS voice descriptors. When omitted, `<VoiceSelector>` automatically reads `window.speechSynthesis.getVoices()`. */
+  voices?: readonly VoiceDescriptor[];
   /** Currently selected `voiceURI` identifier. */
   selectedVoiceUri?: string | null;
   /** Currently selected human-readable language filter (e.g. `"English"`). */
@@ -57,7 +98,7 @@ export interface VoiceSelectorProps {
 }
 
 export function VoiceSelector({
-  voices,
+  voices: propVoices,
   selectedVoiceUri,
   selectedLanguage,
   onVoiceChange,
@@ -66,6 +107,8 @@ export function VoiceSelector({
   labels,
   className,
 }: VoiceSelectorProps) {
+  const browserVoices = useSpeechSynthesisVoices(propVoices === undefined);
+  const voices = propVoices ?? browserVoices;
   const { labels: contextLabels } = usePeerbotsI18n();
   const baseId = React.useId();
   const languageSelectId = `${baseId}-language`;

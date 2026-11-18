@@ -136,7 +136,7 @@ export function ButtonView({
     <>
       <div
         className={cn(
-          "pb:grid pb:grid-cols-2 sm:pb:grid-cols-3 md:pb:grid-cols-4 pb:gap-2.5 pb:p-2",
+          "pb:grid pb:grid-cols-1 sm:pb:grid-cols-2 md:pb:grid-cols-4 pb:gap-2.5 pb:p-2",
           className,
         )}
       >

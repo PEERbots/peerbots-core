@@ -444,7 +444,7 @@ describe("Control Views Suite (ButtonView, TableView, FlowView)", () => {
       const onBatchSave = vi.fn();
       const template = makeRichTemplate();
 
-      // Case 1: No rows selected -> Emotion Apply-All applies to all 3 Message rows (skipping Log row!)
+      // Case 1: No rows selected -> Apply-All triggers are hidden until at least one row is selected
       render(
         <TableView
           template={template}
@@ -452,6 +452,15 @@ describe("Control Views Suite (ButtonView, TableView, FlowView)", () => {
           onButtonAction={(_btn, id, action) => actions.push({ id, action })}
         />,
       );
+
+      expect(
+        screen.queryByRole("button", { name: "Apply all (Emotion)" }),
+      ).not.toBeInTheDocument();
+
+      fireEvent.click(
+        screen.getByRole("checkbox", { name: "Select all buttons" }),
+      );
+      actions.length = 0;
 
       const emotionApplyTrigger = screen.getByRole("button", {
         name: "Apply all (Emotion)",

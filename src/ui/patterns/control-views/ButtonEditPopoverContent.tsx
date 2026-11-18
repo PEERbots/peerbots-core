@@ -245,6 +245,7 @@ export function SingleButtonEditPanel({
                 : "pb:text-gray-600 pb:hover:text-gray-900",
             )}
           >
+            <Icon name="chatBubble" size="sm" aria-hidden="true" />
             {resolvedLabels.message}
           </button>
           <button
