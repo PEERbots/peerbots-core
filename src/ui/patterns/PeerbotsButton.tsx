@@ -28,7 +28,7 @@ export interface PeerbotsButtonProps {
   onContextMenu?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   /** Optional ref forwarded to the underlying `<button>` element */
   buttonRef?: React.Ref<HTMLButtonElement>;
-  /** Optional icon name rendered in the top-left badge of `"Log"` buttons (@default "zap") */
+  /** Optional icon name rendered in the top-left badge of `"Log"` buttons (@default "pencilSquare") */
   logIcon?: IconName;
   /** Optional custom emotion icon overrides (image URL or React node) */
   emotionIcons?: Partial<Record<PeerbotsEmotion, string | React.ReactNode>>;
@@ -56,7 +56,7 @@ export function PeerbotsButton({
   onDoubleClick,
   onContextMenu,
   buttonRef,
-  logIcon = "zap",
+  logIcon = "pencilSquare",
   emotionIcons,
   className,
 }: PeerbotsButtonProps) {

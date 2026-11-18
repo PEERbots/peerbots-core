@@ -268,7 +268,11 @@ describe("Domain UI Components", () => {
       (selects[0].props.onChange as (val: string | null) => void)("Spanish");
       expect(onLanguageChange).toHaveBeenCalledWith("Spanish");
       (selects[1].props.onChange as (val: string | null) => void)("urn:monica");
-      expect(onVoiceChange).toHaveBeenCalledWith("urn:monica");
+      expect(onVoiceChange).toHaveBeenCalledWith("urn:monica", {
+        name: "Mónica",
+        lang: "es-ES",
+        voiceURI: "urn:monica",
+      });
     });
   });
 

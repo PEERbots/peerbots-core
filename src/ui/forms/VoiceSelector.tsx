@@ -85,8 +85,8 @@ export interface VoiceSelectorProps {
   selectedVoiceUri?: string | null;
   /** Currently selected human-readable language filter (e.g. `"English"`). */
   selectedLanguage?: string | null;
-  /** Callback invoked when the user picks a voice `voiceURI`. */
-  onVoiceChange: (voiceUri: string) => void;
+  /** Callback invoked when the user picks a voice `voiceURI` (also receives the matching `VoiceDescriptor`). */
+  onVoiceChange: (voiceUri: string, voice?: VoiceDescriptor) => void;
   /** Optional callback invoked when the language filter changes. */
   onLanguageChange?: (language: string) => void;
   /** Disables both dropdowns when `true`. */
@@ -195,7 +195,9 @@ export function VoiceSelector({
           value={activeVoiceValue}
           onChange={(val) => {
             if (val !== null) {
-              onVoiceChange(String(val));
+              const uri = String(val);
+              const matchedVoice = voices.find((v) => v.voiceURI === uri);
+              onVoiceChange(uri, matchedVoice);
             }
           }}
           options={filteredVoices}
