@@ -316,7 +316,7 @@ describe("Domain UI Components", () => {
         />,
       );
       expect(sidebarCollapsedHtml).toContain("EN");
-      expect(sidebarCollapsedHtml).toContain("pb:-end-1");
+      expect(sidebarCollapsedHtml).toContain("β");
     });
 
     it("handles language selection across default and popover menu variants", () => {
