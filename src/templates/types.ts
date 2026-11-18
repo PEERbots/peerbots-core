@@ -376,3 +376,17 @@ export type Content<TRef = ProvenanceRef> = {
     templatesInfo: TemplateInfo<TRef>[];
   };
 };
+
+/**
+ * Portable JSON representation of a Peerbots content collection (`name`, optional `description`,
+ * and ordered `templates`) used for single-file collection export and import.
+ */
+export type ExportedContentCollection<TRef = ProvenanceRef> = {
+  /** Display name of the content collection. */
+  name: string;
+  /** Optional description of the content collection. */
+  description?: string;
+  /** Ordered list of templates contained in the collection. */
+  templates: Template<TRef>[];
+};
+

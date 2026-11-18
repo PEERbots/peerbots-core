@@ -12,14 +12,18 @@ import {
   blankTemplate,
   convertPaletteToCSV,
   convertTemplateToPalette,
+  exportCollectionAsJson,
   exportTemplateAsJson,
   exportTemplateAsPaletteCsv,
   extractMessageButtons,
+  isCollectionJson,
+  parseCollectionJson,
   parsePaletteCsv,
   parseTemplateFile,
   parseTemplateJson,
   parseTemplatePttf,
   parseTemplateText,
+  serializeCollectionJson,
   serializeTemplateJson,
   serializeTemplatePttf,
   type OrderedTemplatesObject,
@@ -597,6 +601,11 @@ describe("exportTemplateAsJson & exportTemplateAsPaletteCsv browser download hel
         format: "legacy",
         fileName: "legacy-export.csv",
       });
+      exportCollectionAsJson({
+        name: "Mindfulness Pack",
+        description: "Collection of mindfulness exercises",
+        templates: [EXAMPLE_STARTER_SOCIAL_TEMPLATE, EXAMPLE_LOG_AND_SPEAK_TEMPLATE],
+      });
 
       expect(downloads).toEqual([
         {
@@ -615,9 +624,13 @@ describe("exportTemplateAsJson & exportTemplateAsPaletteCsv browser download hel
           href: "blob:mock-url",
           download: "legacy-export.csv",
         },
+        {
+          href: "blob:mock-url",
+          download: "Mindfulness Pack.json",
+        },
       ]);
-      expect(createObjectURL).toHaveBeenCalledTimes(4);
-      expect(revokeObjectURL).toHaveBeenCalledTimes(4);
+      expect(createObjectURL).toHaveBeenCalledTimes(5);
+      expect(revokeObjectURL).toHaveBeenCalledTimes(5);
     } finally {
       createElementSpy.mockRestore();
       createObjectURL.mockRestore();
@@ -625,5 +638,78 @@ describe("exportTemplateAsJson & exportTemplateAsPaletteCsv browser download hel
     }
   });
 });
+
+describe("serializeCollectionJson, isCollectionJson, and parseCollectionJson", () => {
+  it("serializes a content collection to portable JSON (stripping database metadata by default) and round-trips via parseCollectionJson & parseTemplateJson", () => {
+    const t1: Template = {
+      ...EXAMPLE_STARTER_SOCIAL_TEMPLATE,
+      id: "db-tpl-1",
+      contentID: "content-123",
+      contentName: "Classroom Collection",
+    };
+    const t2: Template = {
+      ...EXAMPLE_LOG_AND_SPEAK_TEMPLATE,
+      id: "db-tpl-2",
+      contentID: "content-123",
+      contentName: "Classroom Collection",
+    };
+
+    const collectionJson = serializeCollectionJson({
+      name: "Classroom Collection",
+      description: "Two interactive classroom templates",
+      templates: [t1, t2],
+    });
+
+    expect(isCollectionJson(collectionJson)).toBe(true);
+    expect(
+      isCollectionJson(serializeTemplateJson(EXAMPLE_STARTER_SOCIAL_TEMPLATE)),
+    ).toBe(false);
+    expect(isCollectionJson("{bad json")).toBe(false);
+
+    const parsedCollection = parseCollectionJson(collectionJson);
+    expect(parsedCollection.name).toBe("Classroom Collection");
+    expect(parsedCollection.description).toBe(
+      "Two interactive classroom templates",
+    );
+    expect(parsedCollection.templates).toHaveLength(2);
+    expect(parsedCollection.templates[0].id).toBeUndefined();
+    expect(parsedCollection.templates[0].contentID).toBeUndefined();
+    expect(parsedCollection.templates[0].title).toBe(
+      EXAMPLE_STARTER_SOCIAL_TEMPLATE.title,
+    );
+    expect(parsedCollection.templates[1].title).toBe(
+      EXAMPLE_LOG_AND_SPEAK_TEMPLATE.title,
+    );
+
+    // Also parses via parseTemplateJson for Control page multi-template import
+    const templatesFromTemplateParser = parseTemplateJson(collectionJson, {
+      generateMissingIds: true,
+    });
+    expect(templatesFromTemplateParser).toHaveLength(2);
+    expect(templatesFromTemplateParser[0].id).toBeTruthy();
+    expect(templatesFromTemplateParser[1].id).toBeTruthy();
+  });
+
+  it("preserves database metadata when stripDatabaseMetadata is false", () => {
+    const t1: Template = {
+      ...EXAMPLE_STARTER_SOCIAL_TEMPLATE,
+      id: "db-tpl-1",
+      contentID: "content-123",
+    };
+    const jsonWithMeta = serializeCollectionJson(
+      {
+        name: "Full Collection",
+        templates: [t1],
+      },
+      { stripDatabaseMetadata: false, pretty: false },
+    );
+    expect(jsonWithMeta.includes("\n")).toBe(false);
+    const parsed = parseCollectionJson(jsonWithMeta);
+    expect(parsed.name).toBe("Full Collection");
+    expect(parsed.templates[0].id).toBe("db-tpl-1");
+    expect(parsed.templates[0].contentID).toBe("content-123");
+  });
+});
+
 
 

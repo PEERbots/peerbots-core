@@ -24,6 +24,7 @@ import {
 import { formatTemplateToCode } from "./pttf/format";
 import { analyzeTemplateCode } from "./pttf/parse";
 import type {
+  ExportedContentCollection,
   LoggedEvent,
   Message,
   MetaData,
@@ -986,3 +987,161 @@ export function exportTemplateAsPaletteCsv(
   triggerBrowserDownload(csv, "text/csv;charset=utf-8;", resolvedName);
 }
 
+/**
+ * Options for serializing a content collection via {@link serializeCollectionJson} or {@link exportCollectionAsJson}.
+ */
+export interface SerializeCollectionJsonOptions {
+  /** When `true` (default), formats JSON with 2-space indentation. */
+  pretty?: boolean;
+  /**
+   * When `true` (default), strips database-specific template identifiers (`id`, `contentID`,
+   * `contentName`, `copyOf`, `copyDate`, `sourceContentId`) so the exported collection JSON
+   * is clean and portable across accounts.
+   */
+  stripDatabaseMetadata?: boolean;
+}
+
+/**
+ * Serializes a content collection (`{ name, description, templates }`) into a single JSON string.
+ */
+export function serializeCollectionJson<TRef>(
+  collection: ExportedContentCollection<TRef>,
+  options?: SerializeCollectionJsonOptions,
+): string {
+  const pretty = options?.pretty ?? true;
+  const stripDatabaseMetadata = options?.stripDatabaseMetadata ?? true;
+  const name = firstNonEmptyString(collection.name) || "Untitled Collection";
+  const description = firstNonEmptyString(collection.description) || undefined;
+
+  const templates = collection.templates.map((tpl) => {
+    if (!stripDatabaseMetadata) {
+      return tpl;
+    }
+    const cleanTemplate: Template<TRef> = {
+      title: tpl.title,
+      ...(tpl.description ? { description: tpl.description } : {}),
+      buttons: tpl.buttons,
+      hierarchy: tpl.hierarchy,
+    };
+    return cleanTemplate;
+  });
+
+  const payload: ExportedContentCollection<TRef> = {
+    name,
+    ...(description !== undefined ? { description } : {}),
+    templates,
+  };
+
+  return JSON.stringify(payload, null, pretty ? 2 : undefined);
+}
+
+/**
+ * Triggers a browser file download of a content collection serialized as a single `.json` file.
+ */
+export function exportCollectionAsJson<TRef>(
+  collection: ExportedContentCollection<TRef>,
+  options?: SerializeCollectionJsonOptions & { fileName?: string },
+): void {
+  const safeBase =
+    (collection.name || "collection").trim() || "collection";
+  const resolvedName = options?.fileName?.trim()
+    ? options.fileName.trim().endsWith(".json")
+      ? options.fileName.trim()
+      : `${options.fileName.trim()}.json`
+    : `${safeBase}.json`;
+  const json = serializeCollectionJson(collection, options);
+  triggerBrowserDownload(json, "application/json", resolvedName);
+}
+
+/**
+ * Inspects a JSON string or parsed JSON value and returns `true` when it represents
+ * a content collection (an object with a `templates` array/map, or an array of template objects)
+ * rather than a single standalone template.
+ */
+export function isCollectionJson(jsonTextOrObject: string | unknown): boolean {
+  let parsed: unknown = jsonTextOrObject;
+  if (typeof jsonTextOrObject === "string") {
+    try {
+      const cleaned = jsonTextOrObject.startsWith("\uFEFF")
+        ? jsonTextOrObject.slice(1)
+        : jsonTextOrObject;
+      parsed = JSON.parse(cleaned);
+    } catch {
+      return false;
+    }
+  }
+
+  if (Array.isArray(parsed)) {
+    return parsed.some(
+      (item) =>
+        item &&
+        typeof item === "object" &&
+        !Array.isArray(item) &&
+        ("buttons" in item || "options" in item || "messages" in item),
+    );
+  }
+
+  if (parsed && typeof parsed === "object") {
+    const record = parsed as Record<string, unknown>;
+    if (Array.isArray(record.templates)) {
+      return true;
+    }
+    if (
+      record.templates &&
+      typeof record.templates === "object" &&
+      !Array.isArray(record.templates)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Parses a content collection JSON string into a normalized {@link ExportedContentCollection}
+ * (`{ name, description, templates }`). Also accepts standalone or array template JSON payloads.
+ */
+export function parseCollectionJson(
+  jsonText: string,
+  fileNameOrOptions?: string | ParseTemplateOptions,
+  options?: ParseTemplateOptions,
+): ExportedContentCollection {
+  const context = resolveParseContext(
+    "uploaded-collection.json",
+    "Imported Collection",
+    fileNameOrOptions,
+    options,
+  );
+
+  let parsed: unknown;
+  try {
+    const cleanedJson = jsonText.startsWith("\uFEFF")
+      ? jsonText.slice(1)
+      : jsonText;
+    parsed = JSON.parse(cleanedJson);
+  } catch (err) {
+    throw new Error(
+      `Invalid JSON in "${context.fileName}": ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+
+  const templates = parseTemplateJson(jsonText, fileNameOrOptions, options);
+
+  if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+    const record = parsed as Record<string, unknown>;
+    const name =
+      firstNonEmptyString(record.name, record.title) || context.fallbackTitle;
+    const description = firstNonEmptyString(record.description) || undefined;
+    return {
+      name,
+      ...(description ? { description } : {}),
+      templates,
+    };
+  }
+
+  return {
+    name: context.fallbackTitle,
+    templates,
+  };
+}
