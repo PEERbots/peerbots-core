@@ -1,0 +1,78 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Content Authoring Skill" />
+
+# Peerbots Content Authoring Skill
+
+`@peerbots/core` ships the **`peerbots-content-authoring`** Agent Skill so AI assistants and human authors can draft, review, and refine Peerbots interactive scripts in **PTTF (Peerbots Template Text Format)** while following the **Peerbots Content Authoring Guidelines**.
+
+---
+
+## Installing the Skill
+
+### For AI Coding Agents (`skills.sh` / Cursor / Claude Code / Antigravity / Codex)
+
+Install directly from GitHub:
+
+```bash
+npx skills add PEERbots/peerbots-core --skill peerbots-content-authoring
+```
+
+### From the `@peerbots/core` npm Package
+
+The skill is bundled inside the published package at:
+
+```text
+node_modules/@peerbots/core/skills/peerbots-content-authoring/
+├── SKILL.md
+└── references/
+    ├── pttf-spec.md
+    ├── authoring-guidelines.md
+    └── examples.md
+```
+
+You can also resolve its entrypoint via `@peerbots/core/skills/peerbots-content-authoring`.
+
+---
+
+## For Human Authors (ChatGPT / Claude Web UI)
+
+If you are authoring content in a web chat without an agent CLI, copy the prompt below and paste it at the start of your conversation:
+
+```markdown
+You are helping me author a Peerbots interactive robot script in PTTF (Peerbots Template Text Format).
+
+Format rules:
+- Use 2-space indentation for child buttons.
+- Use `- ` for Message buttons and `! ` for Log buttons.
+- Use `Title | Speech` when the controller button label should differ from what the robot speaks (e.g., `Hint | Look near the moon`).
+- Use `[LabelColor -> RobotColor]` from the 11-color palette (`Light Blue`, `Blue`, `Green`, `Red`, `Purple`, `Pink`, `Yellow`, `Orange`, `Grey`, `Black`, `White`). LabelColor organizes buttons for the controller; RobotColor sets the robot's face/light color. Never put `-> RobotColor` on `!` Log buttons.
+- Use emotions: `:)`, `:(`, `:o`, `:z` (Sleepy), or `[Concerned]`.
+- Use `#anchor` and `-> #anchor` for loops or shared branches.
+- Document your `LabelColor` legend in a `// Color Legend: ...` comment at the top.
+
+Content Authoring Guidelines:
+1. Give the robot a consistent character, backstory, and tone.
+2. Include all 5 core categories where appropriate: Small talk, Feedback, Ignorance/stalling lines, Focusing attention, and the Interaction topic.
+3. Keep each button's speech short and interruptible.
+4. Include a graceful low-battery wind-down using `:z` (Sleepy).
+5. Spell words phonetically if TTS might mispronounce them (e.g., "Ayy" for the letter A).
+6. For Logs (`!`): track *what* happened, not *why* (observable facts over judgment), and place logs near the buttons that trigger them.
+7. Education & Therapy guardrails: presume competence, use chronologically age-appropriate language, give kind/constructive feedback, and NEVER author logs or prompts that track compliance/obedience or neurotypical conformity (such as eye contact, "quiet hands", or suppressing stimming).
+```
+
+---
+
+## PTTF Quick Reference
+
+```text
+// Color Legend: [Green] = Small Talk, [Yellow] = Question, [Blue] = Feedback, [Grey] = Log/Utility
+- #check-in [Green] :) Hi! | Hi everyone! I'm Peerbot. How are you feeling today?
+  - [Yellow] :) Feeling good? | Are you feeling happy or excited today?
+    - [Blue] :) Glad to hear! | That's awesome! Let's get started.
+    ! [Grey] Student shared positive mood
+  - [Yellow] -> #check-in
+- [Green] :z Low battery | My battery is getting sleepy. Let's wave goodbye for today!
+```
+
+See `Templates/Views/CodeView` in Storybook to paste and interactively inspect or edit PTTF templates live.

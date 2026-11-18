@@ -1,5 +1,5 @@
 import { useFormStatus } from "react-dom";
-import { Button, Input, Heading, Text, Icon, Field } from "..";
+import { Button, Input, PasswordInput, Heading, Text, Icon, Field } from "..";
 import React, { useState } from "react";
 import {
   DEFAULT_AUTH_FORM_LABELS,
@@ -140,12 +140,10 @@ export function AuthFormUI({
                   : ""
               }
             >
-              <Input
+              <PasswordInput
                 name="password"
-                type="password"
                 required
                 placeholder={passwordLabel}
-                leftIcon={<Icon name="lockClosed" />}
               />
             </Field>
           )}

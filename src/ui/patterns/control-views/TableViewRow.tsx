@@ -10,6 +10,7 @@ import {
   PEERBOTS_FONT_COLOR_MAP,
 } from "../../forms/PeerbotsColorSelector";
 import { Select, type SelectOption } from "../../forms/Select";
+import { TextArea } from "../../forms/TextArea";
 import { Icon } from "../../foundations/Icon";
 import { TableCell, TableCellField, TableRow } from "../../layout/Table";
 import type { TableDensity } from "../../layout/useTableState";
@@ -167,6 +168,7 @@ export function TableViewRow({
                 variant="compact"
                 disabled={disabled}
                 placeholder={resolvedLabels.buttonTitle}
+                title={button.details.title}
                 value={button.details.title}
                 style={{
                   backgroundColor: labelColorHex,
@@ -271,15 +273,17 @@ export function TableViewRow({
       <TableCell density={density}>
         {button.type === "Message" ? (
           <TableCellField
-            cellVariant="compact"
+            cellVariant="default"
             label={`${resolvedLabels.speech}: ${rowName}`}
           >
-            <Input
-              size="sm"
-              variant="compact"
+            <TextArea
+              rows={1}
               disabled={disabled || syncActive}
+              aria-label={`${resolvedLabels.speech}: ${rowName}`}
               placeholder={resolvedLabels.speech}
+              title={button.details.speech}
               value={button.details.speech}
+              className="pb:min-h-[30px] pb:py-1 pb:px-2 pb:text-xs pb:leading-snug pb:bg-white pb:resize-y pb:[field-sizing:content] pb:disabled:opacity-60 pb:disabled:bg-gray-50"
               onFocus={() => {
                 if (!disabled) {
                   onButtonAction(button, buttonId, { type: "SELECT" });
@@ -303,15 +307,17 @@ export function TableViewRow({
           </TableCellField>
         ) : (
           <TableCellField
-            cellVariant="compact"
+            cellVariant="default"
             label={`${resolvedLabels.details}: ${rowName}`}
           >
-            <Input
-              size="sm"
-              variant="compact"
+            <TextArea
+              rows={1}
               disabled={disabled || syncActive}
+              aria-label={`${resolvedLabels.details}: ${rowName}`}
               placeholder={resolvedLabels.details}
+              title={button.details.details ?? ""}
               value={button.details.details ?? ""}
+              className="pb:min-h-[30px] pb:py-1 pb:px-2 pb:text-xs pb:leading-snug pb:bg-white pb:resize-y pb:[field-sizing:content] pb:disabled:opacity-60 pb:disabled:bg-gray-50"
               onFocus={() => {
                 if (!disabled) {
                   onButtonAction(button, buttonId, { type: "SELECT" });

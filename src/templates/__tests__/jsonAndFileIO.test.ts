@@ -16,8 +16,10 @@ import {
   parsePaletteCsv,
   parseTemplateFile,
   parseTemplateJson,
+  parseTemplatePttf,
   parseTemplateText,
   serializeTemplateJson,
+  serializeTemplatePttf,
   type OrderedTemplatesObject,
   type Template,
 } from "../index";
@@ -482,3 +484,80 @@ describe("Canonical examples.ts round-trip invariants", () => {
     }
   });
 });
+
+describe("parseTemplatePttf, serializeTemplatePttf, and .pttf auto-detection", () => {
+  it("serializes a template to PTTF and parses it back cleanly", () => {
+    const pttf = serializeTemplatePttf(EXAMPLE_LOG_AND_SPEAK_TEMPLATE);
+    expect(pttf).toContain(`// ${EXAMPLE_LOG_AND_SPEAK_TEMPLATE.title}`);
+    expect(pttf).toContain("- [");
+    expect(pttf).toContain("! [");
+
+    const parsed = parseTemplatePttf(pttf, "example.pttf", {
+      generateMissingIds: true,
+    });
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0].title).toBe(EXAMPLE_LOG_AND_SPEAK_TEMPLATE.title);
+    expect(parsed[0].id).toBeTruthy();
+    expect(Object.keys(parsed[0].buttons).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("auto-detects .pttf file hints and PTTF syntax in parseTemplateText without breaking CSV", () => {
+    const pttfSource = [
+      "// Greeting Flow",
+      "",
+      "- [Green] :) Hello | Hello there!",
+      "  ! [Grey] Log Greeting | User greeted robot",
+      "  -> #follow-up",
+      "- #follow-up [Blue] Ask Name | What is your name?",
+    ].join("\n");
+
+    const byExtension = parseTemplateText(pttfSource, "greeting.pttf");
+    expect(byExtension).toHaveLength(1);
+    expect(byExtension[0].title).toBe("Greeting Flow");
+    expect(byExtension[0].hierarchy?.root).toHaveLength(2);
+
+    const byContent = parseTemplateText(pttfSource);
+    expect(byContent).toHaveLength(1);
+    expect(byContent[0].title).toBe("Greeting Flow");
+
+    const fromCsv = parseTemplateText(EXAMPLE_MODERN_PALETTE_CSV);
+    expect(fromCsv).toHaveLength(1);
+    expect(Object.keys(fromCsv[0].buttons).length).toBeGreaterThan(0);
+
+    const multilineCsvWithDashLine = [
+      "title,speech,color,emotion",
+      '"Greeting","Hello!',
+      '- Nice to meet you!",Green,Happy',
+    ].join("\n");
+    const fromMultilineCsv = parseTemplateText(multilineCsvWithDashLine);
+    expect(fromMultilineCsv).toHaveLength(1);
+    expect(Object.values(fromMultilineCsv[0].buttons)[0].details.title).toBe(
+      "Greeting",
+    );
+  });
+
+  it("throws descriptive errors on invalid PTTF diagnostics or empty PTTF", () => {
+    expect(() =>
+      parseTemplatePttf(
+        "- [Green] Broken | Hi\n  -> #missing-anchor",
+        "broken.pttf",
+      ),
+    ).toThrow(/Invalid PTTF in "broken\.pttf".*missing-anchor/);
+
+    expect(() => parseTemplatePttf("// Empty Only", "empty.pttf")).toThrow(
+      /No valid template buttons found in PTTF "empty\.pttf"/,
+    );
+  });
+
+  it("parses .pttf files via parseTemplateFile", async () => {
+    const pttf = serializeTemplatePttf(EXAMPLE_STARTER_SOCIAL_TEMPLATE);
+    const file = new File([pttf], "starter-social.pttf", {
+      type: "text/plain",
+    });
+
+    const parsed = await parseTemplateFile(file);
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0].title).toBe(EXAMPLE_STARTER_SOCIAL_TEMPLATE.title);
+  });
+});
+

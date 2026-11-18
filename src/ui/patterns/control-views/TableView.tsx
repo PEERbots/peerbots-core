@@ -413,7 +413,7 @@ export function TableView({
               density={density}
               className="pb:w-[152px]"
               headerAction={
-                !disabled && visibleRows.length > 0 ? (
+                !disabled && selectedRowIdsInView.length > 0 ? (
                   <TableColumnApplyAllPopover<FlattenedTableEntry, PeerbotsColor>
                     columnTitle={resolvedLabels.labelColor}
                     allRows={visibleRows}
@@ -458,7 +458,7 @@ export function TableView({
               density={density}
               className="pb:w-[152px]"
               headerAction={
-                !disabled && messageEntries.length > 0 ? (
+                !disabled && selectedMessageRowIds.length > 0 ? (
                   <TableColumnApplyAllPopover<FlattenedTableEntry, PeerbotsColor>
                     columnTitle={resolvedLabels.robotColor}
                     allRows={messageEntries}
@@ -511,7 +511,7 @@ export function TableView({
               density={density}
               className="pb:w-[180px]"
               headerAction={
-                !disabled && messageEntries.length > 0 ? (
+                !disabled && selectedMessageRowIds.length > 0 ? (
                   <TableColumnApplyAllPopover<
                     FlattenedTableEntry,
                     PeerbotsEmotion

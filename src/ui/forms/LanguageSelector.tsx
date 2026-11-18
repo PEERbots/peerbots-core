@@ -252,19 +252,26 @@ export function LanguageSelector({
             disabled={disabled}
             aria-label={`${resolvedLabels.language}: ${currentLanguageInfo.name}`}
             className={cn(
-              "pb:relative pb:m-1 pb:p-2 pb:hover:bg-gray-200 pb:rounded-md pb:transition-all pb:duration-200 pb:cursor-pointer pb:flex pb:flex-col pb:justify-center pb:items-center pb:focus-visible:outline-2 pb:focus-visible:outline-offset-2 pb:focus-visible:outline-peerbots-darkteal pb:text-gray-800 pb:hover:text-gray-950 pb:disabled:opacity-50 pb:disabled:cursor-not-allowed",
+              "pb:relative pb:mx-auto pb:my-0.5 pb:w-9 pb:h-9 pb:p-1 pb:hover:bg-gray-200 pb:rounded-md pb:transition-all pb:duration-200 pb:cursor-pointer pb:flex pb:flex-col pb:justify-center pb:items-center pb:focus-visible:outline-2 pb:focus-visible:outline-offset-2 pb:focus-visible:outline-peerbots-darkteal pb:text-gray-800 pb:hover:text-gray-950 pb:disabled:opacity-50 pb:disabled:cursor-not-allowed",
               className,
             )}
           >
-            {badgeType && renderBadge("pb:absolute pb:-top-1.5 pb:-end-1 pb:z-10")}
             <Icon
               name="globe"
-              size="lg"
+              size="sm"
               aria-hidden="true"
-              className="pb:w-6 pb:h-6 pb:text-gray-700"
+              className="pb:w-4 pb:h-4 pb:text-gray-700"
             />
-            <span className="pb:text-[10px] pb:text-center pb:mt-1 pb:uppercase pb:font-semibold">
-              {value.toUpperCase()}
+            <span className="pb:inline-flex pb:items-center pb:justify-center pb:gap-0.5 pb:text-[9px] pb:leading-none pb:text-center pb:mt-0.5 pb:uppercase pb:font-semibold">
+              <span>{value.toUpperCase()}</span>
+              {badgeType === "beta" && (
+                <span
+                  aria-label={resolvedLabels.beta}
+                  className="pb:text-amber-800 pb:font-bold pb:normal-case"
+                >
+                  β
+                </span>
+              )}
             </span>
           </button>
         }

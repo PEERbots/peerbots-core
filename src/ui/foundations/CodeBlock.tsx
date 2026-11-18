@@ -5,7 +5,7 @@ import { Icon } from "./Icon";
 export interface CodeBlockProps {
   /** The code string to display */
   code: string;
-  /** Programming language for syntax/badge (e.g. bash, tsx, json) */
+  /** Programming language for syntax/badge (e.g. bash, tsx, json, pttf) */
   language?: string;
   /** Optional file name displayed in the window header */
   fileName?: string;
@@ -16,6 +16,57 @@ export interface CodeBlockProps {
   /** Whether to show the copy button */
   showCopyButton?: boolean;
   className?: string;
+}
+
+const CODE_TOKEN_REGEX =
+  /(\/\/.*$|#.*$|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\b(?:import|export|from|const|let|var|function|return|type|interface|async|await|if|else|true|false|null|undefined|npm|npx|install)\b|\b\d+(?:\.\d+)?\b|<\/?[A-Za-z][A-Za-z0-9.]*)/;
+
+function highlightCodeLine(line: string, language?: string): React.ReactNode {
+  if (!language || !line) return line;
+  const lang = language.toLowerCase();
+  const parts: React.ReactNode[] = [];
+  let rest = line;
+  let key = 0;
+
+  while (rest.length > 0) {
+    const match = rest.match(CODE_TOKEN_REGEX);
+    if (!match || match.index === undefined) {
+      parts.push(rest);
+      break;
+    }
+    if (match.index > 0) {
+      parts.push(rest.slice(0, match.index));
+    }
+    const token = match[0];
+    let cls = "pb:text-gray-100";
+    if (token.startsWith("//") || (token.startsWith("#") && lang !== "pttf")) {
+      cls = "pb:text-gray-400 pb:italic";
+    } else if (
+      token.startsWith('"') ||
+      token.startsWith("'") ||
+      token.startsWith("`")
+    ) {
+      const afterToken = rest.slice(match.index + token.length);
+      cls =
+        lang === "json" && /^\s*:/.test(afterToken)
+          ? "pb:text-teal-300"
+          : "pb:text-emerald-300";
+    } else if (/^\d/.test(token)) {
+      cls = "pb:text-amber-300";
+    } else if (token.startsWith("<")) {
+      cls = "pb:text-sky-300";
+    } else {
+      cls = "pb:text-purple-300";
+    }
+    parts.push(
+      <span key={key++} className={cls}>
+        {token}
+      </span>,
+    );
+    rest = rest.slice(match.index + token.length);
+  }
+
+  return parts;
 }
 
 export const CodeBlock: React.FC<CodeBlockProps> = ({
@@ -103,18 +154,23 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
         <div className="pb:p-4 sm:pb:p-5 pb:overflow-x-auto pb:text-sm sm:pb:text-base pb:leading-relaxed">
           <pre className="pb:font-mono pb:m-0">
             <code>
-              {showLineNumbers ? (
-                codeLines.map((line, idx) => (
-                  <div key={idx} className="pb:table-row">
-                    <span className="pb:table-cell pb:pe-4 pb:text-end pb:select-none pb:text-gray-400 pb:text-xs">
-                      {idx + 1}
-                    </span>
-                    <span className="pb:table-cell">{line}</span>
-                  </div>
-                ))
-              ) : (
-                code
-              )}
+              {showLineNumbers
+                ? codeLines.map((line, idx) => (
+                    <div key={idx} className="pb:table-row">
+                      <span className="pb:table-cell pb:pe-4 pb:text-end pb:select-none pb:text-gray-400 pb:text-xs">
+                        {idx + 1}
+                      </span>
+                      <span className="pb:table-cell">
+                        {highlightCodeLine(line, language)}
+                      </span>
+                    </div>
+                  ))
+                : codeLines.map((line, idx) => (
+                    <React.Fragment key={idx}>
+                      {highlightCodeLine(line, language)}
+                      {idx < codeLines.length - 1 ? "\n" : null}
+                    </React.Fragment>
+                  ))}
             </code>
           </pre>
         </div>
@@ -128,18 +184,23 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
           >
             <pre className="pb:font-mono pb:m-0">
               <code>
-                {showLineNumbers ? (
-                  codeLines.map((line, idx) => (
-                    <div key={idx} className="pb:table-row">
-                      <span className="pb:table-cell pb:pe-4 pb:text-end pb:select-none pb:text-gray-400 pb:text-xs">
-                        {idx + 1}
-                      </span>
-                      <span className="pb:table-cell">{line}</span>
-                    </div>
-                  ))
-                ) : (
-                  code
-                )}
+                {showLineNumbers
+                  ? codeLines.map((line, idx) => (
+                      <div key={idx} className="pb:table-row">
+                        <span className="pb:table-cell pb:pe-4 pb:text-end pb:select-none pb:text-gray-400 pb:text-xs">
+                          {idx + 1}
+                        </span>
+                        <span className="pb:table-cell">
+                          {highlightCodeLine(line, language)}
+                        </span>
+                      </div>
+                    ))
+                  : codeLines.map((line, idx) => (
+                      <React.Fragment key={idx}>
+                        {highlightCodeLine(line, language)}
+                        {idx < codeLines.length - 1 ? "\n" : null}
+                      </React.Fragment>
+                    ))}
               </code>
             </pre>
           </div>

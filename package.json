@@ -39,8 +39,13 @@
     "./dist/index.css": {
       "style": "./dist/index.css",
       "default": "./dist/index.css"
-    }
+    },
+    "./skills/peerbots-content-authoring": "./skills/peerbots-content-authoring/SKILL.md"
   },
+  "files": [
+    "dist/**",
+    "skills/**"
+  ],
   "license": "GPL-3.0-only",
   "author": "Peerbots",
   "repository": {
@@ -101,7 +106,7 @@
     "@xyflow/react": "^12.10.2",
     "autoprefixer": "^10.4.27",
     "jsdom": "^27.4.0",
-    "playwright": "^1.58.2",
+    "playwright": "^1.65.1",
     "postcss": "^8.5.8",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",

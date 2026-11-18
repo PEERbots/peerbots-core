@@ -21,6 +21,8 @@ import {
   serializePaletteCsv,
   type SerializePaletteCsvOptions,
 } from "./paletteConverters";
+import { formatTemplateToCode } from "./pttf/format";
+import { analyzeTemplateCode } from "./pttf/parse";
 import type {
   LoggedEvent,
   Message,
@@ -100,7 +102,8 @@ function resolveParseContext(
       : (options ?? {});
 
   const derivedTitle =
-    fileName.replace(/\.(json|csv)$/i, "").trim() || defaultTitleFallback;
+    fileName.replace(/\.(json|csv|pttf|txt|md)$/i, "").trim() ||
+    defaultTitleFallback;
   const fallbackTitle = opts.fallbackTitle?.trim() || derivedTitle;
 
   return {
@@ -115,7 +118,7 @@ function slugify(value: string): string {
   return (
     value
       .toLowerCase()
-      .replace(/\.(json|csv)$/i, "")
+      .replace(/\.(json|csv|pttf|txt|md)$/i, "")
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "") || "template"
   );
@@ -765,8 +768,83 @@ export function parseTemplateCsv(
   return [normalized];
 }
 
+function isPttfSyntaxLine(line: string): boolean {
+  return (
+    line.startsWith("//") ||
+    line.startsWith("- ") ||
+    line.startsWith("! ") ||
+    line.startsWith("-> #") ||
+    line.startsWith("## ") ||
+    /^\[[^\]]+\]/.test(line)
+  );
+}
+
+function looksLikePttfText(trimmed: string): boolean {
+  const lines = trimmed
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
+  if (lines.length === 0) return false;
+  const firstLine = lines[0];
+  if (firstLine.includes(",") && !isPttfSyntaxLine(firstLine)) {
+    return false;
+  }
+  return lines.some(isPttfSyntaxLine);
+}
+
 /**
- * Auto-detects JSON vs. CSV template text (using `fileNameHint` and leading token inspection)
+ * Parses Peerbots Template Text Format (PTTF) into canonical `Template[]`.
+ */
+export function parseTemplatePttf(
+  pttfText: string,
+  fileNameOrOptions?: string | ParseTemplateOptions,
+  options?: ParseTemplateOptions,
+): Template[] {
+  const context = resolveParseContext(
+    "uploaded-template.pttf",
+    "Imported Template",
+    fileNameOrOptions,
+    options,
+  );
+  const withoutBom = pttfText.startsWith("\uFEFF")
+    ? pttfText.slice(1)
+    : pttfText;
+  const analysis = analyzeTemplateCode(withoutBom, {
+    title: context.fallbackTitle,
+  });
+
+  const errors = analysis.diagnostics.filter((d) => d.severity === "error");
+  if (errors.length > 0) {
+    const summary = errors
+      .map((e) => `Line ${e.lineNumber}: ${e.message}`)
+      .join("; ");
+    throw new Error(`Invalid PTTF in "${context.fileName}": ${summary}`);
+  }
+
+  const normalized = normalizeSingleTemplateObject(
+    analysis.template as unknown as Record<string, unknown>,
+    context,
+    0,
+  );
+
+  if (!normalized) {
+    throw new Error(
+      `No valid template buttons found in PTTF "${context.fileName}".`,
+    );
+  }
+
+  return [normalized];
+}
+
+/**
+ * Serializes a canonical `Template` to Peerbots Template Text Format (PTTF).
+ */
+export function serializeTemplatePttf(template: Template): string {
+  return formatTemplateToCode(template).code;
+}
+
+/**
+ * Auto-detects JSON, PTTF, vs. CSV template text (using `fileNameHint` and leading token inspection)
  * and parses it into canonical `Template[]`.
  */
 export function parseTemplateText(
@@ -797,6 +875,9 @@ export function parseTemplateText(
   if (lowerHint.endsWith(".json")) {
     return parseTemplateJson(text, fileNameHint, resolvedOpts);
   }
+  if (lowerHint.endsWith(".pttf")) {
+    return parseTemplatePttf(text, fileNameHint, resolvedOpts);
+  }
   if (lowerHint.endsWith(".csv") && !looksLikeJson) {
     return parseTemplateCsv(text, fileNameHint, resolvedOpts);
   }
@@ -804,6 +885,13 @@ export function parseTemplateText(
     return parseTemplateJson(
       text,
       fileNameHint ?? "uploaded-template.json",
+      resolvedOpts,
+    );
+  }
+  if (looksLikePttfText(trimmed)) {
+    return parseTemplatePttf(
+      text,
+      fileNameHint ?? "uploaded-template.pttf",
       resolvedOpts,
     );
   }
@@ -828,7 +916,7 @@ async function readFileAsText(file: File): Promise<string> {
 }
 
 /**
- * Validates size (`<= MAX_TEMPLATE_FILE_BYTES`) and parses an uploaded `.json` or `.csv`
+ * Validates size (`<= MAX_TEMPLATE_FILE_BYTES`) and parses an uploaded `.json`, `.pttf`, or `.csv`
  * `File` into canonical `Template[]`.
  */
 export async function parseTemplateFile(

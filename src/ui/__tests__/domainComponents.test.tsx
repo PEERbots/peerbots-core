@@ -268,7 +268,11 @@ describe("Domain UI Components", () => {
       (selects[0].props.onChange as (val: string | null) => void)("Spanish");
       expect(onLanguageChange).toHaveBeenCalledWith("Spanish");
       (selects[1].props.onChange as (val: string | null) => void)("urn:monica");
-      expect(onVoiceChange).toHaveBeenCalledWith("urn:monica");
+      expect(onVoiceChange).toHaveBeenCalledWith("urn:monica", {
+        name: "Mónica",
+        lang: "es-ES",
+        voiceURI: "urn:monica",
+      });
     });
   });
 
@@ -312,7 +316,7 @@ describe("Domain UI Components", () => {
         />,
       );
       expect(sidebarCollapsedHtml).toContain("EN");
-      expect(sidebarCollapsedHtml).toContain("pb:-end-1");
+      expect(sidebarCollapsedHtml).toContain("β");
     });
 
     it("handles language selection across default and popover menu variants", () => {

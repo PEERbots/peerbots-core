@@ -54,3 +54,43 @@ export const ColorsAndVariants: Story = {
     </div>
   ),
 };
+
+export const FloatingOverlay: Story = {
+  render: () => {
+    const [show, setShow] = React.useState(true);
+    return (
+      <div className="pb:relative pb:w-[540px] pb:h-64 pb:rounded-xl pb:border pb:border-gray-200 pb:bg-gray-50 pb:p-6 pb:overflow-hidden">
+        {show && (
+          <Alert
+            placement="floating"
+            position="top-center"
+            positionStrategy="absolute"
+            color="success"
+            variant="solid"
+            title="Saved"
+            message="This alert floats over content without pushing it down."
+            onClose={() => setShow(false)}
+          />
+        )}
+        <div className="pb:space-y-3">
+          <h3 className="pb:text-base pb:font-bold pb:text-gray-900">
+            Underlying Page Content
+          </h3>
+          <p className="pb:text-sm pb:text-gray-600">
+            Notice how this paragraph stays anchored at the top even when the
+            floating alert appears or is dismissed.
+          </p>
+          {!show && (
+            <button
+              type="button"
+              onClick={() => setShow(true)}
+              className="pb:px-3 pb:py-1.5 pb:rounded-md pb:bg-peerbots-teal pb:text-white pb:text-xs pb:font-semibold pb:cursor-pointer"
+            >
+              Show Floating Alert Again
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  },
+};

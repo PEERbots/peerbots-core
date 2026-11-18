@@ -7,3 +7,4 @@ export * from "./PeerbotsButton";
 export * from "./PeerbotsButtonRow";
 export * from "./control-views";
 export * from "./PeerbotsButtonDisplay";
+export * from "./code";
