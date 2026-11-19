@@ -256,7 +256,7 @@ function FlowViewInner({
   direction: controlledDirection,
   defaultDirection = "TB",
   onDirectionChange,
-  defaultDragBehavior = "select",
+  defaultDragBehavior,
   showMiniMap = false,
   logIcon = "pencilNote",
   emotionIcons,
@@ -269,9 +269,20 @@ function FlowViewInner({
   const { screenToFlowPosition, fitView, setCenter, getZoom } = useReactFlow();
   const [uncontrolledDirection, setUncontrolledDirection] =
     useState<FlowDirection>(defaultDirection);
-  const [dragBehavior, setDragBehavior] = useState<FlowDragBehavior>(
-    disabled ? "pan" : defaultDragBehavior,
-  );
+  const [dragBehavior, setDragBehavior] = useState<FlowDragBehavior>(() => {
+    if (disabled) return "pan";
+    if (defaultDragBehavior) return defaultDragBehavior;
+    if (typeof window !== "undefined") {
+      const isCoarsePointer =
+        typeof window.matchMedia === "function" &&
+        window.matchMedia("(pointer: coarse)").matches;
+      const isSmallViewport = window.innerWidth < 768;
+      if (isCoarsePointer || isSmallViewport) {
+        return "pan";
+      }
+    }
+    return "select";
+  });
   const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const [isLayoutTransitioning, setIsLayoutTransitioning] = useState(false);
@@ -1007,109 +1018,112 @@ function FlowViewInner({
             />
           )}
 
-          {!disabled && (
-            <Panel position="top-left">
-              <div className="pb:flex pb:flex-wrap pb:items-center pb:gap-1.5 pb:rounded-lg pb:bg-white/95 pb:backdrop-blur-xs pb:border pb:border-gray-200 pb:shadow-sm pb:p-1">
-                <div
-                  role="group"
-                  aria-label="Canvas drag mode"
-                  className="pb:inline-flex pb:rounded-md pb:bg-gray-100 pb:p-0.5"
-                >
-                  <button
-                    type="button"
-                    aria-pressed={dragBehavior === "select"}
-                    title="Box-select on drag (hold Space or two-finger scroll to pan)"
-                    onClick={() => setDragBehavior("select")}
-                    className={cn(
-                      "pb:px-2 pb:py-1 pb:text-xs pb:font-semibold pb:rounded pb:cursor-pointer pb:transition-colors",
-                      dragBehavior === "select"
-                        ? "pb:bg-gray-900 pb:text-white"
-                        : "pb:text-gray-600 hover:pb:text-gray-900",
-                    )}
+          <Panel
+            position="top-center"
+            className="pb:!m-0 pb:w-full pb:p-2 pb:pointer-events-none"
+          >
+            <div className="pb:flex pb:flex-wrap pb:items-start pb:justify-between pb:gap-2 pb:w-full">
+              {!disabled && (
+                <div className="pb:pointer-events-auto pb:flex pb:flex-wrap pb:items-center pb:gap-1.5 pb:rounded-lg pb:bg-white/95 pb:backdrop-blur-xs pb:border pb:border-gray-200 pb:shadow-sm pb:p-1">
+                  <div
+                    role="group"
+                    aria-label="Canvas drag mode"
+                    className="pb:inline-flex pb:rounded-md pb:bg-gray-100 pb:p-0.5"
                   >
-                    ↖ Select
-                  </button>
-                  <button
-                    type="button"
-                    aria-pressed={dragBehavior === "pan"}
-                    title="Pan on drag (hold Shift + click/drag to multi-select)"
-                    onClick={() => setDragBehavior("pan")}
-                    className={cn(
-                      "pb:px-2 pb:py-1 pb:text-xs pb:font-semibold pb:rounded pb:cursor-pointer pb:transition-colors",
-                      dragBehavior === "pan"
-                        ? "pb:bg-gray-900 pb:text-white"
-                        : "pb:text-gray-600 hover:pb:text-gray-900",
-                    )}
+                    <button
+                      type="button"
+                      aria-pressed={dragBehavior === "select"}
+                      title="Box-select on drag (hold Space or two-finger scroll to pan)"
+                      onClick={() => setDragBehavior("select")}
+                      className={cn(
+                        "pb:px-2 pb:py-1 pb:text-xs pb:font-semibold pb:rounded pb:cursor-pointer pb:transition-colors",
+                        dragBehavior === "select"
+                          ? "pb:bg-gray-900 pb:text-white"
+                          : "pb:text-gray-600 hover:pb:text-gray-900",
+                      )}
+                    >
+                      ↖ Select
+                    </button>
+                    <button
+                      type="button"
+                      aria-pressed={dragBehavior === "pan"}
+                      title="Pan on drag (hold Shift + click/drag to multi-select)"
+                      onClick={() => setDragBehavior("pan")}
+                      className={cn(
+                        "pb:px-2 pb:py-1 pb:text-xs pb:font-semibold pb:rounded pb:cursor-pointer pb:transition-colors",
+                        dragBehavior === "pan"
+                          ? "pb:bg-gray-900 pb:text-white"
+                          : "pb:text-gray-600 hover:pb:text-gray-900",
+                      )}
+                    >
+                      ✋ Pan
+                    </button>
+                  </div>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="pb:h-7 pb:px-2 pb:text-xs"
+                    onClick={() => handleCreateNode(null)}
                   >
-                    ✋ Pan
-                  </button>
+                    + Add
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="pb:h-7 pb:px-2 pb:text-xs"
+                    onClick={handleAutoLayout}
+                  >
+                    Auto-Layout
+                  </Button>
+                </div>
+              )}
+
+              <div className="pb:pointer-events-auto pb:ms-auto pb:flex pb:flex-col pb:items-end pb:gap-2">
+                <div className="pb:bg-white pb:rounded-md pb:shadow-sm pb:p-1.5 pb:border pb:border-gray-200">
+                  <span className="pb:text-xs pb:font-medium pb:text-gray-700 pb:block pb:text-center pb:mb-1">
+                    {resolvedLabels.flowLayout}
+                  </span>
+                  <TabRadio<FlowDirection>
+                    aria-label={resolvedLabels.flowLayout}
+                    options={[
+                      { value: "TB", label: resolvedLabels.topBottom },
+                      { value: "LR", label: resolvedLabels.leftRight },
+                    ]}
+                    value={activeDirection}
+                    onChange={handleDirectionChange}
+                  />
                 </div>
 
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="pb:h-7 pb:px-2 pb:text-xs"
-                  onClick={() => handleCreateNode(null)}
-                >
-                  + Add
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="pb:h-7 pb:px-2 pb:text-xs"
-                  onClick={handleAutoLayout}
-                >
-                  Auto-Layout
-                </Button>
+                {!disabled && selectedEntries.length >= 2 && (
+                  <BatchButtonEditPanel
+                    selectedButtons={selectedEntries}
+                    emotionIcons={emotionIcons}
+                    emotionLabels={emotionLabels}
+                    colorLabels={colorLabels}
+                    labels={labels}
+                    onApplyLabelColor={(labelColor) =>
+                      applyBatchUpdate((btn) => ({ ...btn, labelColor }))
+                    }
+                    onApplyFaceColor={(color) =>
+                      applyBatchUpdate((btn) =>
+                        btn.type === "Message"
+                          ? { ...btn, details: { ...btn.details, color } }
+                          : null,
+                      )
+                    }
+                    onApplyEmotion={(emotion) =>
+                      applyBatchUpdate((btn) =>
+                        btn.type === "Message"
+                          ? { ...btn, details: { ...btn.details, emotion } }
+                          : null,
+                      )
+                    }
+                    onClearSelection={clearSelection}
+                    onDeleteSelected={handleDeleteSelected}
+                  />
+                )}
               </div>
-            </Panel>
-          )}
-
-          <Panel position="top-right">
-            <div className="pb:flex pb:flex-col pb:items-end pb:gap-2">
-              <div className="pb:bg-white pb:rounded-md pb:shadow-sm pb:p-1.5 pb:border pb:border-gray-200">
-                <span className="pb:text-xs pb:font-medium pb:text-gray-700 pb:block pb:text-center pb:mb-1">
-                  {resolvedLabels.flowLayout}
-                </span>
-                <TabRadio<FlowDirection>
-                  aria-label={resolvedLabels.flowLayout}
-                  options={[
-                    { value: "TB", label: resolvedLabels.topBottom },
-                    { value: "LR", label: resolvedLabels.leftRight },
-                  ]}
-                  value={activeDirection}
-                  onChange={handleDirectionChange}
-                />
-              </div>
-
-              {!disabled && selectedEntries.length >= 2 && (
-                <BatchButtonEditPanel
-                  selectedButtons={selectedEntries}
-                  emotionIcons={emotionIcons}
-                  emotionLabels={emotionLabels}
-                  colorLabels={colorLabels}
-                  labels={labels}
-                  onApplyLabelColor={(labelColor) =>
-                    applyBatchUpdate((btn) => ({ ...btn, labelColor }))
-                  }
-                  onApplyFaceColor={(color) =>
-                    applyBatchUpdate((btn) =>
-                      btn.type === "Message"
-                        ? { ...btn, details: { ...btn.details, color } }
-                        : null,
-                    )
-                  }
-                  onApplyEmotion={(emotion) =>
-                    applyBatchUpdate((btn) =>
-                      btn.type === "Message"
-                        ? { ...btn, details: { ...btn.details, emotion } }
-                        : null,
-                    )
-                  }
-                  onClearSelection={clearSelection}
-                  onDeleteSelected={handleDeleteSelected}
-                />
-              )}
             </div>
           </Panel>
         </ReactFlow>

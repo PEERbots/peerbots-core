@@ -778,6 +778,51 @@ describe("Control Views Suite (ButtonView, TableView, FlowView)", () => {
         template.hierarchy.root.length + 1,
       );
     });
+
+    it("defaults to Pan mode on mobile viewports and honors explicit defaultDragBehavior", () => {
+      const originalInnerWidth = window.innerWidth;
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 375,
+      });
+
+      try {
+        const template = makeRichTemplate();
+        const { unmount } = render(
+          <FlowView template={template} onButtonAction={() => undefined} />,
+        );
+
+        expect(screen.getByRole("button", { name: /Pan/i })).toHaveAttribute(
+          "aria-pressed",
+          "true",
+        );
+        expect(screen.getByRole("button", { name: /Select/i })).toHaveAttribute(
+          "aria-pressed",
+          "false",
+        );
+
+        unmount();
+
+        render(
+          <FlowView
+            template={template}
+            defaultDragBehavior="select"
+            onButtonAction={() => undefined}
+          />,
+        );
+        expect(screen.getByRole("button", { name: /Select/i })).toHaveAttribute(
+          "aria-pressed",
+          "true",
+        );
+      } finally {
+        Object.defineProperty(window, "innerWidth", {
+          writable: true,
+          configurable: true,
+          value: originalInnerWidth,
+        });
+      }
+    });
   });
 
   describe("ButtonView Right-Click Edit Popover & BatchButtonEditPanel", () => {

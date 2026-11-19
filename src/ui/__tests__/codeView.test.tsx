@@ -92,6 +92,10 @@ describe("CodeView", () => {
     expect(within(jsonList).getByText('"buttons"')).toBeInTheDocument();
     expect(within(jsonList).getByText('"hierarchy"')).toBeInTheDocument();
 
+    expect(
+      screen.queryByRole("button", { name: /copy/i }),
+    ).not.toBeInTheDocument();
+
     const results = await axe.run(container);
     expect(results.violations).toEqual([]);
   });

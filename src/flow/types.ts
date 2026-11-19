@@ -66,7 +66,7 @@ export interface FlowViewProps {
   defaultDirection?: FlowDirection;
   /** Callback invoked when layout direction changes */
   onDirectionChange?: (direction: FlowDirection) => void;
-  /** Initial unmodified left-drag behavior (`"select"` marquee box or `"pan"` viewport) (@default "select") */
+  /** Initial unmodified left-drag behavior (`"select"` marquee box or `"pan"` viewport). Defaults to `"pan"` on mobile/touch viewports and `"select"` on desktop. */
   defaultDragBehavior?: FlowDragBehavior;
   /** Shows the ReactFlow `<MiniMap>` in the bottom-right corner (@default false) */
   showMiniMap?: boolean;
