@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 import { Icon } from "../foundations/Icon";
 import { Heading, Text } from "../foundations/Typography";
 import { Button } from "../forms/Button";
 import { Input } from "../forms/Input";
+import { Label } from "../forms/Label";
 import { TextArea } from "../forms/TextArea";
 import { cn } from "../utils";
 
@@ -44,6 +45,14 @@ export interface InlineEditableSectionProps {
   hideEditButton?: boolean;
   /** Optional character threshold above which description is clamped to 1 line with Read More / Show Less toggle in view mode. */
   clampDescriptionThreshold?: number;
+  /** Visible `<Label>` text rendered above the title `<Input>` in edit mode (defaults to `titleAriaLabel`). */
+  titleLabel?: string;
+  /** Optional tooltip copy displayed on the title `<Label>`. */
+  titleTooltip?: string;
+  /** Visible `<Label>` text rendered above the description `<TextArea>` in edit mode (defaults to `descriptionAriaLabel`). */
+  descriptionLabel?: string;
+  /** Optional tooltip copy displayed on the description `<Label>`. */
+  descriptionTooltip?: string;
   /** Placeholder for the title `<Input>`. */
   titlePlaceholder?: string;
   /** Placeholder for the description `<TextArea>`. */
@@ -92,6 +101,10 @@ export function InlineEditableSection({
   children,
   hideEditButton = false,
   clampDescriptionThreshold,
+  titleLabel,
+  titleTooltip,
+  descriptionLabel,
+  descriptionTooltip,
   titlePlaceholder = "Enter name...",
   descriptionPlaceholder = "Enter description...",
   titleAriaLabel = "Title",
@@ -105,6 +118,13 @@ export function InlineEditableSection({
   descriptionRows = 3,
   className,
 }: InlineEditableSectionProps) {
+  const baseId = useId();
+  const titleInputId = `${baseId}-title`;
+  const descriptionInputId = `${baseId}-description`;
+
+  const resolvedTitleLabel = titleLabel ?? titleAriaLabel;
+  const resolvedDescriptionLabel = descriptionLabel ?? descriptionAriaLabel;
+
   const [uncontrolledEditing, setUncontrolledEditing] =
     useState<boolean>(defaultEditing);
   const isEditing =
@@ -164,32 +184,44 @@ export function InlineEditableSection({
     description.length > clampDescriptionThreshold;
 
   return (
-    <div className={cn("space-y-2", className)}>
+    <div className={cn("pb:space-y-2", className)}>
       {isEditing ? (
-        <div className="space-y-2.5">
+        <div className="pb:space-y-2.5">
           {editableTitle && (
-            <div>
+            <div className="pb:space-y-1">
+              {resolvedTitleLabel && (
+                <Label htmlFor={titleInputId} tooltip={titleTooltip}>
+                  {resolvedTitleLabel}
+                </Label>
+              )}
               <Input
+                id={titleInputId}
                 value={draftTitle}
                 onChange={(e) => setDraftTitle(e.target.value)}
                 placeholder={titlePlaceholder}
                 aria-label={titleAriaLabel}
-                className="w-full font-semibold"
+                className="pb:w-full pb:font-semibold"
               />
             </div>
           )}
-          <div>
+          <div className="pb:space-y-1">
+            {resolvedDescriptionLabel && (
+              <Label htmlFor={descriptionInputId} tooltip={descriptionTooltip}>
+                {resolvedDescriptionLabel}
+              </Label>
+            )}
             <TextArea
+              id={descriptionInputId}
               value={draftDescription}
               onChange={(e) => setDraftDescription(e.target.value)}
               placeholder={descriptionPlaceholder}
               aria-label={descriptionAriaLabel}
               rows={descriptionRows}
-              className="w-full"
+              className="pb:w-full"
             />
           </div>
           {children}
-          <div className="mt-2 flex items-center gap-2">
+          <div className="pb:mt-2 pb:flex pb:items-center pb:gap-2">
             <Button
               variant="primary"
               size="sm"
@@ -204,9 +236,9 @@ export function InlineEditableSection({
           </div>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="pb:space-y-2">
           {(editableTitle || title || titleBadges) && (
-            <div className="flex items-center flex-wrap gap-2">
+            <div className="pb:flex pb:items-center pb:flex-wrap pb:gap-2">
               {title && <Heading level={titleHeadingLevel}>{title}</Heading>}
               {titleBadges}
             </div>
@@ -214,11 +246,11 @@ export function InlineEditableSection({
 
           {description ? (
             clampDescriptionThreshold !== undefined ? (
-              <div className="bg-gray-50/50 p-2 rounded-xl border border-gray-100/50">
+              <div className="pb:bg-gray-50/50 pb:p-2 pb:rounded-xl pb:border pb:border-gray-100/50">
                 <div
                   className={cn(
-                    "leading-relaxed",
-                    isClamped && !isExpanded && "line-clamp-1",
+                    "pb:leading-relaxed",
+                    isClamped && !isExpanded && "pb:line-clamp-1",
                   )}
                 >
                   <Text variant="muted">{description}</Text>
@@ -234,10 +266,12 @@ export function InlineEditableSection({
                 )}
               </div>
             ) : (
-              <div className="text-normal text-gray-800">{description}</div>
+              <div className="pb:text-normal pb:text-gray-800">
+                {description}
+              </div>
             )
           ) : shouldShowEmpty && emptyDescriptionText ? (
-            <div className="text-gray-500 text-xs italic">
+            <div className="pb:text-gray-500 pb:text-xs pb:italic">
               {emptyDescriptionText}
             </div>
           ) : null}
@@ -245,7 +279,7 @@ export function InlineEditableSection({
           {children}
 
           {!hideEditButton && (
-            <div className="mt-2">
+            <div className="pb:mt-2">
               <Button
                 variant="secondary"
                 size="sm"

@@ -69,14 +69,16 @@ describe("InlineEditableSection", () => {
       />,
     );
 
-    const titleInput = screen.getByRole("textbox", {
-      name: /collection name/i,
-    });
-    const descInput = screen.getByRole("textbox", {
-      name: /collection description/i,
-    });
+    const titleInput = screen.getByLabelText("Collection Name");
+    const descInput = screen.getByLabelText("Collection Description");
     const saveButton = screen.getByRole("button", { name: /save/i });
 
+    expect(
+      screen.getByText("Collection Name", { selector: "label > div" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Collection Description", { selector: "label > div" }),
+    ).toBeInTheDocument();
     expect(titleInput).toHaveValue("Classroom Greetings");
     expect(descInput).toHaveValue("Morning check-in templates");
 

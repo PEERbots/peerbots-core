@@ -28,12 +28,14 @@ export const Variations: Story = {
     );
 
     return (
-      <div className="space-y-6 max-w-xl">
-        <div className="p-4 border border-gray-200 rounded-xl bg-white">
+      <div className="pb:space-y-6 pb:max-w-xl">
+        <div className="pb:p-4 pb:border pb:border-gray-200 pb:rounded-xl pb:bg-white">
           <InlineEditableSection
             editableTitle
             title={title}
             description={desc}
+            titleLabel="Collection Name"
+            descriptionLabel="Collection Description"
             titleAriaLabel="Collection Name"
             descriptionAriaLabel="Collection Description"
             onSave={(values) => {
@@ -43,9 +45,10 @@ export const Variations: Story = {
           />
         </div>
 
-        <div className="p-4 border border-gray-200 rounded-xl bg-white">
+        <div className="pb:p-4 pb:border pb:border-gray-200 pb:rounded-xl pb:bg-white">
           <InlineEditableSection
             description=""
+            descriptionLabel="Template Description"
             emptyDescriptionText="No description set."
             onSave={() => {}}
           />
