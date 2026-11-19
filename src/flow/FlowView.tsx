@@ -82,6 +82,7 @@ interface FlowNodeContextValue {
   selectedNodeIds: ReadonlyArray<string>;
   editingNodeId: string | null;
   disabled: boolean;
+  isEditingLocked: boolean;
   logIcon: IconName;
   emotionIcons?: Partial<Record<PeerbotsEmotion, string | React.ReactNode>>;
   emotionLabels?: Partial<Record<PeerbotsEmotion, string>>;
@@ -101,6 +102,7 @@ const FlowNodeContext = createContext<FlowNodeContextValue>({
   selectedNodeIds: [],
   editingNodeId: null,
   disabled: false,
+  isEditingLocked: false,
   logIcon: "pencilNote",
   onOpenEdit: () => undefined,
   onCloseEdit: () => undefined,
@@ -121,6 +123,7 @@ const PeerbotsButtonNode = memo(function PeerbotsButtonNode({
     selectedNodeIds,
     editingNodeId,
     disabled,
+    isEditingLocked,
     logIcon,
     emotionIcons,
     emotionLabels,
@@ -139,11 +142,11 @@ const PeerbotsButtonNode = memo(function PeerbotsButtonNode({
   const targetPos = direction === "TB" ? Position.Top : Position.Left;
   const isSelected = Boolean(selected) || buttonId === selectedButtonId;
   const isSingleSelected =
-    !disabled &&
+    !isEditingLocked &&
     isSelected &&
     selectedNodeIds.length <= 1 &&
     editingNodeId !== buttonId;
-  const isEditing = !disabled && editingNodeId === buttonId;
+  const isEditing = !isEditingLocked && editingNodeId === buttonId;
 
   return (
     <div className="pb:relative">
@@ -211,6 +214,7 @@ const PeerbotsButtonNode = memo(function PeerbotsButtonNode({
       <Handle
         type="target"
         position={targetPos}
+        isConnectable={!isEditingLocked}
         className={handleHitClassName}
       />
       <PeerbotsButton
@@ -224,7 +228,7 @@ const PeerbotsButtonNode = memo(function PeerbotsButtonNode({
           /* Handled via FlowView's onNodeClick */
         }}
         onDoubleClick={(e) => {
-          if (disabled) return;
+          if (isEditingLocked) return;
           e.stopPropagation();
           onOpenEdit(buttonId);
         }}
@@ -232,6 +236,7 @@ const PeerbotsButtonNode = memo(function PeerbotsButtonNode({
       <Handle
         type="source"
         position={sourcePos}
+        isConnectable={!isEditingLocked}
         className={handleHitClassName}
       />
     </div>
@@ -269,6 +274,8 @@ function FlowViewInner({
   const { screenToFlowPosition, fitView, setCenter, getZoom } = useReactFlow();
   const [uncontrolledDirection, setUncontrolledDirection] =
     useState<FlowDirection>(defaultDirection);
+  const [isLocked, setIsLocked] = useState(false);
+  const isEditingLocked = disabled || isLocked;
   const [dragBehavior, setDragBehavior] = useState<FlowDragBehavior>(() => {
     if (disabled) return "pan";
     if (defaultDragBehavior) return defaultDragBehavior;
@@ -466,19 +473,19 @@ function FlowViewInner({
 
   const isValidConnection: IsValidConnection = useCallback(
     (connection) => {
-      if (disabled) return false;
+      if (isEditingLocked) return false;
       const source = connection.source;
       const target = connection.target;
       if (!source || !target || source === target) return false;
       const existingChildren = templateRef.current.hierarchy?.[source] ?? [];
       return !existingChildren.includes(target);
     },
-    [disabled],
+    [isEditingLocked],
   );
 
   const onConnect = useCallback(
     (connection: Connection) => {
-      if (disabled || !connection.source || !connection.target) return;
+      if (isEditingLocked || !connection.source || !connection.target) return;
       if (connection.source === connection.target) return;
       onAddConnectionRef.current?.(connection.source, connection.target);
       if (onHierarchyChangeRef.current || onTemplateChangeRef.current) {
@@ -491,7 +498,7 @@ function FlowViewInner({
         );
       }
     },
-    [disabled, emitHierarchyUpdate],
+    [isEditingLocked, emitHierarchyUpdate],
   );
 
   const panToNewNode = useCallback(
@@ -570,7 +577,8 @@ function FlowViewInner({
   // Connecting from a handle into empty canvas creates a new connected button at the drop point
   const onConnectEnd: OnConnectEnd = useCallback(
     (event, connectionState) => {
-      if (disabled || connectionState.isValid || connectionState.toNode) return;
+      if (isEditingLocked || connectionState.isValid || connectionState.toNode)
+        return;
       const fromNodeId = connectionState.fromNode?.id;
       if (!fromNodeId) return;
 
@@ -599,14 +607,15 @@ function FlowViewInner({
     [
       activeDirection,
       createConnectedButtonAt,
-      disabled,
+      isEditingLocked,
       screenToFlowPosition,
     ],
   );
 
   const onReconnect = useCallback(
     (oldEdge: Edge, newConnection: Connection) => {
-      if (disabled || !newConnection.source || !newConnection.target) return;
+      if (isEditingLocked || !newConnection.source || !newConnection.target)
+        return;
       if (newConnection.source === newConnection.target) return;
       onRemoveConnection?.(oldEdge.source, oldEdge.target);
       onAddConnectionRef.current?.(newConnection.source, newConnection.target);
@@ -625,12 +634,12 @@ function FlowViewInner({
         );
       }
     },
-    [disabled, emitHierarchyUpdate, onRemoveConnection],
+    [isEditingLocked, emitHierarchyUpdate, onRemoveConnection],
   );
 
   const onEdgesDelete = useCallback(
     (deletedEdges: Edge[]) => {
-      if (disabled) return;
+      if (isEditingLocked) return;
       let nextHierarchy = templateRef.current.hierarchy;
       for (const edge of deletedEdges) {
         onRemoveConnection?.(edge.source, edge.target);
@@ -647,7 +656,7 @@ function FlowViewInner({
         emitHierarchyUpdate(nextHierarchy);
       }
     },
-    [disabled, emitHierarchyUpdate, onRemoveConnection],
+    [isEditingLocked, emitHierarchyUpdate, onRemoveConnection],
   );
 
   const onNodeClick = useCallback(
@@ -671,7 +680,7 @@ function FlowViewInner({
       }
 
       if (
-        disabled ||
+        isEditingLocked ||
         (!onHierarchyChangeRef.current && !onTemplateChangeRef.current)
       ) {
         return;
@@ -694,7 +703,7 @@ function FlowViewInner({
         emitHierarchyUpdate(reordered);
       }
     },
-    [activeDirection, disabled, emitHierarchyUpdate],
+    [activeDirection, isEditingLocked, emitHierarchyUpdate],
   );
 
   const onSelectionChange = useCallback(
@@ -912,6 +921,19 @@ function FlowViewInner({
     setSelectedNodeIds([]);
   }, [setNodes]);
 
+  const handleInteractiveChange = useCallback(
+    (interactiveStatus: boolean) => {
+      if (disabled) return;
+      const nextLocked = !interactiveStatus;
+      setIsLocked(nextLocked);
+      if (nextLocked) {
+        setEditingNodeId(null);
+        clearSelection();
+      }
+    },
+    [clearSelection, disabled],
+  );
+
   const handleOpenEdit = useCallback((id: string) => setEditingNodeId(id), []);
   const handleCloseEdit = useCallback(() => setEditingNodeId(null), []);
 
@@ -921,6 +943,7 @@ function FlowViewInner({
       selectedNodeIds,
       editingNodeId,
       disabled,
+      isEditingLocked,
       logIcon,
       emotionIcons,
       emotionLabels,
@@ -947,6 +970,7 @@ function FlowViewInner({
       handleOpenEdit,
       handleSaveNode,
       handleToggleRoot,
+      isEditingLocked,
       labels,
       logIcon,
       selectedButtonId,
@@ -955,8 +979,9 @@ function FlowViewInner({
   );
 
   const effectivePanOnDrag =
-    disabled || dragBehavior === "pan" ? true : [1, 2];
-  const effectiveSelectionOnDrag = !disabled && dragBehavior === "select";
+    isEditingLocked || dragBehavior === "pan" ? true : [1, 2];
+  const effectiveSelectionOnDrag =
+    !isEditingLocked && dragBehavior === "select";
 
   return (
     <FlowNodeContext.Provider value={nodeContextValue}>
@@ -983,10 +1008,10 @@ function FlowViewInner({
           onSelectionChange={onSelectionChange}
           onPaneClick={() => setEditingNodeId(null)}
           nodeTypes={nodeTypes}
-          nodesDraggable={!disabled}
-          nodesConnectable={!disabled}
-          edgesReconnectable={!disabled}
-          elementsSelectable={!disabled}
+          nodesDraggable={!isEditingLocked}
+          nodesConnectable={!isEditingLocked}
+          edgesReconnectable={!isEditingLocked}
+          elementsSelectable={!isEditingLocked}
           panOnScroll={true}
           zoomOnPinch={true}
           panActivationKeyCode="Space"
@@ -1005,7 +1030,10 @@ function FlowViewInner({
           proOptions={{ hideAttribution: true }}
         >
           <Background />
-          <Controls />
+          <Controls
+            showInteractive={!disabled}
+            onInteractiveChange={handleInteractiveChange}
+          />
           {showMiniMap && (
             <MiniMap
               pannable
@@ -1023,7 +1051,7 @@ function FlowViewInner({
             className="pb:!m-0 pb:w-full pb:p-2 pb:pointer-events-none"
           >
             <div className="pb:flex pb:flex-wrap pb:items-start pb:justify-between pb:gap-2 pb:w-full">
-              {!disabled && (
+              {!isEditingLocked && (
                 <div className="pb:pointer-events-auto pb:flex pb:flex-wrap pb:items-center pb:gap-1.5 pb:rounded-lg pb:bg-white/95 pb:backdrop-blur-xs pb:border pb:border-gray-200 pb:shadow-sm pb:p-1">
                   <div
                     role="group"
@@ -1095,7 +1123,7 @@ function FlowViewInner({
                   />
                 </div>
 
-                {!disabled && selectedEntries.length >= 2 && (
+                {!isEditingLocked && selectedEntries.length >= 2 && (
                   <BatchButtonEditPanel
                     selectedButtons={selectedEntries}
                     emotionIcons={emotionIcons}
