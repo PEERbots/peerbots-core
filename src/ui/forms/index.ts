@@ -11,6 +11,7 @@ export * from "./Label";
 export * from "./TabRadio";
 export * from "./NumberField";
 export * from "./Field";
+export * from "./FieldGroup";
 export * from "./TextArea";
 export * from "./Checkbox";
 export * from "./PeerbotsColorSelector";

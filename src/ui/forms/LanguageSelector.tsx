@@ -264,12 +264,28 @@ export function LanguageSelector({
             />
             <span className="pb:inline-flex pb:items-center pb:justify-center pb:gap-0.5 pb:text-[9px] pb:leading-none pb:text-center pb:mt-0.5 pb:uppercase pb:font-semibold">
               <span>{value.toUpperCase()}</span>
-              {badgeType === "beta" && (
+              {badgeType && (
                 <span
-                  aria-label={resolvedLabels.beta}
-                  className="pb:text-amber-800 pb:font-bold pb:normal-case"
+                  aria-label={
+                    badgeType === "beta"
+                      ? resolvedLabels.beta
+                      : resolvedLabels.new
+                  }
+                  className={cn(
+                    "pb:font-bold pb:normal-case",
+                    badgeType === "beta"
+                      ? "pb:text-amber-800"
+                      : "pb:text-blue-800",
+                  )}
                 >
-                  β
+                  <span aria-hidden="true">
+                    {badgeType === "beta" ? "β" : "★"}
+                  </span>
+                  <span className="pb:sr-only">
+                    {badgeType === "beta"
+                      ? resolvedLabels.beta
+                      : resolvedLabels.new}
+                  </span>
                 </span>
               )}
             </span>

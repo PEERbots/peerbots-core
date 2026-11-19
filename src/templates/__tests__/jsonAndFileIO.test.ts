@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   EXAMPLE_AGENT_FLAT_TEMPLATE_JSON,
   EXAMPLE_LEGACY_PALETTE_CSV,
@@ -10,14 +10,22 @@ import {
   EXAMPLE_STARTER_SOCIAL_TEMPLATE,
   MAX_TEMPLATE_FILE_BYTES,
   blankTemplate,
+  canExportCollection,
   convertPaletteToCSV,
   convertTemplateToPalette,
+  exportCollectionAsJson,
+  exportTemplateAsJson,
+  exportTemplateAsPaletteCsv,
   extractMessageButtons,
+  isCollectionJson,
+  isPaidMarketplaceCopy,
+  parseCollectionJson,
   parsePaletteCsv,
   parseTemplateFile,
   parseTemplateJson,
   parseTemplatePttf,
   parseTemplateText,
+  serializeCollectionJson,
   serializeTemplateJson,
   serializeTemplatePttf,
   type OrderedTemplatesObject,
@@ -560,4 +568,284 @@ describe("parseTemplatePttf, serializeTemplatePttf, and .pttf auto-detection", (
     expect(parsed[0].title).toBe(EXAMPLE_STARTER_SOCIAL_TEMPLATE.title);
   });
 });
+
+describe("exportTemplateAsJson & exportTemplateAsPaletteCsv browser download helpers", () => {
+  it("triggers anchor download with .json and .csv filenames and revokes object URLs", () => {
+    const createObjectURL = vi
+      .spyOn(URL, "createObjectURL")
+      .mockReturnValue("blob:mock-url");
+    const revokeObjectURL = vi
+      .spyOn(URL, "revokeObjectURL")
+      .mockImplementation(() => undefined);
+
+    const downloads: { href: string; download: string }[] = [];
+    const origCreateElement = document.createElement.bind(document);
+    const createElementSpy = vi
+      .spyOn(document, "createElement")
+      .mockImplementation(((tagName: string) => {
+        const el = origCreateElement(tagName);
+        if (tagName.toLowerCase() === "a") {
+          vi.spyOn(el as HTMLAnchorElement, "click").mockImplementation(() => {
+            downloads.push({
+              href: (el as HTMLAnchorElement).href,
+              download: (el as HTMLAnchorElement).download,
+            });
+          });
+        }
+        return el;
+      }) as typeof document.createElement);
+
+    try {
+      exportTemplateAsJson(EXAMPLE_STARTER_SOCIAL_TEMPLATE);
+      exportTemplateAsJson(EXAMPLE_STARTER_SOCIAL_TEMPLATE, "custom-name");
+      exportTemplateAsPaletteCsv(EXAMPLE_STARTER_SOCIAL_TEMPLATE);
+      exportTemplateAsPaletteCsv(EXAMPLE_STARTER_SOCIAL_TEMPLATE, {
+        format: "legacy",
+        fileName: "legacy-export.csv",
+      });
+      exportCollectionAsJson({
+        name: "Mindfulness Pack",
+        description: "Collection of mindfulness exercises",
+        templates: [EXAMPLE_STARTER_SOCIAL_TEMPLATE, EXAMPLE_LOG_AND_SPEAK_TEMPLATE],
+      });
+
+      expect(downloads).toEqual([
+        {
+          href: "blob:mock-url",
+          download: `${EXAMPLE_STARTER_SOCIAL_TEMPLATE.title}.json`,
+        },
+        {
+          href: "blob:mock-url",
+          download: "custom-name.json",
+        },
+        {
+          href: "blob:mock-url",
+          download: `${EXAMPLE_STARTER_SOCIAL_TEMPLATE.title}_palette.csv`,
+        },
+        {
+          href: "blob:mock-url",
+          download: "legacy-export.csv",
+        },
+        {
+          href: "blob:mock-url",
+          download: "Mindfulness Pack.json",
+        },
+      ]);
+      expect(createObjectURL).toHaveBeenCalledTimes(5);
+      expect(revokeObjectURL).toHaveBeenCalledTimes(5);
+    } finally {
+      createElementSpy.mockRestore();
+      createObjectURL.mockRestore();
+      revokeObjectURL.mockRestore();
+    }
+  });
+});
+
+describe("serializeCollectionJson, isCollectionJson, and parseCollectionJson", () => {
+  it("serializes a content collection to portable JSON (stripping database metadata by default) and round-trips via parseCollectionJson & parseTemplateJson", () => {
+    const t1: Template = {
+      ...EXAMPLE_STARTER_SOCIAL_TEMPLATE,
+      id: "db-tpl-1",
+      contentID: "content-123",
+      contentName: "Classroom Collection",
+    };
+    const t2: Template = {
+      ...EXAMPLE_LOG_AND_SPEAK_TEMPLATE,
+      id: "db-tpl-2",
+      contentID: "content-123",
+      contentName: "Classroom Collection",
+    };
+
+    const collectionJson = serializeCollectionJson({
+      name: "Classroom Collection",
+      description: "Two interactive classroom templates",
+      templates: [t1, t2],
+    });
+
+    expect(isCollectionJson(collectionJson)).toBe(true);
+    expect(
+      isCollectionJson(serializeTemplateJson(EXAMPLE_STARTER_SOCIAL_TEMPLATE)),
+    ).toBe(false);
+    expect(isCollectionJson("{bad json")).toBe(false);
+
+    const parsedCollection = parseCollectionJson(collectionJson);
+    expect(parsedCollection.name).toBe("Classroom Collection");
+    expect(parsedCollection.description).toBe(
+      "Two interactive classroom templates",
+    );
+    expect(parsedCollection.templates).toHaveLength(2);
+    expect(parsedCollection.templates[0].id).toBeUndefined();
+    expect(parsedCollection.templates[0].contentID).toBeUndefined();
+    expect(parsedCollection.templates[0].title).toBe(
+      EXAMPLE_STARTER_SOCIAL_TEMPLATE.title,
+    );
+    expect(parsedCollection.templates[1].title).toBe(
+      EXAMPLE_LOG_AND_SPEAK_TEMPLATE.title,
+    );
+
+    // Also parses via parseTemplateJson for Control page multi-template import
+    const templatesFromTemplateParser = parseTemplateJson(collectionJson, {
+      generateMissingIds: true,
+    });
+    expect(templatesFromTemplateParser).toHaveLength(2);
+    expect(templatesFromTemplateParser[0].id).toBeTruthy();
+    expect(templatesFromTemplateParser[1].id).toBeTruthy();
+  });
+
+  it("preserves database metadata when stripDatabaseMetadata is false", () => {
+    const t1: Template = {
+      ...EXAMPLE_STARTER_SOCIAL_TEMPLATE,
+      id: "db-tpl-1",
+      contentID: "content-123",
+    };
+    const jsonWithMeta = serializeCollectionJson(
+      {
+        name: "Full Collection",
+        templates: [t1],
+      },
+      { stripDatabaseMetadata: false, pretty: false },
+    );
+    expect(jsonWithMeta.includes("\n")).toBe(false);
+    const parsed = parseCollectionJson(jsonWithMeta);
+    expect(parsed.name).toBe("Full Collection");
+    expect(parsed.templates[0].id).toBe("db-tpl-1");
+    expect(parsed.templates[0].contentID).toBe("content-123");
+  });
+
+  it("blocks exporting copies of paid marketplace collections while allowing free copies and authored paid collections", () => {
+    const freeCopyContent = {
+      data: {
+        name: "Free Marketplace Copy",
+        owner: { id: "user-1" },
+        public: false,
+        price: 0,
+        tags: [],
+        trusted: false,
+        copyOf: { id: "market-free-1" },
+        templatesInfo: [{ id: "t1", title: "T1" }],
+      },
+    };
+    expect(isPaidMarketplaceCopy(freeCopyContent)).toBe(false);
+    expect(canExportCollection(freeCopyContent)).toBe(true);
+
+    const authoredPaidContent = {
+      data: {
+        name: "My Own Paid Pack",
+        owner: { id: "user-1" },
+        public: true,
+        price: 24.99,
+        tags: [],
+        trusted: true,
+        templatesInfo: [{ id: "t1", title: "T1" }],
+      },
+    };
+    expect(isPaidMarketplaceCopy(authoredPaidContent)).toBe(false);
+    expect(canExportCollection(authoredPaidContent)).toBe(true);
+
+    const paidCopyContent = {
+      data: {
+        name: "Purchased Paid Copy",
+        owner: { id: "user-1" },
+        public: false,
+        price: 24.99,
+        tags: [],
+        trusted: false,
+        copyOf: { id: "market-paid-1" },
+        templatesInfo: [{ id: "t1", title: "T1" }],
+      },
+    };
+    expect(isPaidMarketplaceCopy(paidCopyContent)).toBe(true);
+    expect(canExportCollection(paidCopyContent)).toBe(false);
+
+    // Also blocks when local price is 0 but upstream sourcePrice > 0
+    expect(isPaidMarketplaceCopy(freeCopyContent, 15)).toBe(true);
+    expect(canExportCollection(freeCopyContent, 15)).toBe(false);
+
+    // Throws when attempting to serialize or export a paid marketplace copy
+    expect(() =>
+      serializeCollectionJson({
+        name: "Purchased Paid Copy",
+        copyOf: { id: "market-paid-1" },
+        price: 24.99,
+        templates: [EXAMPLE_STARTER_SOCIAL_TEMPLATE],
+      }),
+    ).toThrow(/Cannot export a copy of a paid marketplace content collection/i);
+
+    expect(() =>
+      exportCollectionAsJson(
+        {
+          name: "Purchased Paid Copy",
+          copyOf: { id: "market-paid-1" },
+          price: 0,
+          templates: [EXAMPLE_STARTER_SOCIAL_TEMPLATE],
+        },
+        { sourcePrice: 19.99 },
+      ),
+    ).toThrow(/Cannot export a copy of a paid marketplace content collection/i);
+
+    // Single template checks
+    expect(
+      isPaidMarketplaceCopy({
+        copyOf: { id: "market-paid-tpl-1" },
+        sourcePrice: 19.99,
+      }),
+    ).toBe(true);
+    expect(
+      canExportCollection({
+        copyOf: { id: "market-paid-tpl-1" },
+        sourcePrice: 19.99,
+      }),
+    ).toBe(false);
+    expect(
+      isPaidMarketplaceCopy({
+        copyOf: { id: "market-free-tpl-1" },
+        sourcePrice: 0,
+      }),
+    ).toBe(false);
+    expect(
+      isPaidMarketplaceCopy({
+        sourcePrice: 25,
+      }),
+    ).toBe(false);
+  });
+
+  it("excludes archived templates by default in serializeCollectionJson unless includeArchived is true", () => {
+    const activeTpl: Template = {
+      ...EXAMPLE_STARTER_SOCIAL_TEMPLATE,
+      id: "active-1",
+      title: "Active Activity",
+    };
+    const archivedTpl: Template = {
+      ...EXAMPLE_LOG_AND_SPEAK_TEMPLATE,
+      id: "archived-1",
+      title: "Archived Activity",
+      archived: true,
+    };
+
+    const defaultJson = serializeCollectionJson({
+      name: "Mixed Collection",
+      templates: [activeTpl, archivedTpl],
+    });
+    const parsedDefault = parseCollectionJson(defaultJson);
+    expect(parsedDefault.templates).toHaveLength(1);
+    expect(parsedDefault.templates[0].title).toBe("Active Activity");
+
+    const withArchivedJson = serializeCollectionJson(
+      {
+        name: "Mixed Collection",
+        templates: [activeTpl, archivedTpl],
+      },
+      { includeArchived: true },
+    );
+    const parsedWithArchived = parseCollectionJson(withArchivedJson);
+    expect(parsedWithArchived.templates).toHaveLength(2);
+    expect(parsedWithArchived.templates.map((t) => t.title)).toEqual([
+      "Active Activity",
+      "Archived Activity",
+    ]);
+  });
+});
+
+
+
 

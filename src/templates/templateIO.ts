@@ -24,6 +24,8 @@ import {
 import { formatTemplateToCode } from "./pttf/format";
 import { analyzeTemplateCode } from "./pttf/parse";
 import type {
+  Content,
+  ExportedContentCollection,
   LoggedEvent,
   Message,
   MetaData,
@@ -32,6 +34,7 @@ import type {
   RobotControlButton,
   Template,
   TemplateHierarchy,
+  TemplateInfo,
 } from "./types";
 
 export {
@@ -930,4 +933,323 @@ export async function parseTemplateFile(
   }
   const content = await readFileAsText(file);
   return parseTemplateText(content, file.name, options);
+}
+
+function triggerBrowserDownload(
+  content: string,
+  mimeType: string,
+  fileName: string,
+): void {
+  if (typeof document === "undefined" || typeof Blob === "undefined") {
+    return;
+  }
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Triggers a browser file download of a canonical `Template` serialized as pretty-printed JSON.
+ */
+export function exportTemplateAsJson<TRef>(
+  template: Template<TRef>,
+  fileName?: string,
+): void {
+  const safeBase = (template.title || "template").trim() || "template";
+  const resolvedName = fileName?.trim()
+    ? fileName.trim().endsWith(".json")
+      ? fileName.trim()
+      : `${fileName.trim()}.json`
+    : `${safeBase}.json`;
+  const json = serializeTemplateJson(template, true);
+  triggerBrowserDownload(json, "application/json", resolvedName);
+}
+
+/**
+ * Converts a canonical `Template` to a `Palette` and triggers a browser file download as CSV.
+ */
+export function exportTemplateAsPaletteCsv(
+  template: Template,
+  options?: SerializePaletteCsvOptions & { fileName?: string },
+): void {
+  const palette = convertTemplateToPalette(template);
+  const csv = convertPaletteToCSV(palette, options);
+  const safeBase = (palette.title || "palette").trim() || "palette";
+  const resolvedName = options?.fileName?.trim()
+    ? options.fileName.trim().endsWith(".csv")
+      ? options.fileName.trim()
+      : `${options.fileName.trim()}.csv`
+    : `${safeBase}_palette.csv`;
+  triggerBrowserDownload(csv, "text/csv;charset=utf-8;", resolvedName);
+}
+
+/**
+ * Input shape accepted by {@link isPaidMarketplaceCopy} and {@link canExportCollection}.
+ * Supports full {@link Content} records, {@link ExportedContentCollection} objects, and single {@link Template} objects with optional provenance metadata.
+ */
+export type ExportableCollectionSubject<TRef = unknown> =
+  | Pick<Content<TRef>, "data">
+  | (ExportedContentCollection<TRef> & {
+      copyOf?: TRef;
+      price?: number;
+      templatesInfo?: Array<Pick<TemplateInfo<TRef>, "copyOf">>;
+    })
+  | (Pick<Template<TRef>, "copyOf" | "sourceContentId"> & {
+      price?: number;
+      sourcePrice?: number;
+    });
+
+/**
+ * Returns `true` when the given content collection or template is a copy of a paid (non-free) Marketplace item
+ * (`price > 0` or `sourcePrice > 0`, combined with `copyOf` or `sourceContentId` provenance).
+ *
+ * Original collections or templates authored by the user (`!copyOf` and no copied templates) return `false` even when priced for sale.
+ */
+export function isPaidMarketplaceCopy<TRef = unknown>(
+  subject: ExportableCollectionSubject<TRef>,
+  sourcePrice?: number,
+): boolean {
+  if ("data" in subject && subject.data) {
+    const isCopy =
+      Boolean(subject.data.copyOf) ||
+      Boolean(subject.data.templatesInfo?.some((t) => Boolean(t.copyOf)));
+    const effectivePrice =
+      typeof sourcePrice === "number" ? sourcePrice : (subject.data.price ?? 0);
+    return isCopy && effectivePrice > 0;
+  }
+
+  if ("templates" in subject && Array.isArray(subject.templates)) {
+    const col = subject as ExportedContentCollection<TRef> & {
+      copyOf?: TRef;
+      price?: number;
+      templatesInfo?: Array<Pick<TemplateInfo<TRef>, "copyOf">>;
+    };
+    const isCopy =
+      Boolean(col.copyOf) ||
+      Boolean(col.templates?.some((t) => Boolean(t.copyOf))) ||
+      Boolean(col.templatesInfo?.some((t) => Boolean(t.copyOf)));
+    const effectivePrice =
+      typeof sourcePrice === "number" ? sourcePrice : (col.price ?? 0);
+    return isCopy && effectivePrice > 0;
+  }
+
+  const tpl = subject as Pick<Template<TRef>, "copyOf" | "sourceContentId"> & {
+    price?: number;
+    sourcePrice?: number;
+  };
+  const isCopy = Boolean(tpl.copyOf) || Boolean(tpl.sourceContentId);
+  const effectivePrice =
+    typeof sourcePrice === "number"
+      ? sourcePrice
+      : typeof tpl.sourcePrice === "number"
+        ? tpl.sourcePrice
+        : (tpl.price ?? 0);
+  return isCopy && effectivePrice > 0;
+}
+
+/**
+ * Returns `true` when a content collection or template is allowed to be exported
+ * (i.e., it is not a copy of a paid Marketplace item).
+ */
+export function canExportCollection<TRef = unknown>(
+  subject: ExportableCollectionSubject<TRef>,
+  sourcePrice?: number,
+): boolean {
+  return !isPaidMarketplaceCopy(subject, sourcePrice);
+}
+
+/**
+ * Options for serializing a content collection via {@link serializeCollectionJson} or {@link exportCollectionAsJson}.
+ */
+export interface SerializeCollectionJsonOptions {
+  /** When `true` (default), formats JSON with 2-space indentation. */
+  pretty?: boolean;
+  /**
+   * When `true` (default), strips database-specific template identifiers (`id`, `contentID`,
+   * `contentName`, `copyOf`, `copyDate`, `sourceContentId`) so the exported collection JSON
+   * is clean and portable across accounts.
+   */
+  stripDatabaseMetadata?: boolean;
+  /**
+   * Optional price of the upstream Marketplace source collection (when known), used to block
+   * exporting copies of paid Marketplace collections.
+   */
+  sourcePrice?: number;
+  /**
+   * When `true`, includes templates marked `archived: true` in the exported JSON.
+   * Defaults to `false` (only active templates are exported).
+   */
+  includeArchived?: boolean;
+}
+
+/**
+ * Serializes a content collection (`{ name, description, templates }`) into a single JSON string.
+ * Excludes archived templates by default (unless `options.includeArchived` is `true`).
+ * Throws an error if the collection is a copy of a paid Marketplace item (`price > 0`).
+ */
+export function serializeCollectionJson<TRef>(
+  collection: ExportedContentCollection<TRef> & {
+    copyOf?: TRef;
+    price?: number;
+    templatesInfo?: Array<Pick<TemplateInfo<TRef>, "copyOf">>;
+  },
+  options?: SerializeCollectionJsonOptions,
+): string {
+  if (isPaidMarketplaceCopy(collection, options?.sourcePrice)) {
+    throw new Error(
+      "Cannot export a copy of a paid marketplace content collection.",
+    );
+  }
+  const pretty = options?.pretty ?? true;
+  const stripDatabaseMetadata = options?.stripDatabaseMetadata ?? true;
+  const includeArchived = options?.includeArchived ?? false;
+  const name = firstNonEmptyString(collection.name) || "Untitled Collection";
+  const description = firstNonEmptyString(collection.description) || undefined;
+
+  const sourceTemplates = includeArchived
+    ? collection.templates
+    : collection.templates.filter((tpl) => !tpl.archived);
+
+  const templates = sourceTemplates.map((tpl) => {
+    if (!stripDatabaseMetadata) {
+      return tpl;
+    }
+    const cleanTemplate: Template<TRef> = {
+      title: tpl.title,
+      ...(tpl.description ? { description: tpl.description } : {}),
+      buttons: tpl.buttons,
+      hierarchy: tpl.hierarchy,
+    };
+    return cleanTemplate;
+  });
+
+  const payload: ExportedContentCollection<TRef> = {
+    name,
+    ...(description !== undefined ? { description } : {}),
+    templates,
+  };
+
+  return JSON.stringify(payload, null, pretty ? 2 : undefined);
+}
+
+/**
+ * Triggers a browser file download of a content collection serialized as a single `.json` file.
+ * Throws an error if the collection is a copy of a paid Marketplace item (`price > 0`).
+ */
+export function exportCollectionAsJson<TRef>(
+  collection: ExportedContentCollection<TRef> & {
+    copyOf?: TRef;
+    price?: number;
+    templatesInfo?: Array<Pick<TemplateInfo<TRef>, "copyOf">>;
+  },
+  options?: SerializeCollectionJsonOptions & { fileName?: string },
+): void {
+  const safeBase =
+    (collection.name || "collection").trim() || "collection";
+  const resolvedName = options?.fileName?.trim()
+    ? options.fileName.trim().endsWith(".json")
+      ? options.fileName.trim()
+      : `${options.fileName.trim()}.json`
+    : `${safeBase}.json`;
+  const json = serializeCollectionJson(collection, options);
+  triggerBrowserDownload(json, "application/json", resolvedName);
+}
+
+/**
+ * Inspects a JSON string or parsed JSON value and returns `true` when it represents
+ * a content collection (an object with a `templates` array/map, or an array of template objects)
+ * rather than a single standalone template.
+ */
+export function isCollectionJson(jsonTextOrObject: string | unknown): boolean {
+  let parsed: unknown = jsonTextOrObject;
+  if (typeof jsonTextOrObject === "string") {
+    try {
+      const cleaned = jsonTextOrObject.startsWith("\uFEFF")
+        ? jsonTextOrObject.slice(1)
+        : jsonTextOrObject;
+      parsed = JSON.parse(cleaned);
+    } catch {
+      return false;
+    }
+  }
+
+  if (Array.isArray(parsed)) {
+    return parsed.some(
+      (item) =>
+        item &&
+        typeof item === "object" &&
+        !Array.isArray(item) &&
+        ("buttons" in item || "options" in item || "messages" in item),
+    );
+  }
+
+  if (parsed && typeof parsed === "object") {
+    const record = parsed as Record<string, unknown>;
+    if (Array.isArray(record.templates)) {
+      return true;
+    }
+    if (
+      record.templates &&
+      typeof record.templates === "object" &&
+      !Array.isArray(record.templates)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Parses a content collection JSON string into a normalized {@link ExportedContentCollection}
+ * (`{ name, description, templates }`). Also accepts standalone or array template JSON payloads.
+ */
+export function parseCollectionJson(
+  jsonText: string,
+  fileNameOrOptions?: string | ParseTemplateOptions,
+  options?: ParseTemplateOptions,
+): ExportedContentCollection {
+  const context = resolveParseContext(
+    "uploaded-collection.json",
+    "Imported Collection",
+    fileNameOrOptions,
+    options,
+  );
+
+  let parsed: unknown;
+  try {
+    const cleanedJson = jsonText.startsWith("\uFEFF")
+      ? jsonText.slice(1)
+      : jsonText;
+    parsed = JSON.parse(cleanedJson);
+  } catch (err) {
+    throw new Error(
+      `Invalid JSON in "${context.fileName}": ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+
+  const templates = parseTemplateJson(jsonText, fileNameOrOptions, options);
+
+  if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+    const record = parsed as Record<string, unknown>;
+    const name =
+      firstNonEmptyString(record.name, record.title) || context.fallbackTitle;
+    const description = firstNonEmptyString(record.description) || undefined;
+    return {
+      name,
+      ...(description ? { description } : {}),
+      templates,
+    };
+  }
+
+  return {
+    name: context.fallbackTitle,
+    templates,
+  };
 }

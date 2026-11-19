@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   figureOutNewOrder,
+  moveTemplateInList,
+  partitionByArchived,
   reorderHierarchySiblings,
+  reorderTemplatesInfo,
+  setTemplateInfoArchived,
   type TemplateHierarchy,
+  type TemplateInfo,
 } from "../index";
 
 describe("figureOutNewOrder — single-button signature (ported from app.peerbots.org)", () => {
@@ -177,5 +182,64 @@ describe("reorderHierarchySiblings", () => {
     const next = reorderHierarchySiblings(hierarchy, "", "FORWARD");
     expect(next).toEqual(hierarchy);
     expect(next).not.toBe(hierarchy);
+  });
+});
+
+describe("Template collection reordering & archiving helpers", () => {
+  const sampleTemplates: TemplateInfo[] = [
+    { id: "t1", title: "Template 1" },
+    { id: "t2", title: "Template 2 (Archived)", archived: true },
+    { id: "t3", title: "Template 3" },
+    { id: "t4", title: "Template 4" },
+  ];
+
+  it("partitions templates or collections into active and archived lists", () => {
+    const { active, archived } = partitionByArchived(sampleTemplates);
+    expect(active.map((t) => t.id)).toEqual(["t1", "t3", "t4"]);
+    expect(archived.map((t) => t.id)).toEqual(["t2"]);
+
+    const collections = [
+      { id: "c1", data: { name: "Col 1", archived: false } },
+      { id: "c2", data: { name: "Col 2", archived: true } },
+    ];
+    const partitionedCols = partitionByArchived(
+      collections,
+      (c) => Boolean(c.data.archived),
+    );
+    expect(partitionedCols.active.map((c) => c.id)).toEqual(["c1"]);
+    expect(partitionedCols.archived.map((c) => c.id)).toEqual(["c2"]);
+  });
+
+  it("reorders active templates BACK and FORWARD while preserving archived slots", () => {
+    const movedBack = reorderTemplatesInfo(sampleTemplates, "t3", "BACK");
+    expect(movedBack.map((t) => t.id)).toEqual(["t3", "t2", "t1", "t4"]);
+
+    const movedForward = reorderTemplatesInfo(sampleTemplates, "t3", "FORWARD");
+    expect(movedForward.map((t) => t.id)).toEqual(["t1", "t2", "t4", "t3"]);
+
+    // Boundary checks
+    expect(
+      reorderTemplatesInfo(sampleTemplates, "t1", "BACK").map((t) => t.id),
+    ).toEqual(["t1", "t2", "t3", "t4"]);
+    expect(
+      reorderTemplatesInfo(sampleTemplates, "t4", "FORWARD").map((t) => t.id),
+    ).toEqual(["t1", "t2", "t3", "t4"]);
+  });
+
+  it("moves an active template to a target active template's slot via moveTemplateInList", () => {
+    const movedToFirst = moveTemplateInList(sampleTemplates, "t4", "t1");
+    expect(movedToFirst.map((t) => t.id)).toEqual(["t4", "t2", "t1", "t3"]);
+
+    const movedToLast = moveTemplateInList(sampleTemplates, "t1", "t4");
+    expect(movedToLast.map((t) => t.id)).toEqual(["t3", "t2", "t4", "t1"]);
+  });
+
+  it("toggles the archived status of a template in templatesInfo immutably", () => {
+    const archivedT3 = setTemplateInfoArchived(sampleTemplates, "t3", true);
+    expect(archivedT3.find((t) => t.id === "t3")?.archived).toBe(true);
+    expect(sampleTemplates.find((t) => t.id === "t3")?.archived).toBeUndefined();
+
+    const unarchivedT2 = setTemplateInfoArchived(sampleTemplates, "t2", false);
+    expect(unarchivedT2.find((t) => t.id === "t2")?.archived).toBe(false);
   });
 });

@@ -39,6 +39,53 @@ function getLineHighlightClass(
   return "";
 }
 
+const IMMUTABLE_TEMPLATE_KEYS = [
+  "id",
+  "contentID",
+  "contentName",
+  "copyOf",
+  "copyDate",
+  "sourceContentId",
+  "sourcePrice",
+] as const;
+
+function preserveTemplateIdentityAndAssociation(
+  original: Template,
+  draft: Partial<Template>,
+): Template {
+  return {
+    ...original,
+    title: typeof draft.title === "string" ? draft.title : original.title,
+    ...(draft.description !== undefined
+      ? { description: draft.description }
+      : original.description !== undefined
+        ? { description: original.description }
+        : {}),
+    buttons: draft.buttons ?? original.buttons,
+    hierarchy: {
+      ...(draft.hierarchy ?? original.hierarchy),
+      root: Array.isArray(draft.hierarchy?.root)
+        ? draft.hierarchy.root
+        : original.hierarchy.root,
+    },
+    ...(original.id !== undefined ? { id: original.id } : {}),
+    ...(original.contentID !== undefined
+      ? { contentID: original.contentID }
+      : {}),
+    ...(original.contentName !== undefined
+      ? { contentName: original.contentName }
+      : {}),
+    ...(original.copyOf !== undefined ? { copyOf: original.copyOf } : {}),
+    ...(original.copyDate !== undefined ? { copyDate: original.copyDate } : {}),
+    ...(original.sourceContentId !== undefined
+      ? { sourceContentId: original.sourceContentId }
+      : {}),
+    ...(original.sourcePrice !== undefined
+      ? { sourcePrice: original.sourcePrice }
+      : {}),
+  };
+}
+
 /**
  * Parses the active `CodeView` draft (PTTF shorthand or JSON), indexes
  * diagnostics by line, and builds the syntax-highlighted `<pre>` overlay lines.
@@ -64,17 +111,22 @@ export function useCodeViewDraft({
         title: template.title,
         description: template.description,
       });
+      const preservedTemplate = preserveTemplateIdentityAndAssociation(
+        template,
+        res.template,
+      );
       return {
-        template: res.template,
+        template: preservedTemplate,
         diagnostics: res.diagnostics,
-        buttonCount: Object.keys(res.template.buttons).length,
-        rootCount: res.template.hierarchy.root.length,
+        buttonCount: Object.keys(preservedTemplate.buttons).length,
+        rootCount: preservedTemplate.hierarchy.root.length,
         draftLines: adaptPttfLines(res.lines, selectedButtonId),
       };
     }
 
     try {
-      const obj = JSON.parse(draftCode) as Partial<Template>;
+      const obj = JSON.parse(draftCode) as Partial<Template> &
+        Record<string, unknown>;
       if (!obj || typeof obj !== "object" || !obj.buttons || !obj.hierarchy) {
         return {
           template: null,
@@ -90,20 +142,31 @@ export function useCodeViewDraft({
           draftLines: [],
         };
       }
-      const nextTemplate: Template = {
-        ...template,
-        ...obj,
-        title: typeof obj.title === "string" ? obj.title : template.title,
-        buttons: obj.buttons,
-        hierarchy: {
-          ...obj.hierarchy,
-          root: Array.isArray(obj.hierarchy.root) ? obj.hierarchy.root : [],
-        },
-      };
+      const diagnostics: CodeDiagnostic[] = [];
+      const rawLines = draftCode.split(/\r?\n/);
+      for (const key of IMMUTABLE_TEMPLATE_KEYS) {
+        if (
+          Object.prototype.hasOwnProperty.call(obj, key) &&
+          obj[key] !== template[key]
+        ) {
+          const lineIdx = rawLines.findIndex((l) =>
+            new RegExp(`^\\s*"${key}"\\s*:`).test(l),
+          );
+          diagnostics.push({
+            lineNumber: lineIdx >= 0 ? lineIdx + 1 : 1,
+            severity: "warning",
+            message: `Template "${key}" and content association cannot be changed in Code View and will be preserved.`,
+          });
+        }
+      }
+      const nextTemplate = preserveTemplateIdentityAndAssociation(
+        template,
+        obj,
+      );
       const jsonFormatted = formatTemplateToJsonCode(nextTemplate);
       return {
         template: nextTemplate,
-        diagnostics: [],
+        diagnostics,
         buttonCount: Object.keys(nextTemplate.buttons).length,
         rootCount: nextTemplate.hierarchy.root.length,
         draftLines: adaptJsonLines(jsonFormatted.lines, selectedButtonId),

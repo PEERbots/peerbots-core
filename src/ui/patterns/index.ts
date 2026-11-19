@@ -8,3 +8,4 @@ export * from "./PeerbotsButtonRow";
 export * from "./control-views";
 export * from "./PeerbotsButtonDisplay";
 export * from "./code";
+export * from "./InlineEditableSection";

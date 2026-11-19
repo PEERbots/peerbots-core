@@ -235,6 +235,8 @@ export type TemplateInfo<TRef = ProvenanceRef> = {
   copyOf?: TRef;
   /** Optional timestamp recording when this template was copied. */
   copyDate?: Date;
+  /** When `true`, marks this template as archived within its parent collection. */
+  archived?: boolean;
 };
 
 /**
@@ -262,6 +264,10 @@ export type Template<TRef = ProvenanceRef> = {
   copyDate?: Date;
   /** Optional identifier of the originating content package when imported or remixed. */
   sourceContentId?: string;
+  /** Optional catalog price of the originating content package when copied from the Marketplace. */
+  sourcePrice?: number;
+  /** When `true`, marks this template as archived within its parent collection. */
+  archived?: boolean;
 };
 
 /**
@@ -374,5 +380,21 @@ export type Content<TRef = ProvenanceRef> = {
     copyDate?: Date;
     /** Ordered summary list of templates included in this content package. */
     templatesInfo: TemplateInfo<TRef>[];
+    /** When `true`, marks this content collection as archived in the user's library. */
+    archived?: boolean;
   };
 };
+
+/**
+ * Portable JSON representation of a Peerbots content collection (`name`, optional `description`,
+ * and ordered `templates`) used for single-file collection export and import.
+ */
+export type ExportedContentCollection<TRef = ProvenanceRef> = {
+  /** Display name of the content collection. */
+  name: string;
+  /** Optional description of the content collection. */
+  description?: string;
+  /** Ordered list of templates contained in the collection. */
+  templates: Template<TRef>[];
+};
+

@@ -245,4 +245,101 @@ describe("CodeView", () => {
       within(explainer).getByText(/do not have a robot facial expression/i),
     ).toBeInTheDocument();
   });
+
+  it("preserves template id and content association metadata across shorthand and JSON edits", () => {
+    const onTemplateChange = vi.fn();
+    const copyDate = new Date("2026-01-15T12:00:00Z");
+    const template: Template = {
+      ...makeCyclicTemplate(),
+      id: "orig-template-id",
+      contentID: "orig-content-id",
+      contentName: "Original Collection",
+      copyOf: { id: "marketplace-source-id", path: "content/marketplace-source-id" },
+      copyDate,
+      sourceContentId: "source-pkg-1",
+    };
+
+    render(
+      <CodeView
+        template={template}
+        onTemplateChange={onTemplateChange}
+        defaultFormat="json"
+      />,
+    );
+
+    const textarea = screen.getByLabelText(
+      "Template code editor",
+    ) as HTMLTextAreaElement;
+
+    // Raw JSON view omits immutable id and content association fields by default
+    expect(textarea.value).not.toContain('"orig-template-id"');
+    expect(textarea.value).not.toContain('"orig-content-id"');
+
+    // Attempt to overwrite id, contentID, contentName, copyOf, and sourceContentId in JSON mode
+    const tamperedJson = JSON.stringify(
+      {
+        id: "tampered-id",
+        contentID: "tampered-content-id",
+        contentName: "Tampered Collection",
+        copyOf: { id: "other" },
+        sourceContentId: "tampered-source",
+        title: "Updated JSON Title",
+        description: "New JSON description",
+        buttons: template.buttons,
+        hierarchy: template.hierarchy,
+      },
+      null,
+      2,
+    );
+
+    fireEvent.change(textarea, {
+      target: { value: tamperedJson, selectionStart: 0 },
+    });
+
+    const diagnostics = screen.getByRole("status", {
+      name: "Code diagnostics",
+    });
+    expect(
+      within(diagnostics).getByText(
+        /Template "id" and content association cannot be changed in Code View/i,
+      ),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Apply Changes" }));
+    expect(onTemplateChange).toHaveBeenCalledTimes(1);
+    const updatedFromJson = onTemplateChange.mock.calls[0][0] as Template;
+    expect(updatedFromJson.title).toBe("Updated JSON Title");
+    expect(updatedFromJson.description).toBe("New JSON description");
+    expect(updatedFromJson.id).toBe("orig-template-id");
+    expect(updatedFromJson.contentID).toBe("orig-content-id");
+    expect(updatedFromJson.contentName).toBe("Original Collection");
+    expect(updatedFromJson.copyOf).toEqual({
+      id: "marketplace-source-id",
+      path: "content/marketplace-source-id",
+    });
+    expect(updatedFromJson.copyDate).toBe(copyDate);
+    expect(updatedFromJson.sourceContentId).toBe("source-pkg-1");
+
+    // Switch to shorthand mode and apply a change — identity and content association are still preserved
+    onTemplateChange.mockClear();
+    fireEvent.click(screen.getByRole("button", { name: "Shorthand" }));
+    const nextShorthand = "// Updated Shorthand Title\n- [Green] Hello";
+    fireEvent.change(textarea, {
+      target: { value: nextShorthand, selectionStart: nextShorthand.length },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Apply Changes" }));
+    expect(onTemplateChange).toHaveBeenCalledTimes(1);
+    const updatedFromShorthand = onTemplateChange.mock.calls[0][0] as Template;
+    expect(updatedFromShorthand.title).toBe("Updated Shorthand Title");
+    expect(updatedFromShorthand.id).toBe("orig-template-id");
+    expect(updatedFromShorthand.contentID).toBe("orig-content-id");
+    expect(updatedFromShorthand.contentName).toBe("Original Collection");
+    expect(updatedFromShorthand.copyOf).toEqual({
+      id: "marketplace-source-id",
+      path: "content/marketplace-source-id",
+    });
+    expect(updatedFromShorthand.copyDate).toBe(copyDate);
+    expect(updatedFromShorthand.sourceContentId).toBe("source-pkg-1");
+  });
 });
+
