@@ -235,6 +235,8 @@ export type TemplateInfo<TRef = ProvenanceRef> = {
   copyOf?: TRef;
   /** Optional timestamp recording when this template was copied. */
   copyDate?: Date;
+  /** When `true`, marks this template as archived within its parent collection. */
+  archived?: boolean;
 };
 
 /**
@@ -264,6 +266,8 @@ export type Template<TRef = ProvenanceRef> = {
   sourceContentId?: string;
   /** Optional catalog price of the originating content package when copied from the Marketplace. */
   sourcePrice?: number;
+  /** When `true`, marks this template as archived within its parent collection. */
+  archived?: boolean;
 };
 
 /**
@@ -376,6 +380,8 @@ export type Content<TRef = ProvenanceRef> = {
     copyDate?: Date;
     /** Ordered summary list of templates included in this content package. */
     templatesInfo: TemplateInfo<TRef>[];
+    /** When `true`, marks this content collection as archived in the user's library. */
+    archived?: boolean;
   };
 };
 

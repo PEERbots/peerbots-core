@@ -161,3 +161,120 @@ export function moveButtonInHierarchy(
   }
   return hierarchy;
 }
+
+/**
+ * Partitions an array of items (such as `TemplateInfo[]`, `Template[]`, or `Content[]`)
+ * into `{ active, archived }` lists while preserving their relative order.
+ */
+export function partitionByArchived<T>(
+  items: readonly T[],
+  isArchived: (item: T) => boolean = (item) =>
+    Boolean((item as { archived?: boolean } | null | undefined)?.archived),
+): { active: T[]; archived: T[] } {
+  const active: T[] = [];
+  const archived: T[] = [];
+  for (const item of items) {
+    if (isArchived(item)) {
+      archived.push(item);
+    } else {
+      active.push(item);
+    }
+  }
+  return { active, archived };
+}
+
+/**
+ * Immutably reorders an active template one step `"BACK"` (earlier) or `"FORWARD"` (later)
+ * relative to other active (non-archived) templates in `items`, keeping archived entries
+ * in their existing array indices.
+ */
+export function reorderTemplatesInfo<
+  T extends { id: string; archived?: boolean },
+>(
+  items: readonly T[],
+  templateId: string,
+  direction: ReorderDirection | "up" | "down",
+): T[] {
+  const normalized: ReorderDirection =
+    direction === "up" || direction === "BACK" ? "BACK" : "FORWARD";
+  const activeIndices: number[] = [];
+  const activeItems: T[] = [];
+
+  items.forEach((item, index) => {
+    if (!item.archived) {
+      activeIndices.push(index);
+      activeItems.push(item);
+    }
+  });
+
+  const activePos = activeItems.findIndex((item) => item.id === templateId);
+  if (activePos === -1) {
+    return [...items];
+  }
+
+  const targetActivePos =
+    normalized === "BACK" ? activePos - 1 : activePos + 1;
+  if (targetActivePos < 0 || targetActivePos >= activeItems.length) {
+    return [...items];
+  }
+
+  const reorderedActive = [...activeItems];
+  const temp = reorderedActive[activePos];
+  reorderedActive[activePos] = reorderedActive[targetActivePos];
+  reorderedActive[targetActivePos] = temp;
+
+  const result = [...items];
+  activeIndices.forEach((originalIdx, i) => {
+    result[originalIdx] = reorderedActive[i];
+  });
+  return result;
+}
+
+/**
+ * Immutably moves an active template identified by `fromId` to the active slot of `toId`,
+ * shifting intermediate active templates while keeping archived entries in their existing slots.
+ */
+export function moveTemplateInList<
+  T extends { id: string; archived?: boolean },
+>(items: readonly T[], fromId: string, toId: string): T[] {
+  if (!fromId || !toId || fromId === toId) {
+    return [...items];
+  }
+
+  const activeIndices: number[] = [];
+  const activeItems: T[] = [];
+
+  items.forEach((item, index) => {
+    if (!item.archived) {
+      activeIndices.push(index);
+      activeItems.push(item);
+    }
+  });
+
+  const fromPos = activeItems.findIndex((item) => item.id === fromId);
+  const toPos = activeItems.findIndex((item) => item.id === toId);
+  if (fromPos === -1 || toPos === -1) {
+    return [...items];
+  }
+
+  const reorderedActive = [...activeItems];
+  const [moved] = reorderedActive.splice(fromPos, 1);
+  reorderedActive.splice(toPos, 0, moved);
+
+  const result = [...items];
+  activeIndices.forEach((originalIdx, i) => {
+    result[originalIdx] = reorderedActive[i];
+  });
+  return result;
+}
+
+/**
+ * Immutably updates the `archived` flag of the template matching `templateId` in `items`.
+ */
+export function setTemplateInfoArchived<
+  T extends { id: string; archived?: boolean },
+>(items: readonly T[], templateId: string, archived: boolean): T[] {
+  return items.map((item) =>
+    item.id === templateId ? { ...item, archived } : item,
+  );
+}

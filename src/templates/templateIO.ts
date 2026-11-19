@@ -1081,10 +1081,16 @@ export interface SerializeCollectionJsonOptions {
    * exporting copies of paid Marketplace collections.
    */
   sourcePrice?: number;
+  /**
+   * When `true`, includes templates marked `archived: true` in the exported JSON.
+   * Defaults to `false` (only active templates are exported).
+   */
+  includeArchived?: boolean;
 }
 
 /**
  * Serializes a content collection (`{ name, description, templates }`) into a single JSON string.
+ * Excludes archived templates by default (unless `options.includeArchived` is `true`).
  * Throws an error if the collection is a copy of a paid Marketplace item (`price > 0`).
  */
 export function serializeCollectionJson<TRef>(
@@ -1102,10 +1108,15 @@ export function serializeCollectionJson<TRef>(
   }
   const pretty = options?.pretty ?? true;
   const stripDatabaseMetadata = options?.stripDatabaseMetadata ?? true;
+  const includeArchived = options?.includeArchived ?? false;
   const name = firstNonEmptyString(collection.name) || "Untitled Collection";
   const description = firstNonEmptyString(collection.description) || undefined;
 
-  const templates = collection.templates.map((tpl) => {
+  const sourceTemplates = includeArchived
+    ? collection.templates
+    : collection.templates.filter((tpl) => !tpl.archived);
+
+  const templates = sourceTemplates.map((tpl) => {
     if (!stripDatabaseMetadata) {
       return tpl;
     }

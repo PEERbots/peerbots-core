@@ -808,6 +808,42 @@ describe("serializeCollectionJson, isCollectionJson, and parseCollectionJson", (
       }),
     ).toBe(false);
   });
+
+  it("excludes archived templates by default in serializeCollectionJson unless includeArchived is true", () => {
+    const activeTpl: Template = {
+      ...EXAMPLE_STARTER_SOCIAL_TEMPLATE,
+      id: "active-1",
+      title: "Active Activity",
+    };
+    const archivedTpl: Template = {
+      ...EXAMPLE_LOG_AND_SPEAK_TEMPLATE,
+      id: "archived-1",
+      title: "Archived Activity",
+      archived: true,
+    };
+
+    const defaultJson = serializeCollectionJson({
+      name: "Mixed Collection",
+      templates: [activeTpl, archivedTpl],
+    });
+    const parsedDefault = parseCollectionJson(defaultJson);
+    expect(parsedDefault.templates).toHaveLength(1);
+    expect(parsedDefault.templates[0].title).toBe("Active Activity");
+
+    const withArchivedJson = serializeCollectionJson(
+      {
+        name: "Mixed Collection",
+        templates: [activeTpl, archivedTpl],
+      },
+      { includeArchived: true },
+    );
+    const parsedWithArchived = parseCollectionJson(withArchivedJson);
+    expect(parsedWithArchived.templates).toHaveLength(2);
+    expect(parsedWithArchived.templates.map((t) => t.title)).toEqual([
+      "Active Activity",
+      "Archived Activity",
+    ]);
+  });
 });
 
 
