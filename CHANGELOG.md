@@ -1,5 +1,11 @@
 # @peerbots/core
 
+## 1.4.2
+
+### Patch Changes
+
+- [#38](https://github.com/PEERbots/peerbots-core/pull/38) [`ee19d8b`](https://github.com/PEERbots/peerbots-core/commit/ee19d8b2d73d8d8de8253390f9c96c56ae822c94) Thanks [@sbeleidy](https://github.com/sbeleidy)! - Use `@theme static` in `src/styles/theme.css` so Tailwind v4 emits all Peerbots theme CSS custom properties in both the standalone `@peerbots/core/theme` stylesheet (`dist/styles/theme.css`) and the prefixed `--pb-*` tokens in the main bundle instead of tree-shaking unused theme tokens.
+
 ## 1.4.1
 
 ### Patch Changes
