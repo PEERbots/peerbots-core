@@ -42,7 +42,7 @@ export function CodeInteractiveLines<
   return (
     <div
       className={cn(
-        "pb:bg-[#1e222b] pb:text-gray-100 pb:font-mono pb:text-xs sm:pb:text-sm pb:overflow-x-auto pb:p-3 pb:max-h-[32rem] pb:overflow-y-auto",
+        "pb:bg-[#1e222b] pb:text-gray-100 pb:font-mono pb:text-xs pb:sm:text-sm pb:overflow-x-auto pb:p-3 pb:max-h-[32rem] pb:overflow-y-auto",
         className,
       )}
     >
@@ -92,7 +92,7 @@ export function CodeInteractiveLines<
                     ? "pb:bg-white/10 pb:ring-1 pb:ring-peerbots-teal/60"
                     : line.isSelected
                       ? "pb:bg-peerbots-teal/15"
-                      : "hover:pb:bg-white/5",
+                      : "pb:hover:bg-white/5",
                 )}
               >
                 <span

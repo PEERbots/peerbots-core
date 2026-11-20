@@ -479,7 +479,7 @@ export function CodeView({
                 type="button"
                 onClick={handleFormatDraft}
                 disabled={!parsedDraft.template}
-                className="pb:px-2.5 pb:py-1 pb:text-xs pb:font-medium pb:rounded-lg pb:border pb:border-gray-300 pb:bg-white pb:text-gray-700 pb:hover:bg-gray-100 disabled:pb:opacity-50 pb:cursor-pointer"
+                className="pb:px-2.5 pb:py-1 pb:text-xs pb:font-medium pb:rounded-lg pb:border pb:border-gray-300 pb:bg-white pb:text-gray-700 pb:hover:bg-gray-100 pb:disabled:opacity-50 pb:cursor-pointer"
               >
                 Format
               </button>
@@ -500,7 +500,7 @@ export function CodeView({
                   !parsedDraft.template ||
                   parsedDraft.diagnostics.some((d) => d.severity === "error")
                 }
-                className="pb:px-3 pb:py-1 pb:text-xs pb:font-semibold pb:rounded-lg pb:bg-peerbots-teal pb:text-gray-900 pb:hover:opacity-90 disabled:pb:opacity-50 pb:cursor-pointer"
+                className="pb:px-3 pb:py-1 pb:text-xs pb:font-semibold pb:rounded-lg pb:bg-peerbots-teal pb:text-gray-900 pb:hover:opacity-90 pb:disabled:opacity-50 pb:cursor-pointer"
               >
                 Apply Changes
               </button>
@@ -513,7 +513,7 @@ export function CodeView({
       <div
         className={cn(
           "pb:grid pb:grid-cols-1",
-          showExplainer && "lg:pb:grid-cols-12",
+          showExplainer && "pb:lg:grid-cols-12",
         )}
       >
         {!isEditable ? (
@@ -532,7 +532,7 @@ export function CodeView({
                 onButtonAction(line.button, line.buttonId, { type: "SELECT" });
               }
             }}
-            className={showExplainer ? "lg:pb:col-span-7" : "pb:col-span-1"}
+            className={showExplainer ? "pb:lg:col-span-7" : "pb:col-span-1"}
           />
         ) : (
           <CodeEditorSurface
@@ -604,7 +604,7 @@ export function CodeView({
             }}
             onAutocompleteHover={setAutocompleteIndex}
             onAutocompleteSelect={applyAutocompleteSuggestion}
-            className={showExplainer ? "lg:pb:col-span-7" : "pb:col-span-1"}
+            className={showExplainer ? "pb:lg:col-span-7" : "pb:col-span-1"}
           />
         )}
 

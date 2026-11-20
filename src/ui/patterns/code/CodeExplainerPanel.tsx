@@ -41,7 +41,7 @@ export function CodeExplainerPanel<
     <aside
       aria-label="Interactive code explainer"
       className={cn(
-        "lg:pb:col-span-5 pb:bg-gray-50 pb:border-t lg:pb:border-t-0 lg:pb:border-l pb:border-gray-200 pb:p-4 pb:flex pb:flex-col pb:gap-4",
+        "pb:lg:col-span-5 pb:bg-gray-50 pb:border-t pb:lg:border-t-0 pb:lg:border-l pb:border-gray-200 pb:p-4 pb:flex pb:flex-col pb:gap-4 pb:lg:max-h-[36rem] pb:lg:overflow-y-auto",
         className,
       )}
     >

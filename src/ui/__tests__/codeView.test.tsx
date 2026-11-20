@@ -345,5 +345,37 @@ describe("CodeView", () => {
     expect(updatedFromShorthand.copyDate).toBe(copyDate);
     expect(updatedFromShorthand.sourceContentId).toBe("source-pkg-1");
   });
+
+  it("renders side-by-side lg grid classes with valid pb: prefix order and toggles the explainer panel", () => {
+    const template = makeCyclicTemplate();
+    const { container } = render(
+      <CodeView template={template} onTemplateChange={vi.fn()} />,
+    );
+
+    const explainer = screen.getByLabelText("Interactive code explainer");
+    expect(explainer.className).toContain("pb:lg:col-span-5");
+    expect(explainer.className).not.toContain("lg:pb:");
+
+    const gridContainer = explainer.parentElement!;
+    expect(gridContainer.className).toContain("pb:lg:grid-cols-12");
+    expect(gridContainer.className).not.toContain("lg:pb:");
+
+    const toggleBtn = screen.getByRole("button", { name: /Explainer On/i });
+    expect(toggleBtn).toHaveAttribute("aria-pressed", "true");
+
+    fireEvent.click(toggleBtn);
+    expect(
+      screen.queryByLabelText("Interactive code explainer"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Explainer Off/i }),
+    ).toHaveAttribute("aria-pressed", "false");
+    expect(container.querySelector(".pb\\:lg\\:grid-cols-12")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: /Explainer Off/i }));
+    expect(
+      screen.getByLabelText("Interactive code explainer"),
+    ).toBeInTheDocument();
+  });
 });
 
