@@ -143,7 +143,7 @@ export const ComparisonWithCollapsible: Story = {
     },
   },
   render: () => (
-    <div className="pb:grid pb:grid-cols-1 md:pb:grid-cols-2 pb:gap-6 pb:w-full pb:max-w-4xl pb:p-4">
+    <div className="pb:grid pb:grid-cols-1 pb:md:grid-cols-2 pb:gap-6 pb:w-full pb:max-w-4xl pb:p-4">
       <div className="pb:space-y-2">
         <div className="pb:text-xs pb:font-bold pb:uppercase pb:tracking-wider pb:text-peerbots-darkteal">
           Accordion (2+ Coordinated Items, Single-Open)

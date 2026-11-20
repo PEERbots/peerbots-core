@@ -151,7 +151,7 @@ export const Default: Story = {
 
 export const Variations: Story = {
   render: () => (
-    <div className="pb:grid pb:grid-cols-1 md:pb:grid-cols-2 pb:gap-4">
+    <div className="pb:grid pb:grid-cols-1 pb:md:grid-cols-2 pb:gap-4">
       <div className="pb:rounded-xl pb:overflow-hidden pb:border pb:border-gray-200">
         <CodeInteractiveLines
           lines={SAMPLE_LINES}

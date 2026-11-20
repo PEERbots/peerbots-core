@@ -122,7 +122,7 @@ function CanonicalTemplatesShowcase() {
         </Text>
       </div>
 
-      <div className="pb:grid pb:grid-cols-1 lg:pb:grid-cols-2 pb:gap-6">
+      <div className="pb:grid pb:grid-cols-1 pb:lg:grid-cols-2 pb:gap-6">
         <Card hoverable={false} padding="sm" className="pb:flex pb:flex-col pb:gap-3">
           <div className="pb:flex pb:items-center pb:justify-between">
             <Heading level={3} size={6}>
@@ -302,7 +302,7 @@ function BulkAuthorPlaygroundShowcase() {
         </Text>
       </div>
 
-      <div className="pb:grid pb:grid-cols-1 lg:pb:grid-cols-2 pb:gap-6">
+      <div className="pb:grid pb:grid-cols-1 pb:lg:grid-cols-2 pb:gap-6">
         <Card hoverable={false} padding="sm" className="pb:flex pb:flex-col pb:gap-4">
           <div className="pb:flex pb:flex-col pb:gap-1.5">
             <label
@@ -338,7 +338,7 @@ function BulkAuthorPlaygroundShowcase() {
             />
           </div>
 
-          <div className="pb:grid pb:grid-cols-1 sm:pb:grid-cols-2 pb:gap-3">
+          <div className="pb:grid pb:grid-cols-1 pb:sm:grid-cols-2 pb:gap-3">
             <label
               htmlFor="opt-parse-titles"
               className="pb:flex pb:items-center pb:justify-between pb:gap-2 pb:text-sm pb:text-gray-900"
@@ -406,7 +406,7 @@ function BulkAuthorPlaygroundShowcase() {
 
             <label
               htmlFor="opt-question-feedback"
-              className="pb:flex pb:items-center pb:justify-between pb:gap-2 pb:text-sm pb:text-gray-900 sm:pb:col-span-2"
+              className="pb:flex pb:items-center pb:justify-between pb:gap-2 pb:text-sm pb:text-gray-900 pb:sm:col-span-2"
             >
               <span>Insert Feedback Buttons After Questions (?)</span>
               <Switch

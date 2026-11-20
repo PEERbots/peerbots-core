@@ -52,7 +52,7 @@ export const Icon = React.forwardRef<SVGSVGElement, IconProps>(
         className={cn(
           sizes[size],
           "pb:inline-block",
-          mirror && "rtl:pb:-scale-x-100",
+          mirror && "pb:rtl:-scale-x-100",
           className,
         )}
         {...props}

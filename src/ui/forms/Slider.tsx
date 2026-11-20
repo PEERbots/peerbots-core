@@ -101,7 +101,7 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
               </BaseSlider.Track>
               <BaseSlider.Thumb
                 aria-label={ariaLabel || (name ? name : "Slider")}
-                className="pb:z-10 pb:block pb:w-4.5 pb:h-4.5 pb:bg-white pb:shadow-md pb:rounded-full pb:border-2 pb:border-primary focus:pb:outline-none focus:pb:ring-4 focus:pb:ring-primary/20 pb:cursor-grab active:pb:cursor-grabbing pb:hover:scale-110 active:pb:scale-95 pb:transition-transform"
+                className="pb:z-10 pb:block pb:w-4.5 pb:h-4.5 pb:bg-white pb:shadow-md pb:rounded-full pb:border-2 pb:border-primary pb:focus:outline-none pb:focus:ring-4 pb:focus:ring-primary/20 pb:cursor-grab pb:active:cursor-grabbing pb:hover:scale-110 pb:active:scale-95 pb:transition-transform"
               />
             </BaseSlider.Control>
           </BaseSlider.Root>

@@ -345,5 +345,58 @@ describe("CodeView", () => {
     expect(updatedFromShorthand.copyDate).toBe(copyDate);
     expect(updatedFromShorthand.sourceContentId).toBe("source-pkg-1");
   });
+
+  it("renders resizable side-by-side explainer panel with keyboard/double-click resize and toggle", () => {
+    const template = makeCyclicTemplate();
+    render(<CodeView template={template} onTemplateChange={vi.fn()} />);
+
+    const explainer = screen.getByLabelText("Interactive code explainer");
+    expect(explainer.className).toContain("pb:lg:w-[var(--explainer-width)]");
+    expect(explainer.style.getPropertyValue("--explainer-width")).toBe("40%");
+
+    const splitContainer = explainer.parentElement!;
+    expect(splitContainer.className).toContain("pb:lg:flex-row");
+
+    const separator = screen.getByRole("separator", {
+      name: /Resize code explainer panel/i,
+    });
+    expect(separator).toHaveAttribute("aria-valuenow", "40");
+
+    // Keyboard resize wider & narrower + double-click reset
+    fireEvent.keyDown(separator, { key: "ArrowLeft" });
+    expect(separator).toHaveAttribute("aria-valuenow", "43");
+    expect(explainer.style.getPropertyValue("--explainer-width")).toBe("43%");
+
+    fireEvent.keyDown(separator, { key: "ArrowRight" });
+    expect(separator).toHaveAttribute("aria-valuenow", "40");
+
+    fireEvent.keyDown(separator, { key: "ArrowLeft", shiftKey: true });
+    expect(separator).toHaveAttribute("aria-valuenow", "48");
+
+    fireEvent.doubleClick(separator);
+    expect(separator).toHaveAttribute("aria-valuenow", "40");
+
+    // Toggle explainer off & back on
+    const toggleBtn = screen.getByRole("button", { name: /Explainer On/i });
+    expect(toggleBtn).toHaveAttribute("aria-pressed", "true");
+
+    fireEvent.click(toggleBtn);
+    expect(
+      screen.queryByLabelText("Interactive code explainer"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("separator", {
+        name: /Resize code explainer panel/i,
+      }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Explainer Off/i }),
+    ).toHaveAttribute("aria-pressed", "false");
+
+    fireEvent.click(screen.getByRole("button", { name: /Explainer Off/i }));
+    expect(
+      screen.getByLabelText("Interactive code explainer"),
+    ).toBeInTheDocument();
+  });
 });
 

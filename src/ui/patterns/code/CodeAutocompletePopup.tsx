@@ -58,7 +58,7 @@ export function CodeAutocompletePopup({
                 "pb:w-full pb:flex pb:items-center pb:justify-between pb:gap-2 pb:px-2.5 pb:py-1.5 pb:text-left pb:text-xs pb:transition-colors pb:cursor-pointer",
                 isSelected
                   ? "pb:bg-peerbots-teal/15 pb:text-gray-900"
-                  : "pb:bg-white pb:text-gray-700 hover:pb:bg-gray-50",
+                  : "pb:bg-white pb:text-gray-700 pb:hover:bg-gray-50",
               )}
             >
               <span className="pb:flex pb:items-center pb:gap-2 pb:min-w-0">

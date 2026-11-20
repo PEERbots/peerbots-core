@@ -150,23 +150,23 @@ describe("Internationalization & Bidirectional Layout Suite", () => {
 
     it("Switch thumb contains RTL translation class", () => {
       const html = renderToString(<Switch checked />);
-      expect(html).toContain("rtl:pb:data-[checked]:-translate-x-5");
+      expect(html).toContain("pb:rtl:data-[checked]:-translate-x-5");
     });
 
     it("Icon automatically mirrors directional icons in RTL and supports shouldMirror", () => {
       const htmlChevron = renderToString(<Icon name="chevronRight" />);
-      expect(htmlChevron).toContain("rtl:pb:-scale-x-100");
+      expect(htmlChevron).toContain("pb:rtl:-scale-x-100");
 
       const htmlCheck = renderToString(<Icon name="check" />);
-      expect(htmlCheck).not.toContain("rtl:pb:-scale-x-100");
+      expect(htmlCheck).not.toContain("pb:rtl:-scale-x-100");
 
       const htmlForced = renderToString(<Icon name="check" shouldMirror={true} />);
-      expect(htmlForced).toContain("rtl:pb:-scale-x-100");
+      expect(htmlForced).toContain("pb:rtl:-scale-x-100");
 
       const htmlDisabled = renderToString(
         <Icon name="chevronRight" shouldMirror={false} />
       );
-      expect(htmlDisabled).not.toContain("rtl:pb:-scale-x-100");
+      expect(htmlDisabled).not.toContain("pb:rtl:-scale-x-100");
     });
 
     it("Text component renders logical start and end alignment", () => {
@@ -227,9 +227,9 @@ describe("Internationalization & Bidirectional Layout Suite", () => {
         const html = renderToString(<Icon name={name as any} shouldMirror={shouldMirror} />);
 
         if (shouldMirror) {
-          expect(html).toContain("rtl:pb:-scale-x-100");
+          expect(html).toContain("pb:rtl:-scale-x-100");
         } else {
-          expect(html).not.toContain("rtl:pb:-scale-x-100");
+          expect(html).not.toContain("pb:rtl:-scale-x-100");
         }
       }
     });

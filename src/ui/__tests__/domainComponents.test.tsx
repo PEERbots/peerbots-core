@@ -125,11 +125,11 @@ describe("Domain UI Components", () => {
       expect(happyRadio.className).toContain("pb:h-8");
       expect(happyRadio.className).toContain("pb:w-8");
       expect(happyRadio.className).toContain("pb:bg-primary");
-      expect(happyRadio.className).toContain("hover:pb:bg-peerbots-teal");
+      expect(happyRadio.className).toContain("pb:hover:bg-peerbots-teal");
       expect(happyRadio.className).toContain("pb:border-2");
       expect(happyRadio.className).toContain("pb:border-gray-950");
       expect(neutralRadio.className).toContain("pb:bg-primary");
-      expect(neutralRadio.className).toContain("hover:pb:bg-peerbots-teal");
+      expect(neutralRadio.className).toContain("pb:hover:bg-peerbots-teal");
       expect(neutralRadio.className).toContain("pb:border-teal-800/25");
 
       const happyImg = happyRadio.querySelector("img")!;

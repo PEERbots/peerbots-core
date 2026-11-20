@@ -83,12 +83,12 @@ export function CodeEditorSurface({
         </div>
       )}
 
-      <div className="pb:relative pb:flex pb:rounded-lg pb:border pb:border-gray-300 pb:bg-[#1e222b]">
+      <div className="pb:relative pb:flex pb:rounded-lg pb:border pb:border-gray-300 pb:bg-[#1e222b] pb:max-h-[32rem]">
         {/* Line Numbers Gutter */}
         <div
           ref={lineGutterRef}
           aria-hidden="true"
-          className="pb:w-9 pb:shrink-0 pb:rounded-l-lg pb:py-3 pb:pr-2 pb:pl-2 pb:font-mono pb:text-xs sm:pb:text-sm pb:leading-6 pb:text-right pb:text-gray-500 pb:select-none pb:overflow-hidden pb:border-r pb:border-gray-800"
+          className="pb:w-9 pb:shrink-0 pb:rounded-l-lg pb:py-3 pb:pr-2 pb:pl-2 pb:font-mono pb:text-xs pb:sm:text-sm pb:leading-6 pb:text-right pb:text-gray-500 pb:select-none pb:overflow-hidden pb:max-h-[32rem] pb:border-r pb:border-gray-800"
         >
           {draftCode.split(/\r?\n/).map((_, idx) => {
             const lineNum = idx + 1;
@@ -124,7 +124,7 @@ export function CodeEditorSurface({
                       ? "pb:text-amber-400 pb:font-semibold"
                       : isActive
                         ? "pb:text-peerbots-teal pb:font-semibold"
-                        : "hover:pb:text-gray-300",
+                        : "pb:hover:text-gray-300",
                 )}
               >
                 {lineNum}
@@ -137,7 +137,7 @@ export function CodeEditorSurface({
           <pre
             ref={highlightPreRef}
             aria-hidden="true"
-            className="pb:pointer-events-none pb:m-0 pb:py-3 pb:px-3 pb:font-mono pb:text-xs sm:pb:text-sm pb:leading-6 pb:whitespace-pre pb:overflow-hidden pb:min-h-[21rem]"
+            className="pb:pointer-events-none pb:m-0 pb:py-3 pb:px-3 pb:font-mono pb:text-xs pb:sm:text-sm pb:leading-6 pb:whitespace-pre pb:overflow-hidden pb:min-h-[21rem] pb:max-h-[32rem]"
           >
             {highlightedDraftLines}
           </pre>
@@ -168,7 +168,7 @@ export function CodeEditorSurface({
             }}
             rows={14}
             spellCheck={false}
-            className="pb:absolute pb:inset-0 pb:w-full pb:h-full pb:resize-none pb:rounded-r-lg pb:bg-transparent pb:text-transparent pb:caret-white pb:font-mono pb:text-xs sm:pb:text-sm pb:leading-6 pb:py-3 pb:px-4 pb:whitespace-pre pb:overflow-auto focus:pb:outline-none focus:pb:ring-2 focus:pb:ring-peerbots-teal"
+            className="pb:absolute pb:inset-0 pb:w-full pb:h-full pb:resize-none pb:rounded-r-lg pb:bg-transparent pb:text-transparent pb:caret-white pb:font-mono pb:text-xs pb:sm:text-sm pb:leading-6 pb:py-3 pb:px-4 pb:whitespace-pre pb:overflow-auto pb:focus:outline-none pb:focus:ring-2 pb:focus:ring-peerbots-teal"
           />
 
           {autocompleteContext && (

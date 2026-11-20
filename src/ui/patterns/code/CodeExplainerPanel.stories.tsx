@@ -127,7 +127,7 @@ export const Variations: Story = {
   render: () => {
     const [hoveredTokenIdx, setHoveredTokenIdx] = useState<number | null>(null);
     return (
-      <div className="pb:grid pb:grid-cols-1 md:pb:grid-cols-2 pb:gap-4">
+      <div className="pb:grid pb:grid-cols-1 pb:md:grid-cols-2 pb:gap-4">
         <div className="pb:border pb:border-gray-200 pb:rounded-xl pb:overflow-hidden">
           <CodeExplainerPanel
             activeLine={SAMPLE_LINES[1]}

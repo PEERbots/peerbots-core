@@ -551,7 +551,7 @@ export const TableCell = React.forwardRef<
         )}
         <div className="pb:min-w-0 pb:flex-1">{children}</div>
         {cellAction && (
-          <div className="pb:shrink-0 pb:opacity-80 group-hover/cell:pb:opacity-100 focus-within:pb:opacity-100 pb:transition-opacity">
+          <div className="pb:shrink-0 pb:opacity-80 pb:group-hover/cell:opacity-100 pb:focus-within:opacity-100 pb:transition-opacity">
             {cellAction}
           </div>
         )}

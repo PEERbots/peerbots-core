@@ -162,14 +162,14 @@ const PeerbotsButtonNode = memo(function PeerbotsButtonNode({
           <button
             type="button"
             onClick={() => onOpenEdit(buttonId)}
-            className="pb:px-2 pb:py-0.5 pb:text-[11px] pb:font-semibold pb:rounded pb:bg-gray-900 pb:text-white hover:pb:bg-gray-800 pb:cursor-pointer"
+            className="pb:px-2 pb:py-0.5 pb:text-[11px] pb:font-semibold pb:rounded pb:bg-gray-900 pb:text-white pb:hover:bg-gray-800 pb:cursor-pointer"
           >
             ✎ Edit
           </button>
           <button
             type="button"
             onClick={() => onAddChild(buttonId)}
-            className="pb:px-2 pb:py-0.5 pb:text-[11px] pb:font-semibold pb:rounded pb:bg-gray-100 pb:text-gray-800 hover:pb:bg-gray-200 pb:cursor-pointer"
+            className="pb:px-2 pb:py-0.5 pb:text-[11px] pb:font-semibold pb:rounded pb:bg-gray-100 pb:text-gray-800 pb:hover:bg-gray-200 pb:cursor-pointer"
           >
             + Add
           </button>
@@ -244,7 +244,7 @@ const PeerbotsButtonNode = memo(function PeerbotsButtonNode({
 });
 
 const handleHitClassName =
-  "pb:!w-3 pb:!h-3 pb:!bg-white pb:!border-2 pb:!border-slate-400 hover:pb:!border-teal-600 hover:pb:!bg-teal-50 hover:pb:!scale-125 pb:transition-transform after:pb:content-[''] after:pb:absolute after:pb:-inset-2.5 after:pb:rounded-full after:pb:cursor-crosshair";
+  "pb:!w-3 pb:!h-3 pb:!bg-white pb:!border-2 pb:!border-slate-400 pb:hover:!border-teal-600 pb:hover:!bg-teal-50 pb:hover:!scale-125 pb:transition-transform pb:after:content-[''] pb:after:absolute pb:after:-inset-2.5 pb:after:rounded-full pb:after:cursor-crosshair";
 
 const nodeTypes = { peerbotsButton: PeerbotsButtonNode };
 
@@ -989,7 +989,7 @@ function FlowViewInner({
         className={cn(
           "pb:w-full pb:h-full pb:min-h-[400px]",
           isLayoutTransitioning &&
-            "[&_.react-flow__node]:pb:transition-transform [&_.react-flow__node]:pb:duration-250 [&_.react-flow__node]:pb:ease-out",
+            "pb:[&_.react-flow__node]:transition-transform pb:[&_.react-flow__node]:duration-250 pb:[&_.react-flow__node]:ease-out",
           className,
         )}
       >
@@ -1067,7 +1067,7 @@ function FlowViewInner({
                         "pb:px-2 pb:py-1 pb:text-xs pb:font-semibold pb:rounded pb:cursor-pointer pb:transition-colors",
                         dragBehavior === "select"
                           ? "pb:bg-gray-900 pb:text-white"
-                          : "pb:text-gray-600 hover:pb:text-gray-900",
+                          : "pb:text-gray-600 pb:hover:text-gray-900",
                       )}
                     >
                       ↖ Select
@@ -1081,7 +1081,7 @@ function FlowViewInner({
                         "pb:px-2 pb:py-1 pb:text-xs pb:font-semibold pb:rounded pb:cursor-pointer pb:transition-colors",
                         dragBehavior === "pan"
                           ? "pb:bg-gray-900 pb:text-white"
-                          : "pb:text-gray-600 hover:pb:text-gray-900",
+                          : "pb:text-gray-600 pb:hover:text-gray-900",
                       )}
                     >
                       ✋ Pan
