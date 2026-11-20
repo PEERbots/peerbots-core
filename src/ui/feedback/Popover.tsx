@@ -79,7 +79,7 @@ export function Popover({
         >
           <BasePopover.Popup
             className={cn(
-              "pb:z-50 pb:rounded-2xl pb:p-4 pb:min-w-[240px] pb:max-w-sm pb:text-gray-900 pb:transition-all pb:duration-150 data-[state=open]:pb:animate-in data-[state=closed]:pb:animate-out data-[state=closed]:pb:fade-out-0 data-[state=open]:pb:fade-in-0 data-[state=closed]:pb:zoom-out-95 data-[state=open]:pb:zoom-in-95",
+              "pb:z-50 pb:rounded-2xl pb:p-4 pb:min-w-[240px] pb:max-w-sm pb:text-gray-900 pb:transition-all pb:duration-150 pb:data-[state=open]:animate-in pb:data-[state=closed]:animate-out pb:data-[state=closed]:fade-out-0 pb:data-[state=open]:fade-in-0 pb:data-[state=closed]:zoom-out-95 pb:data-[state=open]:zoom-in-95",
               variantStyles[variant] || variantStyles.surface,
               className,
             )}

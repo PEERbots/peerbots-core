@@ -58,27 +58,27 @@ const sizeStyles: Record<
 > = {
   sm: {
     containerRadius: "pb:rounded-xl",
-    header: "pb:px-3.5 pb:py-2.5 sm:pb:px-4 sm:pb:py-2.5 pb:gap-2.5",
+    header: "pb:px-3.5 pb:py-2.5 pb:sm:px-4 pb:sm:py-2.5 pb:gap-2.5",
     title: "pb:text-sm pb:font-semibold pb:leading-snug",
     chevronBadge: "pb:w-6 pb:h-6",
     chevronIcon: "pb:w-3.5 pb:h-3.5",
-    content: "pb:px-3.5 pb:pb-3.5 pb:pt-2 sm:pb:px-4 pb:text-sm",
+    content: "pb:px-3.5 pb:pb-3.5 pb:pt-2 pb:sm:px-4 pb:text-sm",
   },
   md: {
     containerRadius: "pb:rounded-2xl",
-    header: "pb:px-4 pb:py-3.5 sm:pb:px-5 sm:pb:py-3.5 pb:gap-3",
+    header: "pb:px-4 pb:py-3.5 pb:sm:px-5 pb:sm:py-3.5 pb:gap-3",
     title: "pb:text-base pb:font-bold pb:leading-snug",
     chevronBadge: "pb:w-7 pb:h-7",
     chevronIcon: "pb:w-4 pb:h-4",
-    content: "pb:px-4 pb:pb-4 pb:pt-2.5 sm:pb:px-5 pb:text-sm sm:pb:text-base",
+    content: "pb:px-4 pb:pb-4 pb:pt-2.5 pb:sm:px-5 pb:text-sm pb:sm:text-base",
   },
   lg: {
     containerRadius: "pb:rounded-2xl",
-    header: "pb:px-5 pb:py-4 sm:pb:px-6 sm:pb:py-4.5 pb:gap-4",
-    title: "pb:text-base sm:pb:text-lg pb:font-bold pb:leading-snug",
+    header: "pb:px-5 pb:py-4 pb:sm:px-6 pb:sm:py-4.5 pb:gap-4",
+    title: "pb:text-base pb:sm:text-lg pb:font-bold pb:leading-snug",
     chevronBadge: "pb:w-8 pb:h-8",
     chevronIcon: "pb:w-4 pb:h-4",
-    content: "pb:px-5 pb:pb-5 pb:pt-3 sm:pb:px-6 pb:text-base",
+    content: "pb:px-5 pb:pb-5 pb:pt-3 pb:sm:px-6 pb:text-base",
   },
 };
 

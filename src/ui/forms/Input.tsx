@@ -39,7 +39,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const inputClasses = cn(
       "pb:block pb:w-full pb:rounded-md pb:border-0 pb:text-gray-900 pb:placeholder:text-gray-400 pb:focus:outline-none pb:appearance-none pb:transition-colors",
       size === "sm" || variant === "compact"
-        ? "pb:px-2 pb:py-1 pb:text-xs sm:pb:text-sm pb:leading-5 pb:min-h-[28px]"
+        ? "pb:px-2 pb:py-1 pb:text-xs pb:sm:text-sm pb:leading-5 pb:min-h-[28px]"
         : "pb:px-1.5 pb:py-1.5 pb:sm:text-sm pb:sm:leading-6",
       variant === "ghost"
         ? "pb:bg-transparent pb:shadow-none pb:ring-1 pb:ring-inset pb:ring-transparent pb:hover:bg-gray-100/80 pb:hover:ring-gray-300 pb:focus:bg-white pb:focus:ring-2 pb:focus:ring-inset pb:focus:ring-primary"

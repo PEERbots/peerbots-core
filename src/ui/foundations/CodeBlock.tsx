@@ -151,7 +151,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
 
       {/* Code Block Body (+ non-overlapping controls for default / flat variants) */}
       {isWindow ? (
-        <div className="pb:p-4 sm:pb:p-5 pb:overflow-x-auto pb:text-sm sm:pb:text-base pb:leading-relaxed">
+        <div className="pb:p-4 pb:sm:p-5 pb:overflow-x-auto pb:text-sm pb:sm:text-base pb:leading-relaxed">
           <pre className="pb:font-mono pb:m-0">
             <code>
               {showLineNumbers
@@ -178,8 +178,8 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
         <div className="pb:flex pb:items-start pb:justify-between pb:gap-3">
           <div
             className={cn(
-              "pb:flex-1 pb:min-w-0 pb:py-4 sm:pb:py-5 pb:ps-4 sm:pb:ps-5 pb:overflow-x-auto pb:text-sm sm:pb:text-base pb:leading-relaxed",
-              showCopyButton || language ? "pb:pe-1" : "pb:pe-4 sm:pb:pe-5",
+              "pb:flex-1 pb:min-w-0 pb:py-4 pb:sm:py-5 pb:ps-4 pb:sm:ps-5 pb:overflow-x-auto pb:text-sm pb:sm:text-base pb:leading-relaxed",
+              showCopyButton || language ? "pb:pe-1" : "pb:pe-4 pb:sm:pe-5",
             )}
           >
             <pre className="pb:font-mono pb:m-0">

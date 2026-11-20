@@ -132,7 +132,7 @@ export function Stepper({
                   )}
                 >
                   {isComplete ? (
-                    <Icon name="check" className="pb:w-2.5 pb:pb:h-2.5" />
+                    <Icon name="check" className="pb:w-2.5 pb:h-2.5" />
                   ) : (
                     idx + 1
                   )}
@@ -283,7 +283,7 @@ export function Stepper({
                   {step.title}
                 </div>
                 {step.description && (
-                  <div className="pb:text-[10px] pb:text-gray-600 pb:mt-0.5 pb:hidden sm:pb:block truncate">
+                  <div className="pb:text-[10px] pb:text-gray-600 pb:mt-0.5 pb:hidden pb:sm:block truncate">
                     {step.description}
                   </div>
                 )}

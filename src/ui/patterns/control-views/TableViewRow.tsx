@@ -174,7 +174,7 @@ export function TableViewRow({
                   backgroundColor: labelColorHex,
                   color: labelFontColorHex,
                 }}
-                className="pb:font-semibold pb:ring-black/20 placeholder:pb:text-current/60"
+                className="pb:font-semibold pb:ring-black/20 pb:placeholder:text-current/60"
                 onFocus={() => {
                   if (!disabled) {
                     onButtonAction(button, buttonId, { type: "SELECT" });

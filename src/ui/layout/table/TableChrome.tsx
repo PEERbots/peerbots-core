@@ -60,13 +60,13 @@ export function TableToolbar({
   return (
     <div
       className={cn(
-        "pb:flex pb:flex-col sm:pb:flex-row sm:pb:items-center sm:pb:justify-between pb:gap-3 pb:p-3 sm:pb:px-4 pb:bg-white pb:border-b pb:border-gray-200",
+        "pb:flex pb:flex-col pb:sm:flex-row pb:sm:items-center pb:sm:justify-between pb:gap-3 pb:p-3 pb:sm:px-4 pb:bg-white pb:border-b pb:border-gray-200",
         className,
       )}
     >
       <div className="pb:flex pb:flex-wrap pb:items-center pb:gap-3 pb:flex-1">
         {onSearchChange && (
-          <div className="pb:w-full sm:pb:w-64">
+          <div className="pb:w-full pb:sm:w-64">
             <SearchInput
               value={searchValue ?? ""}
               onChange={(e) => onSearchChange(e.target.value)}
@@ -253,7 +253,7 @@ export function TablePagination({
   return (
     <div
       className={cn(
-        "pb:flex pb:flex-col sm:pb:flex-row sm:pb:items-center sm:pb:justify-between pb:gap-3 pb:px-4 pb:py-3 pb:bg-gray-50/80 pb:border-t pb:border-gray-200 pb:text-xs pb:text-gray-600",
+        "pb:flex pb:flex-col pb:sm:flex-row pb:sm:items-center pb:sm:justify-between pb:gap-3 pb:px-4 pb:py-3 pb:bg-gray-50/80 pb:border-t pb:border-gray-200 pb:text-xs pb:text-gray-600",
         className,
       )}
     >

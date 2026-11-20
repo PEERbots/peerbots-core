@@ -220,10 +220,10 @@ export const Button = React.forwardRef<
         : "pb:px-4.5 pb:py-2.5 pb:text-sm",
       lg: isActuallyIconOnly
         ? "pb:p-3 pb:text-base"
-        : "pb:px-6 pb:py-3.5 pb:text-base sm:pb:text-lg",
+        : "pb:px-6 pb:py-3.5 pb:text-base pb:sm:text-lg",
       xl: isActuallyIconOnly
         ? "pb:p-3.5 pb:text-lg"
-        : "pb:px-8 pb:py-4 pb:text-lg sm:pb:text-xl",
+        : "pb:px-8 pb:py-4 pb:text-lg pb:sm:text-xl",
     };
 
     const variantStyles =

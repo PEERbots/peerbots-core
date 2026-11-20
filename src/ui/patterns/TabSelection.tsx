@@ -122,7 +122,7 @@ export function TabSelection({
               "pb:inline-flex pb:items-center pb:shrink-0 pb:rounded-lg pb:border pb:transition-colors",
               isActive
                 ? "pb:bg-primary/25 pb:text-gray-950 pb:border-peerbots-darkteal/40 pb:border-b-2 pb:border-b-peerbots-darkteal pb:shadow-2xs"
-                : "pb:text-gray-700 pb:bg-gray-100 hover:pb:bg-gray-200 hover:pb:text-gray-950 pb:border-gray-200",
+                : "pb:text-gray-700 pb:bg-gray-100 pb:hover:bg-gray-200 pb:hover:text-gray-950 pb:border-gray-200",
             )}
           >
             <button
@@ -143,7 +143,7 @@ export function TabSelection({
                 hasActions && "pb:pe-1.5 pb:rounded-e-none",
                 isActive
                   ? "pb:font-bold pb:text-gray-950"
-                  : "pb:font-medium pb:text-gray-700 pb:bg-gray-100 hover:pb:bg-gray-200 hover:pb:text-gray-950",
+                  : "pb:font-medium pb:text-gray-700 pb:bg-gray-100 pb:hover:bg-gray-200 pb:hover:text-gray-950",
               )}
             >
               {tab.label}

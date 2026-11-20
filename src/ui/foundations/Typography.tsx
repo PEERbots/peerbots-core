@@ -3,12 +3,12 @@ import { cn } from "../utils";
 import { BrandColor, ComponentColor, ComponentSize } from "../types";
 
 const headingSizes: Record<number, string> = {
-  1: "pb:text-4xl sm:pb:text-5xl pb:font-bold pb:leading-tight",
-  2: "pb:text-3xl sm:pb:text-4xl pb:font-bold pb:leading-snug",
-  3: "pb:text-2xl sm:pb:text-3xl pb:font-bold pb:leading-snug",
-  4: "pb:text-xl sm:pb:text-2xl pb:font-bold pb:leading-snug",
-  5: "pb:text-lg sm:pb:text-xl pb:font-bold",
-  6: "pb:text-base sm:pb:text-lg pb:font-bold",
+  1: "pb:text-4xl pb:sm:text-5xl pb:font-bold pb:leading-tight",
+  2: "pb:text-3xl pb:sm:text-4xl pb:font-bold pb:leading-snug",
+  3: "pb:text-2xl pb:sm:text-3xl pb:font-bold pb:leading-snug",
+  4: "pb:text-xl pb:sm:text-2xl pb:font-bold pb:leading-snug",
+  5: "pb:text-lg pb:sm:text-xl pb:font-bold",
+  6: "pb:text-base pb:sm:text-lg pb:font-bold",
 };
 
 const headingColorClasses: Record<string, string> = {
@@ -47,7 +47,7 @@ const textSizeClasses: Record<string, string> = {
   md: "pb:text-base pb:leading-relaxed",
   lg: "pb:text-lg pb:leading-relaxed",
   xl: "pb:text-xl pb:leading-relaxed",
-  lead: "pb:text-lg sm:pb:text-xl pb:leading-relaxed pb:text-slate-700",
+  lead: "pb:text-lg pb:sm:text-xl pb:leading-relaxed pb:text-slate-700",
 };
 
 const weightClasses = {

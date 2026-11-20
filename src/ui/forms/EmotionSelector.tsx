@@ -176,11 +176,11 @@ export function EmotionSelector({
             disabled={disabled}
             onClick={() => handleSelect(emotion)}
             className={cn(
-              "pb:inline-flex pb:items-center pb:justify-center pb:shrink-0 pb:rounded-lg pb:bg-primary hover:pb:bg-peerbots-teal pb:text-gray-950 pb:cursor-pointer pb:transition-all pb:duration-150 pb:focus-visible:outline-2 pb:focus-visible:outline-offset-2 pb:focus-visible:outline-peerbots-darkteal pb:disabled:opacity-50 pb:disabled:cursor-not-allowed",
+              "pb:inline-flex pb:items-center pb:justify-center pb:shrink-0 pb:rounded-lg pb:bg-primary pb:hover:bg-peerbots-teal pb:text-gray-950 pb:cursor-pointer pb:transition-all pb:duration-150 pb:focus-visible:outline-2 pb:focus-visible:outline-offset-2 pb:focus-visible:outline-peerbots-darkteal pb:disabled:opacity-50 pb:disabled:cursor-not-allowed",
               buttonSizeClasses[size],
               isSelected
                 ? "pb:border-2 pb:border-gray-950 pb:ring-2 pb:ring-gray-950/20 pb:shadow-sm"
-                : "pb:border pb:border-teal-800/25 hover:pb:border-gray-900/50",
+                : "pb:border pb:border-teal-800/25 pb:hover:border-gray-900/50",
             )}
           >
             <PeerbotsEmotionIcon
@@ -191,7 +191,7 @@ export function EmotionSelector({
                 "pb:transition-opacity",
                 isSelected
                   ? "pb:opacity-100"
-                  : "pb:opacity-85 hover:pb:opacity-100",
+                  : "pb:opacity-85 pb:hover:opacity-100",
               )}
             />
           </button>

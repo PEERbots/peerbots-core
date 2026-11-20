@@ -87,7 +87,7 @@ export const Default: Story = {
 
 export const Variations: Story = {
   render: () => (
-    <div className="pb:grid pb:grid-cols-1 md:pb:grid-cols-2 pb:gap-4">
+    <div className="pb:grid pb:grid-cols-1 pb:md:grid-cols-2 pb:gap-4">
       <div className="pb:relative pb:h-52 pb:bg-[#1e222b] pb:rounded-xl pb:p-3">
         <CodeAutocompletePopup
           context={EMOTION_CONTEXT}

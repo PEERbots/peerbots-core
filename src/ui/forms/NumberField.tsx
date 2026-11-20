@@ -109,10 +109,10 @@ export const NumberField = React.forwardRef<HTMLDivElement, NumberFieldProps>(
               <BaseNumberField.Decrement
                 aria-label="Decrement"
                 className={cn(
-                  "pb:relative pb:z-[2] pb:flex pb:items-center pb:justify-center pb:text-gray-500 pb:hover:text-gray-700 pb:hover:bg-gray-100/50 pb:rounded-s-md pb:border-e disabled:pb:opacity-30 pb:cursor-pointer pb:transition-opacity",
+                  "pb:relative pb:z-[2] pb:flex pb:items-center pb:justify-center pb:text-gray-500 pb:hover:text-gray-700 pb:hover:bg-gray-100/50 pb:rounded-s-md pb:border-e pb:disabled:opacity-30 pb:cursor-pointer pb:transition-opacity",
                   isSmall ? "pb:w-6 pb:h-7" : "pb:w-8 pb:h-9",
                   variant === "ghost"
-                    ? "pb:border-transparent group-hover:pb:border-gray-200 group-focus-within:pb:border-gray-200"
+                    ? "pb:border-transparent pb:group-hover:border-gray-200 pb:group-focus-within:border-gray-200"
                     : "pb:border-gray-300",
                 )}
               >
@@ -132,7 +132,7 @@ export const NumberField = React.forwardRef<HTMLDivElement, NumberFieldProps>(
               className={cn(
                 "pb:block pb:w-full pb:bg-transparent pb:border-0 pb:text-gray-900 pb:placeholder:text-gray-400 pb:focus:outline-none pb:focus:ring-0 pb:text-center pb:appearance-none pb:relative pb:z-0",
                 isSmall
-                  ? "pb:px-1.5 pb:py-1 pb:text-xs sm:pb:text-sm pb:leading-5"
+                  ? "pb:px-1.5 pb:py-1 pb:text-xs pb:sm:text-sm pb:leading-5"
                   : "pb:px-3 pb:py-1.5 pb:sm:text-sm pb:sm:leading-6",
                 !showButtons && "pb:rounded-md",
               )}
@@ -142,10 +142,10 @@ export const NumberField = React.forwardRef<HTMLDivElement, NumberFieldProps>(
               <BaseNumberField.Increment
                 aria-label="Increment"
                 className={cn(
-                  "pb:relative pb:z-[2] pb:flex pb:items-center pb:justify-center pb:text-gray-500 pb:hover:text-gray-700 pb:hover:bg-gray-100/50 pb:rounded-e-md pb:border-s disabled:pb:opacity-30 pb:cursor-pointer pb:transition-opacity",
+                  "pb:relative pb:z-[2] pb:flex pb:items-center pb:justify-center pb:text-gray-500 pb:hover:text-gray-700 pb:hover:bg-gray-100/50 pb:rounded-e-md pb:border-s pb:disabled:opacity-30 pb:cursor-pointer pb:transition-opacity",
                   isSmall ? "pb:w-6 pb:h-7" : "pb:w-8 pb:h-9",
                   variant === "ghost"
-                    ? "pb:border-transparent group-hover:pb:border-gray-200 group-focus-within:pb:border-gray-200"
+                    ? "pb:border-transparent pb:group-hover:border-gray-200 pb:group-focus-within:border-gray-200"
                     : "pb:border-gray-300",
                 )}
               >

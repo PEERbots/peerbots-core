@@ -133,7 +133,7 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
               "pb:flex pb:items-center pb:justify-between pb:gap-1.5 pb:rounded-md pb:border-0 pb:text-gray-900 pb:transition-colors pb:cursor-pointer pb:focus:outline-none",
               inline ? "pb:w-auto" : "pb:w-full",
               isSmall
-                ? "pb:py-1 pb:ps-2 pb:pe-2 pb:text-xs sm:pb:text-sm pb:leading-5 pb:min-h-[28px]"
+                ? "pb:py-1 pb:ps-2 pb:pe-2 pb:text-xs pb:sm:text-sm pb:leading-5 pb:min-h-[28px]"
                 : "pb:py-1.5 pb:ps-3 pb:pe-3 pb:sm:text-sm pb:sm:leading-6 pb:min-h-[36px]",
               variant === "ghost"
                 ? "pb:bg-transparent pb:ring-1 pb:ring-inset pb:ring-transparent pb:hover:bg-gray-100/80 pb:hover:ring-gray-300 pb:focus:bg-white pb:focus:ring-2 pb:focus:ring-primary"
@@ -173,12 +173,12 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
               sideOffset={4}
               className="pb:z-[60] pb:min-w-[var(--anchor-width)]"
             >
-              <BaseSelect.Popup className="pb:max-h-60 pb:overflow-auto pb:rounded-md pb:bg-white pb:py-1 pb:text-base pb:shadow-lg pb:ring-1 pb:ring-black/5 focus:pb:outline-none pb:sm:text-sm">
+              <BaseSelect.Popup className="pb:max-h-60 pb:overflow-auto pb:rounded-md pb:bg-white pb:py-1 pb:text-base pb:shadow-lg pb:ring-1 pb:ring-black/5 pb:focus:outline-none pb:sm:text-sm">
                 {normalizedOptions.map((option, index) => (
                   <BaseSelect.Item
                     key={`${option.value}-${index}`}
                     value={option.value}
-                    className="pb:relative pb:cursor-default pb:select-none pb:py-2 pb:ps-3 pb:pe-9 pb:text-gray-900 pb:hover:bg-gray-100 data-[highlighted]:pb:bg-gray-100 data-[selected]:pb:font-semibold"
+                    className="pb:relative pb:cursor-default pb:select-none pb:py-2 pb:ps-3 pb:pe-9 pb:text-gray-900 pb:hover:bg-gray-100 pb:data-[highlighted]:bg-gray-100 pb:data-[selected]:font-semibold"
                   >
                     <BaseSelect.ItemText>{option.label}</BaseSelect.ItemText>
                     <BaseSelect.ItemIndicator className="pb:absolute pb:inset-y-0 pb:end-0 pb:flex pb:items-center pb:pe-4 pb:text-primary">

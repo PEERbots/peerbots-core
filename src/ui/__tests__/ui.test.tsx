@@ -54,8 +54,8 @@ describe("Core UI Components & Utilities", () => {
     it("allows pb:-prefixed classes to override each other properly", () => {
       expect(cn("pb:w-full", "pb:w-auto")).toBe("pb:w-auto");
       expect(cn("pb:p-4", "pb:p-6")).toBe("pb:p-6");
-      expect(cn("rtl:pb:translate-x-5", "rtl:pb:-translate-x-5")).toBe(
-        "rtl:pb:-translate-x-5",
+      expect(cn("pb:rtl:translate-x-5", "pb:rtl:-translate-x-5")).toBe(
+        "pb:rtl:-translate-x-5",
       );
     });
   });

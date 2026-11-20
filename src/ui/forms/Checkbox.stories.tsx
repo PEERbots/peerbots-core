@@ -26,7 +26,7 @@ const StatefulCheckbox = (
       />
       <label
         htmlFor="terms"
-        className="pb:text-sm pb:font-medium pb:leading-none peer-disabled:pb:cursor-not-allowed peer-disabled:pb:opacity-70"
+        className="pb:text-sm pb:font-medium pb:leading-none pb:peer-disabled:cursor-not-allowed pb:peer-disabled:opacity-70"
       >
         {props.label || "Accept terms and conditions"}
       </label>

@@ -62,9 +62,9 @@ const paddingClasses: Record<string, string> = {
   none: "",
   xs: "pb:p-2.5",
   sm: "pb:p-4",
-  md: "pb:p-6 sm:pb:p-8",
-  lg: "pb:p-8 sm:pb:p-10 md:pb:p-12",
-  xl: "pb:p-10 sm:pb:p-12 md:pb:p-16",
+  md: "pb:p-6 pb:sm:p-8",
+  lg: "pb:p-8 pb:sm:p-10 pb:md:p-12",
+  xl: "pb:p-10 pb:sm:p-12 pb:md:p-16",
 };
 
 export const Card = React.forwardRef<HTMLElement, CardProps>(
