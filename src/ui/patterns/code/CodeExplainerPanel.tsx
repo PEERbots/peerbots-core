@@ -19,6 +19,7 @@ export interface CodeExplainerPanelProps<
   heading?: string;
   emptyHint: string;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 /**
@@ -36,12 +37,14 @@ export function CodeExplainerPanel<
   heading = "What This Produces",
   emptyHint,
   className,
+  style,
 }: CodeExplainerPanelProps<TLine>) {
   return (
     <aside
       aria-label="Interactive code explainer"
+      style={style}
       className={cn(
-        "pb:lg:col-span-5 pb:bg-gray-50 pb:border-t pb:lg:border-t-0 pb:lg:border-l pb:border-gray-200 pb:p-4 pb:flex pb:flex-col pb:gap-4 pb:lg:max-h-[36rem] pb:lg:overflow-y-auto",
+        "pb:bg-gray-50 pb:border-t pb:lg:border-t-0 pb:lg:border-l pb:border-gray-200 pb:p-4 pb:flex pb:flex-col pb:gap-4 pb:lg:max-h-[36rem] pb:lg:overflow-y-auto",
         className,
       )}
     >

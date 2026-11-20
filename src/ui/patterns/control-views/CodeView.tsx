@@ -84,6 +84,10 @@ export function CodeView({
   const [showExplainer, setShowExplainer] = useState<boolean>(
     defaultShowExplainer,
   );
+  const [explainerWidthPercent, setExplainerWidthPercent] =
+    useState<number>(40);
+  const [isResizingExplainer, setIsResizingExplainer] =
+    useState<boolean>(false);
   const [showAllAnchors, setShowAllAnchors] = useState<boolean>(false);
 
   const [hoveredLineNumber, setHoveredLineNumber] = useState<number | null>(
@@ -101,6 +105,7 @@ export function CodeView({
     left: number;
   }>({ top: 0, left: 0 });
 
+  const splitContainerRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const undoStackRef = useRef<UndoEntry[]>([]);
 
@@ -511,9 +516,11 @@ export function CodeView({
 
       {/* Main Content */}
       <div
+        ref={splitContainerRef}
         className={cn(
-          "pb:grid pb:grid-cols-1",
-          showExplainer && "pb:lg:grid-cols-12",
+          "pb:flex pb:flex-col",
+          showExplainer && "pb:lg:flex-row",
+          isResizingExplainer && "pb:select-none",
         )}
       >
         {!isEditable ? (
@@ -532,7 +539,7 @@ export function CodeView({
                 onButtonAction(line.button, line.buttonId, { type: "SELECT" });
               }
             }}
-            className={showExplainer ? "pb:lg:col-span-7" : "pb:col-span-1"}
+            className="pb:flex-1 pb:min-w-0"
           />
         ) : (
           <CodeEditorSurface
@@ -604,38 +611,111 @@ export function CodeView({
             }}
             onAutocompleteHover={setAutocompleteIndex}
             onAutocompleteSelect={applyAutocompleteSuggestion}
-            className={showExplainer ? "pb:lg:col-span-7" : "pb:col-span-1"}
+            className="pb:flex-1 pb:min-w-0"
           />
         )}
 
         {showExplainer && (
-          <CodeExplainerPanel
-            activeLine={activeLine}
-            lineDiagnostics={
-              isEditable && activeLine
-                ? (diagnosticsByLine.get(activeLine.lineNumber) ?? [])
-                : []
-            }
-            hoveredTokenIdx={hoveredTokenIdx}
-            onHoverToken={setHoveredTokenIdx}
-            renderPreview={(line) => (
-              <PttfButtonPreview
-                line={line}
-                disabled={disabled}
-                logIcon={logIcon}
-                emotionIcons={emotionIcons}
-                emotionLabels={emotionLabels}
-                onButtonAction={onButtonAction}
+          <>
+            <div
+              role="separator"
+              aria-orientation="vertical"
+              aria-label="Resize code explainer panel"
+              aria-valuemin={22}
+              aria-valuemax={62}
+              aria-valuenow={Math.round(explainerWidthPercent)}
+              tabIndex={0}
+              title="Drag to resize explainer (double-click to reset)"
+              onDoubleClick={() => setExplainerWidthPercent(40)}
+              onPointerDown={(e) => {
+                if (e.button !== 0 && e.pointerType === "mouse") return;
+                e.preventDefault();
+                e.currentTarget.setPointerCapture?.(e.pointerId);
+                setIsResizingExplainer(true);
+              }}
+              onPointerMove={(e) => {
+                if (!isResizingExplainer) return;
+                const container = splitContainerRef.current;
+                if (!container) return;
+                const rect = container.getBoundingClientRect();
+                if (rect.width <= 0) return;
+                const isRtl =
+                  typeof window !== "undefined" &&
+                  window.getComputedStyle(container).direction === "rtl";
+                const rawPercent = isRtl
+                  ? ((e.clientX - rect.left) / rect.width) * 100
+                  : ((rect.right - e.clientX) / rect.width) * 100;
+                const clamped = Math.min(62, Math.max(22, rawPercent));
+                setExplainerWidthPercent(clamped);
+              }}
+              onPointerUp={(e) => {
+                if (!isResizingExplainer) return;
+                e.currentTarget.releasePointerCapture?.(e.pointerId);
+                setIsResizingExplainer(false);
+              }}
+              onPointerCancel={() => setIsResizingExplainer(false)}
+              onKeyDown={(e) => {
+                const step = e.shiftKey ? 8 : 3;
+                if (e.key === "ArrowLeft") {
+                  e.preventDefault();
+                  setExplainerWidthPercent((prev) =>
+                    Math.min(62, prev + step),
+                  );
+                } else if (e.key === "ArrowRight") {
+                  e.preventDefault();
+                  setExplainerWidthPercent((prev) =>
+                    Math.max(22, prev - step),
+                  );
+                } else if (e.key === "Home") {
+                  e.preventDefault();
+                  setExplainerWidthPercent(40);
+                }
+              }}
+              className={cn(
+                "pb:hidden pb:lg:flex pb:w-2 pb:shrink-0 pb:cursor-col-resize pb:items-center pb:justify-center pb:bg-gray-100 pb:border-s pb:border-gray-200 pb:transition-colors pb:hover:bg-peerbots-teal/30 pb:focus:outline-none pb:focus-visible:bg-peerbots-teal/40 pb:touch-none",
+                isResizingExplainer && "pb:bg-peerbots-teal/40",
+              )}
+            >
+              <span
+                aria-hidden="true"
+                className="pb:h-8 pb:w-0.5 pb:rounded-full pb:bg-gray-400"
               />
-            )}
-            emptyHint={
-              isEditable
-                ? format === "json" && !parsedDraft.template
-                  ? "Fix the JSON syntax error to restore the live button preview and breakdown."
-                  : "Place your cursor on any line to preview its button and see what each symbol means."
-                : "Hover or focus any line on the left to preview its button and see what each symbol means."
-            }
-          />
+            </div>
+
+            <CodeExplainerPanel
+              activeLine={activeLine}
+              lineDiagnostics={
+                isEditable && activeLine
+                  ? (diagnosticsByLine.get(activeLine.lineNumber) ?? [])
+                  : []
+              }
+              hoveredTokenIdx={hoveredTokenIdx}
+              onHoverToken={setHoveredTokenIdx}
+              style={
+                {
+                  "--explainer-width": `${explainerWidthPercent}%`,
+                } as React.CSSProperties
+              }
+              className="pb:lg:w-[var(--explainer-width)] pb:lg:shrink-0 pb:lg:border-l-0"
+              renderPreview={(line) => (
+                <PttfButtonPreview
+                  line={line}
+                  disabled={disabled}
+                  logIcon={logIcon}
+                  emotionIcons={emotionIcons}
+                  emotionLabels={emotionLabels}
+                  onButtonAction={onButtonAction}
+                />
+              )}
+              emptyHint={
+                isEditable
+                  ? format === "json" && !parsedDraft.template
+                    ? "Fix the JSON syntax error to restore the live button preview and breakdown."
+                    : "Place your cursor on any line to preview its button and see what each symbol means."
+                  : "Hover or focus any line on the left to preview its button and see what each symbol means."
+              }
+            />
+          </>
         )}
       </div>
     </div>
