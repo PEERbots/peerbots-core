@@ -778,6 +778,125 @@ describe("Control Views Suite (ButtonView, TableView, FlowView)", () => {
         template.hierarchy.root.length + 1,
       );
     });
+
+    it("defaults to Pan mode on mobile viewports and honors explicit defaultDragBehavior", () => {
+      const originalInnerWidth = window.innerWidth;
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 375,
+      });
+
+      try {
+        const template = makeRichTemplate();
+        const { unmount } = render(
+          <FlowView template={template} onButtonAction={() => undefined} />,
+        );
+
+        expect(screen.getByRole("button", { name: /Pan/i })).toHaveAttribute(
+          "aria-pressed",
+          "true",
+        );
+        expect(screen.getByRole("button", { name: /Select/i })).toHaveAttribute(
+          "aria-pressed",
+          "false",
+        );
+
+        unmount();
+
+        render(
+          <FlowView
+            template={template}
+            defaultDragBehavior="select"
+            onButtonAction={() => undefined}
+          />,
+        );
+        expect(screen.getByRole("button", { name: /Select/i })).toHaveAttribute(
+          "aria-pressed",
+          "true",
+        );
+      } finally {
+        Object.defineProperty(window, "innerWidth", {
+          writable: true,
+          configurable: true,
+          value: originalInnerWidth,
+        });
+      }
+    });
+
+    it("wires the Controls lock button to toggle read-only control mode while keeping button clicks active", () => {
+      const onButtonAction = vi.fn();
+      const template = makeRichTemplate();
+
+      const { unmount } = render(
+        <FlowView
+          template={template}
+          selectedButtonId="btn-1"
+          onButtonAction={onButtonAction}
+        />,
+      );
+
+      // Unlocked by default: editing toolbar and node edit button are visible
+      expect(
+        screen.getAllByRole("button", { name: "+ Add" }).length,
+      ).toBeGreaterThanOrEqual(2);
+      expect(
+        screen.getByRole("button", { name: /Auto-Layout/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /Edit/i }),
+      ).toBeInTheDocument();
+
+      // Click React Flow's lock ("toggle interactivity") button
+      const lockBtn = screen.getByRole("button", {
+        name: /toggle interactivity/i,
+      });
+      fireEvent.click(lockBtn);
+
+      // Editing UI is hidden when locked
+      expect(
+        screen.queryAllByRole("button", { name: "+ Add" }),
+      ).toHaveLength(0);
+      expect(
+        screen.queryByRole("button", { name: /Auto-Layout/i }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /Edit/i }),
+      ).not.toBeInTheDocument();
+
+      // Clicking a button node still triggers SELECT + CLICK in locked control mode
+      const helloNodeBtn = screen.getByRole("button", { name: "Hello" });
+      expect(helloNodeBtn).not.toBeDisabled();
+      fireEvent.click(helloNodeBtn.closest(".react-flow__node")!);
+      expect(onButtonAction).toHaveBeenCalledWith(
+        template.buttons["btn-1"],
+        "btn-1",
+        { type: "CLICK" },
+      );
+
+      // Unlocking restores editing controls
+      fireEvent.click(lockBtn);
+      expect(
+        screen.getAllByRole("button", { name: "+ Add" }).length,
+      ).toBeGreaterThanOrEqual(2);
+      expect(
+        screen.getByRole("button", { name: /Edit/i }),
+      ).toBeInTheDocument();
+
+      unmount();
+
+      // When disabled={true}, the lock button is hidden
+      render(
+        <FlowView
+          template={template}
+          disabled
+          onButtonAction={onButtonAction}
+        />,
+      );
+      expect(
+        screen.queryByRole("button", { name: /toggle interactivity/i }),
+      ).not.toBeInTheDocument();
+    });
   });
 
   describe("ButtonView Right-Click Edit Popover & BatchButtonEditPanel", () => {

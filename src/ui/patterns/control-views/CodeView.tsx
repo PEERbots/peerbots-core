@@ -85,7 +85,6 @@ export function CodeView({
     defaultShowExplainer,
   );
   const [showAllAnchors, setShowAllAnchors] = useState<boolean>(false);
-  const [copied, setCopied] = useState<boolean>(false);
 
   const [hoveredLineNumber, setHoveredLineNumber] = useState<number | null>(
     null,
@@ -338,17 +337,6 @@ export function CodeView({
     }
   };
 
-  const handleCopy = async () => {
-    const textToCopy = isEditable ? draftCode : activeCode;
-    try {
-      await navigator.clipboard.writeText(textToCopy);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Clipboard may be unavailable in non-secure test environments
-    }
-  };
-
   const handleFormatDraft = () => {
     if (!parsedDraft.template) return;
     pushUndo(draftCode, editorSelectionStart);
@@ -518,19 +506,6 @@ export function CodeView({
               </button>
             </>
           )}
-
-          <button
-            type="button"
-            onClick={handleCopy}
-            aria-label="Copy template code"
-            className="pb:inline-flex pb:items-center pb:gap-1 pb:px-2.5 pb:py-1 pb:text-xs pb:font-medium pb:rounded-lg pb:border pb:border-gray-300 pb:bg-white pb:text-gray-700 pb:hover:bg-gray-100 pb:cursor-pointer"
-          >
-            <Icon
-              name={copied ? "check" : "clipboard"}
-              className="pb:w-3.5 pb:h-3.5"
-            />
-            <span>{copied ? "Copied" : "Copy"}</span>
-          </button>
         </div>
       </div>
 

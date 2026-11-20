@@ -82,6 +82,7 @@ interface FlowNodeContextValue {
   selectedNodeIds: ReadonlyArray<string>;
   editingNodeId: string | null;
   disabled: boolean;
+  isEditingLocked: boolean;
   logIcon: IconName;
   emotionIcons?: Partial<Record<PeerbotsEmotion, string | React.ReactNode>>;
   emotionLabels?: Partial<Record<PeerbotsEmotion, string>>;
@@ -101,6 +102,7 @@ const FlowNodeContext = createContext<FlowNodeContextValue>({
   selectedNodeIds: [],
   editingNodeId: null,
   disabled: false,
+  isEditingLocked: false,
   logIcon: "pencilNote",
   onOpenEdit: () => undefined,
   onCloseEdit: () => undefined,
@@ -121,6 +123,7 @@ const PeerbotsButtonNode = memo(function PeerbotsButtonNode({
     selectedNodeIds,
     editingNodeId,
     disabled,
+    isEditingLocked,
     logIcon,
     emotionIcons,
     emotionLabels,
@@ -139,11 +142,11 @@ const PeerbotsButtonNode = memo(function PeerbotsButtonNode({
   const targetPos = direction === "TB" ? Position.Top : Position.Left;
   const isSelected = Boolean(selected) || buttonId === selectedButtonId;
   const isSingleSelected =
-    !disabled &&
+    !isEditingLocked &&
     isSelected &&
     selectedNodeIds.length <= 1 &&
     editingNodeId !== buttonId;
-  const isEditing = !disabled && editingNodeId === buttonId;
+  const isEditing = !isEditingLocked && editingNodeId === buttonId;
 
   return (
     <div className="pb:relative">
@@ -211,6 +214,7 @@ const PeerbotsButtonNode = memo(function PeerbotsButtonNode({
       <Handle
         type="target"
         position={targetPos}
+        isConnectable={!isEditingLocked}
         className={handleHitClassName}
       />
       <PeerbotsButton
@@ -224,7 +228,7 @@ const PeerbotsButtonNode = memo(function PeerbotsButtonNode({
           /* Handled via FlowView's onNodeClick */
         }}
         onDoubleClick={(e) => {
-          if (disabled) return;
+          if (isEditingLocked) return;
           e.stopPropagation();
           onOpenEdit(buttonId);
         }}
@@ -232,6 +236,7 @@ const PeerbotsButtonNode = memo(function PeerbotsButtonNode({
       <Handle
         type="source"
         position={sourcePos}
+        isConnectable={!isEditingLocked}
         className={handleHitClassName}
       />
     </div>
@@ -256,7 +261,7 @@ function FlowViewInner({
   direction: controlledDirection,
   defaultDirection = "TB",
   onDirectionChange,
-  defaultDragBehavior = "select",
+  defaultDragBehavior,
   showMiniMap = false,
   logIcon = "pencilNote",
   emotionIcons,
@@ -269,9 +274,22 @@ function FlowViewInner({
   const { screenToFlowPosition, fitView, setCenter, getZoom } = useReactFlow();
   const [uncontrolledDirection, setUncontrolledDirection] =
     useState<FlowDirection>(defaultDirection);
-  const [dragBehavior, setDragBehavior] = useState<FlowDragBehavior>(
-    disabled ? "pan" : defaultDragBehavior,
-  );
+  const [isLocked, setIsLocked] = useState(false);
+  const isEditingLocked = disabled || isLocked;
+  const [dragBehavior, setDragBehavior] = useState<FlowDragBehavior>(() => {
+    if (disabled) return "pan";
+    if (defaultDragBehavior) return defaultDragBehavior;
+    if (typeof window !== "undefined") {
+      const isCoarsePointer =
+        typeof window.matchMedia === "function" &&
+        window.matchMedia("(pointer: coarse)").matches;
+      const isSmallViewport = window.innerWidth < 768;
+      if (isCoarsePointer || isSmallViewport) {
+        return "pan";
+      }
+    }
+    return "select";
+  });
   const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const [isLayoutTransitioning, setIsLayoutTransitioning] = useState(false);
@@ -455,19 +473,19 @@ function FlowViewInner({
 
   const isValidConnection: IsValidConnection = useCallback(
     (connection) => {
-      if (disabled) return false;
+      if (isEditingLocked) return false;
       const source = connection.source;
       const target = connection.target;
       if (!source || !target || source === target) return false;
       const existingChildren = templateRef.current.hierarchy?.[source] ?? [];
       return !existingChildren.includes(target);
     },
-    [disabled],
+    [isEditingLocked],
   );
 
   const onConnect = useCallback(
     (connection: Connection) => {
-      if (disabled || !connection.source || !connection.target) return;
+      if (isEditingLocked || !connection.source || !connection.target) return;
       if (connection.source === connection.target) return;
       onAddConnectionRef.current?.(connection.source, connection.target);
       if (onHierarchyChangeRef.current || onTemplateChangeRef.current) {
@@ -480,7 +498,7 @@ function FlowViewInner({
         );
       }
     },
-    [disabled, emitHierarchyUpdate],
+    [isEditingLocked, emitHierarchyUpdate],
   );
 
   const panToNewNode = useCallback(
@@ -559,7 +577,8 @@ function FlowViewInner({
   // Connecting from a handle into empty canvas creates a new connected button at the drop point
   const onConnectEnd: OnConnectEnd = useCallback(
     (event, connectionState) => {
-      if (disabled || connectionState.isValid || connectionState.toNode) return;
+      if (isEditingLocked || connectionState.isValid || connectionState.toNode)
+        return;
       const fromNodeId = connectionState.fromNode?.id;
       if (!fromNodeId) return;
 
@@ -588,14 +607,15 @@ function FlowViewInner({
     [
       activeDirection,
       createConnectedButtonAt,
-      disabled,
+      isEditingLocked,
       screenToFlowPosition,
     ],
   );
 
   const onReconnect = useCallback(
     (oldEdge: Edge, newConnection: Connection) => {
-      if (disabled || !newConnection.source || !newConnection.target) return;
+      if (isEditingLocked || !newConnection.source || !newConnection.target)
+        return;
       if (newConnection.source === newConnection.target) return;
       onRemoveConnection?.(oldEdge.source, oldEdge.target);
       onAddConnectionRef.current?.(newConnection.source, newConnection.target);
@@ -614,12 +634,12 @@ function FlowViewInner({
         );
       }
     },
-    [disabled, emitHierarchyUpdate, onRemoveConnection],
+    [isEditingLocked, emitHierarchyUpdate, onRemoveConnection],
   );
 
   const onEdgesDelete = useCallback(
     (deletedEdges: Edge[]) => {
-      if (disabled) return;
+      if (isEditingLocked) return;
       let nextHierarchy = templateRef.current.hierarchy;
       for (const edge of deletedEdges) {
         onRemoveConnection?.(edge.source, edge.target);
@@ -636,7 +656,7 @@ function FlowViewInner({
         emitHierarchyUpdate(nextHierarchy);
       }
     },
-    [disabled, emitHierarchyUpdate, onRemoveConnection],
+    [isEditingLocked, emitHierarchyUpdate, onRemoveConnection],
   );
 
   const onNodeClick = useCallback(
@@ -660,7 +680,7 @@ function FlowViewInner({
       }
 
       if (
-        disabled ||
+        isEditingLocked ||
         (!onHierarchyChangeRef.current && !onTemplateChangeRef.current)
       ) {
         return;
@@ -683,7 +703,7 @@ function FlowViewInner({
         emitHierarchyUpdate(reordered);
       }
     },
-    [activeDirection, disabled, emitHierarchyUpdate],
+    [activeDirection, isEditingLocked, emitHierarchyUpdate],
   );
 
   const onSelectionChange = useCallback(
@@ -901,6 +921,19 @@ function FlowViewInner({
     setSelectedNodeIds([]);
   }, [setNodes]);
 
+  const handleInteractiveChange = useCallback(
+    (interactiveStatus: boolean) => {
+      if (disabled) return;
+      const nextLocked = !interactiveStatus;
+      setIsLocked(nextLocked);
+      if (nextLocked) {
+        setEditingNodeId(null);
+        clearSelection();
+      }
+    },
+    [clearSelection, disabled],
+  );
+
   const handleOpenEdit = useCallback((id: string) => setEditingNodeId(id), []);
   const handleCloseEdit = useCallback(() => setEditingNodeId(null), []);
 
@@ -910,6 +943,7 @@ function FlowViewInner({
       selectedNodeIds,
       editingNodeId,
       disabled,
+      isEditingLocked,
       logIcon,
       emotionIcons,
       emotionLabels,
@@ -936,6 +970,7 @@ function FlowViewInner({
       handleOpenEdit,
       handleSaveNode,
       handleToggleRoot,
+      isEditingLocked,
       labels,
       logIcon,
       selectedButtonId,
@@ -944,8 +979,9 @@ function FlowViewInner({
   );
 
   const effectivePanOnDrag =
-    disabled || dragBehavior === "pan" ? true : [1, 2];
-  const effectiveSelectionOnDrag = !disabled && dragBehavior === "select";
+    isEditingLocked || dragBehavior === "pan" ? true : [1, 2];
+  const effectiveSelectionOnDrag =
+    !isEditingLocked && dragBehavior === "select";
 
   return (
     <FlowNodeContext.Provider value={nodeContextValue}>
@@ -972,10 +1008,10 @@ function FlowViewInner({
           onSelectionChange={onSelectionChange}
           onPaneClick={() => setEditingNodeId(null)}
           nodeTypes={nodeTypes}
-          nodesDraggable={!disabled}
-          nodesConnectable={!disabled}
-          edgesReconnectable={!disabled}
-          elementsSelectable={!disabled}
+          nodesDraggable={!isEditingLocked}
+          nodesConnectable={!isEditingLocked}
+          edgesReconnectable={!isEditingLocked}
+          elementsSelectable={!isEditingLocked}
           panOnScroll={true}
           zoomOnPinch={true}
           panActivationKeyCode="Space"
@@ -994,7 +1030,10 @@ function FlowViewInner({
           proOptions={{ hideAttribution: true }}
         >
           <Background />
-          <Controls />
+          <Controls
+            showInteractive={!disabled}
+            onInteractiveChange={handleInteractiveChange}
+          />
           {showMiniMap && (
             <MiniMap
               pannable
@@ -1007,109 +1046,112 @@ function FlowViewInner({
             />
           )}
 
-          {!disabled && (
-            <Panel position="top-left">
-              <div className="pb:flex pb:flex-wrap pb:items-center pb:gap-1.5 pb:rounded-lg pb:bg-white/95 pb:backdrop-blur-xs pb:border pb:border-gray-200 pb:shadow-sm pb:p-1">
-                <div
-                  role="group"
-                  aria-label="Canvas drag mode"
-                  className="pb:inline-flex pb:rounded-md pb:bg-gray-100 pb:p-0.5"
-                >
-                  <button
-                    type="button"
-                    aria-pressed={dragBehavior === "select"}
-                    title="Box-select on drag (hold Space or two-finger scroll to pan)"
-                    onClick={() => setDragBehavior("select")}
-                    className={cn(
-                      "pb:px-2 pb:py-1 pb:text-xs pb:font-semibold pb:rounded pb:cursor-pointer pb:transition-colors",
-                      dragBehavior === "select"
-                        ? "pb:bg-gray-900 pb:text-white"
-                        : "pb:text-gray-600 hover:pb:text-gray-900",
-                    )}
+          <Panel
+            position="top-center"
+            className="pb:!m-0 pb:w-full pb:p-2 pb:pointer-events-none"
+          >
+            <div className="pb:flex pb:flex-wrap pb:items-start pb:justify-between pb:gap-2 pb:w-full">
+              {!isEditingLocked && (
+                <div className="pb:pointer-events-auto pb:flex pb:flex-wrap pb:items-center pb:gap-1.5 pb:rounded-lg pb:bg-white/95 pb:backdrop-blur-xs pb:border pb:border-gray-200 pb:shadow-sm pb:p-1">
+                  <div
+                    role="group"
+                    aria-label="Canvas drag mode"
+                    className="pb:inline-flex pb:rounded-md pb:bg-gray-100 pb:p-0.5"
                   >
-                    ↖ Select
-                  </button>
-                  <button
-                    type="button"
-                    aria-pressed={dragBehavior === "pan"}
-                    title="Pan on drag (hold Shift + click/drag to multi-select)"
-                    onClick={() => setDragBehavior("pan")}
-                    className={cn(
-                      "pb:px-2 pb:py-1 pb:text-xs pb:font-semibold pb:rounded pb:cursor-pointer pb:transition-colors",
-                      dragBehavior === "pan"
-                        ? "pb:bg-gray-900 pb:text-white"
-                        : "pb:text-gray-600 hover:pb:text-gray-900",
-                    )}
+                    <button
+                      type="button"
+                      aria-pressed={dragBehavior === "select"}
+                      title="Box-select on drag (hold Space or two-finger scroll to pan)"
+                      onClick={() => setDragBehavior("select")}
+                      className={cn(
+                        "pb:px-2 pb:py-1 pb:text-xs pb:font-semibold pb:rounded pb:cursor-pointer pb:transition-colors",
+                        dragBehavior === "select"
+                          ? "pb:bg-gray-900 pb:text-white"
+                          : "pb:text-gray-600 hover:pb:text-gray-900",
+                      )}
+                    >
+                      ↖ Select
+                    </button>
+                    <button
+                      type="button"
+                      aria-pressed={dragBehavior === "pan"}
+                      title="Pan on drag (hold Shift + click/drag to multi-select)"
+                      onClick={() => setDragBehavior("pan")}
+                      className={cn(
+                        "pb:px-2 pb:py-1 pb:text-xs pb:font-semibold pb:rounded pb:cursor-pointer pb:transition-colors",
+                        dragBehavior === "pan"
+                          ? "pb:bg-gray-900 pb:text-white"
+                          : "pb:text-gray-600 hover:pb:text-gray-900",
+                      )}
+                    >
+                      ✋ Pan
+                    </button>
+                  </div>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="pb:h-7 pb:px-2 pb:text-xs"
+                    onClick={() => handleCreateNode(null)}
                   >
-                    ✋ Pan
-                  </button>
+                    + Add
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="pb:h-7 pb:px-2 pb:text-xs"
+                    onClick={handleAutoLayout}
+                  >
+                    Auto-Layout
+                  </Button>
+                </div>
+              )}
+
+              <div className="pb:pointer-events-auto pb:ms-auto pb:flex pb:flex-col pb:items-end pb:gap-2">
+                <div className="pb:bg-white pb:rounded-md pb:shadow-sm pb:p-1.5 pb:border pb:border-gray-200">
+                  <span className="pb:text-xs pb:font-medium pb:text-gray-700 pb:block pb:text-center pb:mb-1">
+                    {resolvedLabels.flowLayout}
+                  </span>
+                  <TabRadio<FlowDirection>
+                    aria-label={resolvedLabels.flowLayout}
+                    options={[
+                      { value: "TB", label: resolvedLabels.topBottom },
+                      { value: "LR", label: resolvedLabels.leftRight },
+                    ]}
+                    value={activeDirection}
+                    onChange={handleDirectionChange}
+                  />
                 </div>
 
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="pb:h-7 pb:px-2 pb:text-xs"
-                  onClick={() => handleCreateNode(null)}
-                >
-                  + Add
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="pb:h-7 pb:px-2 pb:text-xs"
-                  onClick={handleAutoLayout}
-                >
-                  Auto-Layout
-                </Button>
+                {!isEditingLocked && selectedEntries.length >= 2 && (
+                  <BatchButtonEditPanel
+                    selectedButtons={selectedEntries}
+                    emotionIcons={emotionIcons}
+                    emotionLabels={emotionLabels}
+                    colorLabels={colorLabels}
+                    labels={labels}
+                    onApplyLabelColor={(labelColor) =>
+                      applyBatchUpdate((btn) => ({ ...btn, labelColor }))
+                    }
+                    onApplyFaceColor={(color) =>
+                      applyBatchUpdate((btn) =>
+                        btn.type === "Message"
+                          ? { ...btn, details: { ...btn.details, color } }
+                          : null,
+                      )
+                    }
+                    onApplyEmotion={(emotion) =>
+                      applyBatchUpdate((btn) =>
+                        btn.type === "Message"
+                          ? { ...btn, details: { ...btn.details, emotion } }
+                          : null,
+                      )
+                    }
+                    onClearSelection={clearSelection}
+                    onDeleteSelected={handleDeleteSelected}
+                  />
+                )}
               </div>
-            </Panel>
-          )}
-
-          <Panel position="top-right">
-            <div className="pb:flex pb:flex-col pb:items-end pb:gap-2">
-              <div className="pb:bg-white pb:rounded-md pb:shadow-sm pb:p-1.5 pb:border pb:border-gray-200">
-                <span className="pb:text-xs pb:font-medium pb:text-gray-700 pb:block pb:text-center pb:mb-1">
-                  {resolvedLabels.flowLayout}
-                </span>
-                <TabRadio<FlowDirection>
-                  aria-label={resolvedLabels.flowLayout}
-                  options={[
-                    { value: "TB", label: resolvedLabels.topBottom },
-                    { value: "LR", label: resolvedLabels.leftRight },
-                  ]}
-                  value={activeDirection}
-                  onChange={handleDirectionChange}
-                />
-              </div>
-
-              {!disabled && selectedEntries.length >= 2 && (
-                <BatchButtonEditPanel
-                  selectedButtons={selectedEntries}
-                  emotionIcons={emotionIcons}
-                  emotionLabels={emotionLabels}
-                  colorLabels={colorLabels}
-                  labels={labels}
-                  onApplyLabelColor={(labelColor) =>
-                    applyBatchUpdate((btn) => ({ ...btn, labelColor }))
-                  }
-                  onApplyFaceColor={(color) =>
-                    applyBatchUpdate((btn) =>
-                      btn.type === "Message"
-                        ? { ...btn, details: { ...btn.details, color } }
-                        : null,
-                    )
-                  }
-                  onApplyEmotion={(emotion) =>
-                    applyBatchUpdate((btn) =>
-                      btn.type === "Message"
-                        ? { ...btn, details: { ...btn.details, emotion } }
-                        : null,
-                    )
-                  }
-                  onClearSelection={clearSelection}
-                  onDeleteSelected={handleDeleteSelected}
-                />
-              )}
             </div>
           </Panel>
         </ReactFlow>
