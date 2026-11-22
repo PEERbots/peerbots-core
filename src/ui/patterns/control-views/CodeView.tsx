@@ -20,6 +20,7 @@ import {
   adaptPttfLines,
   type ExplainedPttfLine,
 } from "./code-view/pttfAdapter";
+import { buildPlayableButtonLineMap } from "./code-view/playableLines";
 import { PttfButtonPreview } from "./code-view/PttfButtonPreview";
 import { useCodeViewDraft } from "./code-view/useCodeViewDraft";
 import type { PeerbotsButtonActionHandler } from "./types";
@@ -43,6 +44,8 @@ export interface CodeViewProps {
   emotionLabels?: Partial<Record<PeerbotsEmotion, string>>;
   /** Initial syntax format: `"shorthand"` (PTTF) or `"json"` (@default "shorthand") */
   defaultFormat?: "shorthand" | "json";
+  /** Whether the editor starts locked in read-only play mode (@default false when `onTemplateChange` is provided). */
+  defaultLocked?: boolean;
   /**
    * @deprecated Inspect and Edit are now unified: providing `onTemplateChange` enables live editing directly.
    */
@@ -74,11 +77,14 @@ export function CodeView({
   emotionIcons,
   emotionLabels,
   defaultFormat = "shorthand",
+  defaultLocked = false,
   defaultMode: _defaultMode,
   defaultShowExplainer = true,
   className,
 }: CodeViewProps) {
-  const isEditable = Boolean(onTemplateChange) && !disabled;
+  const canEdit = Boolean(onTemplateChange) && !disabled;
+  const [isLocked, setIsLocked] = useState<boolean>(defaultLocked);
+  const isEditable = canEdit && !isLocked;
 
   const [format, setFormat] = useState<"shorthand" | "json">(defaultFormat);
   const [showExplainer, setShowExplainer] = useState<boolean>(
@@ -162,6 +168,38 @@ export function CodeView({
       editorCursorLine,
       hoveredTokenIdx,
     });
+
+  const playableLines = useMemo(
+    () =>
+      buildPlayableButtonLineMap({
+        format,
+        draftCode,
+        isEditable,
+        disabled,
+        parsedTemplate: parsedDraft.template,
+        diagnostics: parsedDraft.diagnostics,
+        lines: isEditable ? parsedDraft.draftLines : normalizedLines,
+        selectedButtonId,
+      }),
+    [
+      format,
+      draftCode,
+      isEditable,
+      disabled,
+      parsedDraft.template,
+      parsedDraft.diagnostics,
+      parsedDraft.draftLines,
+      normalizedLines,
+      selectedButtonId,
+    ],
+  );
+
+  const handlePlayLine = (lineNumber: number) => {
+    if (disabled || !onButtonAction) return;
+    const entry = playableLines.get(lineNumber);
+    if (!entry) return;
+    onButtonAction(entry.button, entry.buttonId, { type: "SELECT" });
+  };
 
   const activeLine: ExplainedPttfLine | undefined = useMemo(() => {
     if (isEditable) {
@@ -296,6 +334,15 @@ export function CodeView({
   };
 
   const handleEditorKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      const entry = playableLines.get(editorCursorLine);
+      if (entry && onButtonAction && !disabled) {
+        e.preventDefault();
+        onButtonAction(entry.button, entry.buttonId, { type: "SELECT" });
+        return;
+      }
+    }
+
     if (
       (e.metaKey || e.ctrlKey) &&
       !e.shiftKey &&
@@ -448,6 +495,33 @@ export function CodeView({
         </div>
 
         <div className="pb:flex pb:flex-wrap pb:items-center pb:gap-2">
+          {canEdit && (
+            <button
+              type="button"
+              onClick={() => setIsLocked((prev) => !prev)}
+              aria-pressed={isLocked}
+              aria-label={
+                isLocked ? "Unlock code editor" : "Lock code editor"
+              }
+              title={
+                isLocked
+                  ? "Unlock to edit code"
+                  : "Lock to read-only play mode"
+              }
+              className={cn(
+                "pb:inline-flex pb:items-center pb:justify-center pb:p-1.5 pb:rounded-lg pb:border pb:transition-colors pb:cursor-pointer",
+                isLocked
+                  ? "pb:border-peerbots-teal pb:bg-peerbots-teal/10 pb:text-teal-800"
+                  : "pb:border-gray-300 pb:bg-white pb:text-gray-700 pb:hover:bg-gray-100",
+              )}
+            >
+              <Icon
+                name={isLocked ? "lockClosed" : "lockOpen"}
+                className="pb:w-4 pb:h-4"
+              />
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => setShowExplainer((prev) => !prev)}
@@ -539,6 +613,8 @@ export function CodeView({
                 onButtonAction(line.button, line.buttonId, { type: "SELECT" });
               }
             }}
+            lineActions={onButtonAction ? playableLines : undefined}
+            onLineAction={onButtonAction ? handlePlayLine : undefined}
             className="pb:flex-1 pb:min-w-0"
           />
         ) : (
@@ -555,6 +631,8 @@ export function CodeView({
             autocompleteIndex={clampedAutocompleteIndex}
             autocompletePosition={autocompletePosition}
             textareaRef={textareaRef}
+            lineActions={onButtonAction ? playableLines : undefined}
+            onLineAction={onButtonAction ? handlePlayLine : undefined}
             headerLeft={
               format === "shorthand" ? (
                 <span>

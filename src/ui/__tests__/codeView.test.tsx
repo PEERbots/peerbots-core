@@ -398,5 +398,197 @@ describe("CodeView", () => {
       screen.getByLabelText("Interactive code explainer"),
     ).toBeInTheDocument();
   });
+
+  it("toggles between unlocked live edit and locked read-only play mode via the Lock/Unlock button with zero axe violations", async () => {
+    const onTemplateChange = vi.fn();
+    const onButtonAction = vi.fn();
+    const template = makeCyclicTemplate();
+
+    const { container } = render(
+      <CodeView
+        template={template}
+        onTemplateChange={onTemplateChange}
+        onButtonAction={onButtonAction}
+      />,
+    );
+
+    // Unlocked by default: editor textarea + Apply Changes + gutter Play buttons
+    expect(screen.getByLabelText("Template code editor")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Apply Changes" }),
+    ).toBeInTheDocument();
+
+    const lockBtn = screen.getByRole("button", { name: "Lock code editor" });
+    expect(lockBtn).toHaveAttribute("aria-pressed", "false");
+
+    // Gutter Play buttons work in unlocked edit mode (Shorthand)
+    const playHelloEdit = screen.getByRole("button", {
+      name: "Play button: Say Hello",
+    });
+    expect(playHelloEdit).toHaveAttribute("tabindex", "-1");
+    fireEvent.click(playHelloEdit);
+    expect(onButtonAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "Message",
+        details: expect.objectContaining({ title: "Say Hello" }),
+      }),
+      expect.any(String),
+      { type: "SELECT" },
+    );
+
+    // Clicking Lock switches to read-only play mode
+    fireEvent.click(lockBtn);
+    expect(
+      screen.queryByLabelText("Template code editor"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Apply Changes" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Unlock code editor" }),
+    ).toHaveAttribute("aria-pressed", "true");
+
+    // Gutter Play button still works in locked read-only mode
+    onButtonAction.mockClear();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Play button: Wave Logged" }),
+    );
+    expect(onButtonAction).toHaveBeenCalledWith(
+      template.buttons["2"],
+      "2",
+      { type: "SELECT" },
+    );
+
+    const results = await axe.run(container);
+    expect(results.violations).toEqual([]);
+
+    // Unlocking restores live editor
+    fireEvent.click(
+      screen.getByRole("button", { name: "Unlock code editor" }),
+    );
+    expect(screen.getByLabelText("Template code editor")).toBeInTheDocument();
+  });
+
+  it("places one Play button on the first line of every button in expanded JSON, supports Ctrl/Cmd+Enter, and suppresses Play on malformed/ambiguous JSON", () => {
+    const onTemplateChange = vi.fn();
+    const onButtonAction = vi.fn();
+    const template = makeCyclicTemplate();
+
+    render(
+      <CodeView
+        template={template}
+        defaultFormat="json"
+        onTemplateChange={onTemplateChange}
+        onButtonAction={onButtonAction}
+      />,
+    );
+
+    // Exactly 2 Play buttons in expanded JSON (one on the first line of each button object)
+    const playButtons = screen.getAllByRole("button", {
+      name: /^Play button:/,
+    });
+    expect(playButtons).toHaveLength(2);
+    expect(
+      screen.getByRole("button", { name: "Play button: Say Hello" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Play button: Wave Logged" }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Play button: Say Hello" }),
+    );
+    expect(onButtonAction).toHaveBeenCalledWith(
+      template.buttons["1"],
+      "1",
+      { type: "SELECT" },
+    );
+
+    // Ctrl+Enter on the first line of button "1" plays it
+    const textarea = screen.getByLabelText(
+      "Template code editor",
+    ) as HTMLTextAreaElement;
+    onButtonAction.mockClear();
+    const btn1Pos = textarea.value.indexOf('"1": {');
+    fireEvent.click(textarea, { target: { selectionStart: btn1Pos } });
+    fireEvent.select(textarea, { target: { selectionStart: btn1Pos } });
+    fireEvent.keyDown(textarea, { key: "Enter", ctrlKey: true });
+    expect(onButtonAction).toHaveBeenCalledWith(
+      template.buttons["1"],
+      "1",
+      { type: "SELECT" },
+    );
+
+    // 1. Broken JSON -> ALL Play buttons suppressed (no stale line drift)
+    fireEvent.change(textarea, {
+      target: { value: "{ broken json", selectionStart: 5 },
+    });
+    expect(
+      screen.queryAllByRole("button", { name: /^Play button:/ }),
+    ).toHaveLength(0);
+
+    // 2. Minified JSON (multiple buttons on the same line) -> ambiguous line suppressed
+    fireEvent.change(textarea, {
+      target: { value: JSON.stringify(template), selectionStart: 0 },
+    });
+    expect(
+      screen.queryAllByRole("button", { name: /^Play button:/ }),
+    ).toHaveLength(0);
+
+    // 3. Invalid button field types (speech: 123) -> invalid button suppressed, valid sibling stays playable
+    const partiallyInvalid = JSON.stringify(
+      {
+        title: "Mixed",
+        buttons: {
+          "1": {
+            type: "Message",
+            labelColor: "Green",
+            details: { title: "Bad Speech", speech: 123 },
+          },
+          "2": {
+            type: "Log",
+            labelColor: "Grey",
+            details: { title: "Good Log", details: "Valid note" },
+          },
+        },
+        hierarchy: { root: ["1", "2"] },
+      },
+      null,
+      2,
+    );
+    fireEvent.change(textarea, {
+      target: { value: partiallyInvalid, selectionStart: 0 },
+    });
+    expect(
+      screen.queryByRole("button", { name: "Play button: Bad Speech" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Play button: Good Log" }),
+    ).toBeInTheDocument();
+
+    // 4. Duplicate button keys in JSON -> duplicate key suppressed
+    const duplicateKeyJson = `{
+  "title": "Dupes",
+  "buttons": {
+    "1": { "type": "Message", "labelColor": "Green", "details": { "title": "First", "speech": "Hi" } },
+    "1": { "type": "Message", "labelColor": "Green", "details": { "title": "Second", "speech": "Bye" } },
+    "2": { "type": "Log", "labelColor": "Grey", "details": { "title": "Unique Log", "details": "Ok" } }
+  },
+  "hierarchy": { "root": ["1", "2"] }
+}`;
+    fireEvent.change(textarea, {
+      target: { value: duplicateKeyJson, selectionStart: 0 },
+    });
+    expect(
+      screen.queryByRole("button", { name: "Play button: First" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Play button: Second" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Play button: Unique Log" }),
+    ).toBeInTheDocument();
+  });
 });
+
 

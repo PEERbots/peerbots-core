@@ -1,6 +1,11 @@
+import { Icon } from "../../foundations/Icon";
 import { cn } from "../../utils";
 import { CodeStatusBar } from "./CodeStatusBar";
-import type { ExplainedCodeLine, ExplainedCodeToken } from "./types";
+import type {
+  CodeLineActionItem,
+  ExplainedCodeLine,
+  ExplainedCodeToken,
+} from "./types";
 
 export interface CodeInteractiveLinesProps<
   TLine extends ExplainedCodeLine = ExplainedCodeLine,
@@ -15,13 +20,17 @@ export interface CodeInteractiveLinesProps<
   onHoverLine: (lineNumber: number | null) => void;
   onHoverToken: (tokenIdx: number | null) => void;
   onSelectLine?: (line: TLine) => void;
+  /** Optional map of lineNumber -> playable button metadata for rendering left-gutter Play buttons. */
+  lineActions?: Map<number, CodeLineActionItem>;
+  /** Invoked when a line's gutter Play button is clicked. */
+  onLineAction?: (lineNumber: number) => void;
   ariaLabel?: string;
   className?: string;
 }
 
 /**
  * Domain-neutral interactive read-only code pane with line/token hover
- * highlighting and keyboard selection.
+ * highlighting, optional per-line gutter Play triggers, and keyboard selection.
  */
 export function CodeInteractiveLines<
   TLine extends ExplainedCodeLine = ExplainedCodeLine,
@@ -36,9 +45,13 @@ export function CodeInteractiveLines<
   onHoverLine,
   onHoverToken,
   onSelectLine,
+  lineActions,
+  onLineAction,
   ariaLabel = "Formatted template code lines",
   className,
 }: CodeInteractiveLinesProps<TLine>) {
+  const showActionColumn = Boolean(onLineAction && lineActions && lineActions.size > 0);
+
   return (
     <div
       className={cn(
@@ -54,6 +67,7 @@ export function CodeInteractiveLines<
         <div role="list" aria-label={ariaLabel}>
           {lines.map((line) => {
             const isHovered = hoveredLineNumber === line.lineNumber;
+            const action = lineActions?.get(line.lineNumber);
 
             return (
               <div
@@ -86,7 +100,7 @@ export function CodeInteractiveLines<
                   }
                 }}
                 className={cn(
-                  "pb:flex pb:items-baseline pb:gap-3 pb:px-2 pb:py-0.5 pb:rounded pb:transition-colors pb:outline-none",
+                  "pb:flex pb:items-baseline pb:gap-2 pb:px-2 pb:py-0.5 pb:rounded pb:transition-colors pb:outline-none",
                   line.isInteractive && !disabled && "pb:cursor-pointer",
                   isHovered
                     ? "pb:bg-white/10 pb:ring-1 pb:ring-peerbots-teal/60"
@@ -95,6 +109,30 @@ export function CodeInteractiveLines<
                       : "pb:hover:bg-white/5",
                 )}
               >
+                {showActionColumn && (
+                  <span className="pb:w-5 pb:shrink-0 pb:flex pb:items-center pb:justify-center pb:self-center">
+                    {action && !disabled && onLineAction ? (
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        aria-label={`Play button: ${action.label}`}
+                        title={`Play button: ${action.label}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onLineAction(line.lineNumber);
+                        }}
+                        className={cn(
+                          "pb:inline-flex pb:items-center pb:justify-center pb:w-4 pb:h-4 pb:rounded pb:transition-colors pb:cursor-pointer",
+                          action.isSelected
+                            ? "pb:text-peerbots-teal pb:bg-peerbots-teal/20"
+                            : "pb:text-gray-400 pb:hover:text-peerbots-teal pb:hover:bg-white/10",
+                        )}
+                      >
+                        <Icon name="play" className="pb:w-3 pb:h-3" />
+                      </button>
+                    ) : null}
+                  </span>
+                )}
                 <span
                   aria-hidden="true"
                   className="pb:w-6 pb:shrink-0 pb:text-right pb:text-gray-500 pb:select-none pb:text-xs"
