@@ -1,5 +1,11 @@
 # @peerbots/core
 
+## 1.5.0
+
+### Minor Changes
+
+- [#42](https://github.com/PEERbots/peerbots-core/pull/42) [`18bd2b9`](https://github.com/PEERbots/peerbots-core/commit/18bd2b9899fefab87adfc1125306ed1107015a54) Thanks [@sbeleidy](https://github.com/sbeleidy)! - Add a FlowView-style Lock/Unlock toggle (`defaultLocked` prop, `lockClosed`/`lockOpen` icon) and per-line left-gutter Play buttons (with `Ctrl/Cmd+Enter` shortcut and malformed/erroring code safeguards) to `CodeView` in both Shorthand and expanded JSON views.
+
 ## 1.4.3
 
 ### Patch Changes
