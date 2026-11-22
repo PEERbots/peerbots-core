@@ -42,3 +42,9 @@ export interface CodeAutocompleteState {
   replaceEnd: number;
   suggestions: CodeAutocompleteOption[];
 }
+
+export interface CodeLineActionItem {
+  lineNumber: number;
+  label: string;
+  isSelected?: boolean;
+}

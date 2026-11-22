@@ -7,6 +7,7 @@ import type {
   CodeAutocompleteOption,
   CodeAutocompleteState,
   CodeDiagnosticItem,
+  CodeLineActionItem,
   ExplainedCodeLine,
   ExplainedCodeToken,
 } from "./types";
@@ -31,6 +32,10 @@ export interface CodeEditorSurfaceProps {
   headerLeft?: React.ReactNode;
   headerRight?: React.ReactNode;
   textareaAriaLabel?: string;
+  /** Optional map of lineNumber -> playable button metadata for rendering left-gutter Play buttons. */
+  lineActions?: Map<number, CodeLineActionItem>;
+  /** Invoked when a line's gutter Play button is clicked. */
+  onLineAction?: (lineNumber: number) => void;
   onDraftChange: (nextValue: string, el: HTMLTextAreaElement) => void;
   onCursorUpdate: (el: HTMLTextAreaElement) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
@@ -43,8 +48,9 @@ export interface CodeEditorSurfaceProps {
 
 /**
  * Domain-neutral layered monospace code editor surface with clickable
- * line-number gutter, syntax-highlighted `<pre>` overlay, inline floating
- * autocomplete, live status bar, and line-by-line diagnostics.
+ * line-number gutter, optional per-line Play/error triggers, syntax-highlighted
+ * `<pre>` overlay, inline floating autocomplete, live status bar, and
+ * line-by-line diagnostics.
  */
 export function CodeEditorSurface({
   draftCode,
@@ -62,6 +68,8 @@ export function CodeEditorSurface({
   headerLeft,
   headerRight,
   textareaAriaLabel = "Template code editor",
+  lineActions,
+  onLineAction,
   onDraftChange,
   onCursorUpdate,
   onKeyDown,
@@ -73,6 +81,7 @@ export function CodeEditorSurface({
 }: CodeEditorSurfaceProps) {
   const highlightPreRef = useRef<HTMLPreElement | null>(null);
   const lineGutterRef = useRef<HTMLDivElement | null>(null);
+  const hasActionSlot = Boolean(onLineAction);
 
   return (
     <div className={cn("pb:p-4 pb:flex pb:flex-col pb:gap-3", className)}>
@@ -84,11 +93,14 @@ export function CodeEditorSurface({
       )}
 
       <div className="pb:relative pb:flex pb:rounded-lg pb:border pb:border-gray-300 pb:bg-[#1e222b] pb:max-h-[32rem]">
-        {/* Line Numbers Gutter */}
+        {/* Line Numbers & Play/Error Gutter */}
         <div
           ref={lineGutterRef}
-          aria-hidden="true"
-          className="pb:w-9 pb:shrink-0 pb:rounded-l-lg pb:py-3 pb:pr-2 pb:pl-2 pb:font-mono pb:text-xs pb:sm:text-sm pb:leading-6 pb:text-right pb:text-gray-500 pb:select-none pb:overflow-hidden pb:max-h-[32rem] pb:border-r pb:border-gray-800"
+          aria-hidden={hasActionSlot ? undefined : true}
+          className={cn(
+            "pb:shrink-0 pb:rounded-l-lg pb:py-3 pb:pr-2 pb:pl-1.5 pb:font-mono pb:text-xs pb:sm:text-sm pb:leading-6 pb:text-right pb:text-gray-500 pb:select-none pb:overflow-hidden pb:max-h-[32rem] pb:border-r pb:border-gray-800",
+            hasActionSlot ? "pb:w-14" : "pb:w-9 pb:pl-2",
+          )}
         >
           {draftCode.split(/\r?\n/).map((_, idx) => {
             const lineNum = idx + 1;
@@ -96,38 +108,75 @@ export function CodeEditorSurface({
             const lineDiags = diagnosticsByLine.get(lineNum) ?? [];
             const hasError = lineDiags.some((d) => d.severity === "error");
             const hasWarning = lineDiags.some((d) => d.severity === "warning");
+            const action = lineActions?.get(lineNum);
+            const diagTooltip =
+              lineDiags.length > 0
+                ? lineDiags.map((d) => d.message).join("\n")
+                : undefined;
+
             return (
               <div
                 key={lineNum}
-                title={
-                  lineDiags.length > 0
-                    ? lineDiags.map((d) => d.message).join("\n")
-                    : undefined
-                }
-                onClick={() => {
-                  const el = textareaRef.current;
-                  if (!el) return;
-                  const lines = el.value.split(/\r?\n/);
-                  let offset = 0;
-                  for (let k = 0; k < idx; k += 1) {
-                    offset += lines[k].length + 1;
-                  }
-                  el.focus();
-                  el.setSelectionRange(offset, offset);
-                  onJumpToLine(lineNum, offset);
-                }}
-                className={cn(
-                  "pb:cursor-pointer pb:transition-colors",
-                  hasError
-                    ? "pb:text-red-400 pb:font-bold"
-                    : hasWarning
-                      ? "pb:text-amber-400 pb:font-semibold"
-                      : isActive
-                        ? "pb:text-peerbots-teal pb:font-semibold"
-                        : "pb:hover:text-gray-300",
-                )}
+                title={diagTooltip}
+                className="pb:h-6 pb:flex pb:items-center pb:justify-end pb:gap-1"
               >
-                {lineNum}
+                {hasActionSlot && (
+                  <span className="pb:w-4 pb:shrink-0 pb:flex pb:items-center pb:justify-center">
+                    {hasError ? (
+                      <Icon
+                        name="xCircle"
+                        aria-hidden="true"
+                        className="pb:w-3.5 pb:h-3.5 pb:text-red-400"
+                      />
+                    ) : action && onLineAction ? (
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        aria-label={`Play button: ${action.label}`}
+                        title={`Play button: ${action.label} (Ctrl/Cmd+Enter)`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onLineAction(lineNum);
+                        }}
+                        className={cn(
+                          "pb:inline-flex pb:items-center pb:justify-center pb:w-4 pb:h-4 pb:rounded pb:transition-colors pb:cursor-pointer",
+                          action.isSelected
+                            ? "pb:text-peerbots-teal pb:bg-peerbots-teal/20"
+                            : "pb:text-gray-400 pb:hover:text-peerbots-teal pb:hover:bg-white/10",
+                        )}
+                      >
+                        <Icon name="play" className="pb:w-3 pb:h-3" />
+                      </button>
+                    ) : null}
+                  </span>
+                )}
+                <span
+                  aria-hidden="true"
+                  onClick={() => {
+                    const el = textareaRef.current;
+                    if (!el) return;
+                    const lines = el.value.split(/\r?\n/);
+                    let offset = 0;
+                    for (let k = 0; k < idx; k += 1) {
+                      offset += lines[k].length + 1;
+                    }
+                    el.focus();
+                    el.setSelectionRange(offset, offset);
+                    onJumpToLine(lineNum, offset);
+                  }}
+                  className={cn(
+                    "pb:min-w-[1.5rem] pb:text-right pb:cursor-pointer pb:transition-colors",
+                    hasError
+                      ? "pb:text-red-400 pb:font-bold"
+                      : hasWarning
+                        ? "pb:text-amber-400 pb:font-semibold"
+                        : isActive
+                          ? "pb:text-peerbots-teal pb:font-semibold"
+                          : "pb:hover:text-gray-300",
+                  )}
+                >
+                  {lineNum}
+                </span>
               </div>
             );
           })}
