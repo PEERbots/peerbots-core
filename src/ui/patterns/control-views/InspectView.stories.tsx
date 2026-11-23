@@ -2,25 +2,25 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { EXAMPLE_QA_AND_COLORS_TEMPLATE } from "../../../templates/examples";
 import type { Template } from "../../../templates/types";
-import { CodeView } from "./CodeView";
+import { InspectView } from "./InspectView";
 
-const meta: Meta<typeof CodeView> = {
-  title: "Templates/Views/CodeView",
-  component: CodeView,
+const meta: Meta<typeof InspectView> = {
+  title: "Templates/Views/InspectView",
+  component: InspectView,
   tags: ["autodocs"],
   parameters: {
     layout: "padded",
     docs: {
       description: {
         component:
-          "Human-readable Peerbots Template Text Format (PTTF) view with syntax highlighting, interactive hover/focus explainers showing the live `<PeerbotsButton>` each line produces, and an Edit & Format mode for round-trip authoring.",
+          "Human-readable Peerbots Template Text Format (PTTF) inspect view with syntax highlighting, interactive hover/focus explainers showing the live `<PeerbotsButton>` each line produces, and an Edit & Format mode for round-trip authoring.",
       },
     },
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof CodeView>;
+type Story = StoryObj<typeof InspectView>;
 
 const CYCLIC_AND_LOG_TEMPLATE: Template = {
   id: "social-checkin-loop",
@@ -82,7 +82,7 @@ export const Default: Story = {
     );
 
     return (
-      <CodeView
+      <InspectView
         template={template}
         selectedButtonId={selectedButtonId}
         onTemplateChange={setTemplate}
@@ -108,16 +108,16 @@ export const Variations: Story = {
           <h3 className="pb:text-sm pb:font-semibold pb:text-gray-800 pb:mb-2">
             Full 17-Button Template (Editable)
           </h3>
-          <CodeView
+          <InspectView
             template={template}
             onTemplateChange={setTemplate}
           />
         </div>
         <div>
           <h3 className="pb:text-sm pb:font-semibold pb:text-gray-800 pb:mb-2">
-            Read-Only Compact Code (Explainer Off)
+            Read-Only Compact Inspect (Explainer Off)
           </h3>
-          <CodeView
+          <InspectView
             template={CYCLIC_AND_LOG_TEMPLATE}
             defaultShowExplainer={false}
           />

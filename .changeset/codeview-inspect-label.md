@@ -1,5 +1,5 @@
 ---
-"@peerbots/core": patch
+"@peerbots/core": minor
 ---
 
-Rename `CodeView`'s user-facing header label from "Code View" to "Inspect View" (and expose an optional `title` prop) while keeping internal component and type names unchanged.
+Rename `CodeView` / `CodeViewProps` to `InspectView` / `InspectViewProps` (with default `"Inspect View"` heading and an optional `title` prop), while keeping the domain-neutral `Code*` subcomponents unchanged and re-exporting deprecated `CodeView` / `CodeViewProps` aliases (scheduled for removal in `v2.0.0`).
