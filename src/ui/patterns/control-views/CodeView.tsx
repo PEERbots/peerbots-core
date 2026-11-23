@@ -52,6 +52,8 @@ export interface CodeViewProps {
   defaultMode?: "inspect" | "edit";
   /** Whether hover/focus explainers are enabled (@default true) */
   defaultShowExplainer?: boolean;
+  /** Visible heading label in the toolbar (@default "Inspect View") */
+  title?: string;
   /** Additional container classes */
   className?: string;
 }
@@ -80,6 +82,7 @@ export function CodeView({
   defaultLocked = false,
   defaultMode: _defaultMode,
   defaultShowExplainer = true,
+  title = "Inspect View",
   className,
 }: CodeViewProps) {
   const canEdit = Boolean(onTemplateChange) && !disabled;
@@ -450,7 +453,7 @@ export function CodeView({
         <div className="pb:flex pb:items-center pb:gap-2">
           <Icon name="code" className="pb:w-4 pb:h-4 pb:text-peerbots-teal" />
           <span className="pb:text-sm pb:font-semibold pb:text-gray-900">
-            Code View
+            {title}
           </span>
 
           {/* Shorthand vs JSON Switcher */}

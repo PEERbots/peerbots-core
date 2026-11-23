@@ -305,7 +305,7 @@ describe("CodeView", () => {
     });
     expect(
       within(diagnostics).getByText(
-        /Template "id" and content association cannot be changed in Code View/i,
+        /Template "id" and content association cannot be changed in Inspect View/i,
       ),
     ).toBeInTheDocument();
 

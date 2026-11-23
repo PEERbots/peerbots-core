@@ -155,7 +155,7 @@ export function useCodeViewDraft({
           diagnostics.push({
             lineNumber: lineIdx >= 0 ? lineIdx + 1 : 1,
             severity: "warning",
-            message: `Template "${key}" and content association cannot be changed in Code View and will be preserved.`,
+            message: `Template "${key}" and content association cannot be changed in Inspect View and will be preserved.`,
           });
         }
       }
