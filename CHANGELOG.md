@@ -1,5 +1,11 @@
 # @peerbots/core
 
+## 1.6.0
+
+### Minor Changes
+
+- [#44](https://github.com/PEERbots/peerbots-core/pull/44) [`00cb7ff`](https://github.com/PEERbots/peerbots-core/commit/00cb7ff76b89d6bfaf4dfd643e8bab05a980b45e) Thanks [@sbeleidy](https://github.com/sbeleidy)! - Rename `CodeView` / `CodeViewProps` to `InspectView` / `InspectViewProps` (with default `"Inspect View"` heading and an optional `title` prop), while keeping the domain-neutral `Code*` subcomponents unchanged and re-exporting deprecated `CodeView` / `CodeViewProps` aliases (scheduled for removal in `v2.0.0`).
+
 ## 1.5.0
 
 ### Minor Changes
