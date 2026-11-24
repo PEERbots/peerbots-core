@@ -25,7 +25,7 @@ import { PttfButtonPreview } from "./code-view/PttfButtonPreview";
 import { useCodeViewDraft } from "./code-view/useCodeViewDraft";
 import type { PeerbotsButtonActionHandler } from "./types";
 
-export interface CodeViewProps {
+export interface InspectViewProps {
   /** Canonical Peerbots template containing `buttons` and `hierarchy` */
   template: Template;
   /** Optional action callback invoked when a code line's button is selected or activated */
@@ -52,6 +52,8 @@ export interface CodeViewProps {
   defaultMode?: "inspect" | "edit";
   /** Whether hover/focus explainers are enabled (@default true) */
   defaultShowExplainer?: boolean;
+  /** Visible heading label in the toolbar (@default "Inspect View") */
+  title?: string;
   /** Additional container classes */
   className?: string;
 }
@@ -62,12 +64,12 @@ interface UndoEntry {
 }
 
 /**
- * Interactive Code & Shorthand View for Peerbots `Template` objects.
+ * Interactive Inspect & Shorthand View for Peerbots `Template` objects.
  *
  * Composes domain-neutral {@link CodeInteractiveLines}, {@link CodeEditorSurface},
  * and {@link CodeExplainerPanel} with PTTF/JSON adapters and {@link PttfButtonPreview}.
  */
-export function CodeView({
+export function InspectView({
   template,
   onButtonAction,
   onTemplateChange,
@@ -80,8 +82,9 @@ export function CodeView({
   defaultLocked = false,
   defaultMode: _defaultMode,
   defaultShowExplainer = true,
+  title = "Inspect View",
   className,
-}: CodeViewProps) {
+}: InspectViewProps) {
   const canEdit = Boolean(onTemplateChange) && !disabled;
   const [isLocked, setIsLocked] = useState<boolean>(defaultLocked);
   const isEditable = canEdit && !isLocked;
@@ -450,7 +453,7 @@ export function CodeView({
         <div className="pb:flex pb:items-center pb:gap-2">
           <Icon name="code" className="pb:w-4 pb:h-4 pb:text-peerbots-teal" />
           <span className="pb:text-sm pb:font-semibold pb:text-gray-900">
-            Code View
+            {title}
           </span>
 
           {/* Shorthand vs JSON Switcher */}
@@ -799,3 +802,16 @@ export function CodeView({
     </div>
   );
 }
+
+/**
+ * @deprecated Renamed to {@link InspectViewProps}.
+ * TODO(v2): Remove deprecated `CodeViewProps` alias in the next major release (v2.0.0).
+ */
+export type CodeViewProps = InspectViewProps;
+
+/**
+ * @deprecated Renamed to {@link InspectView}.
+ * TODO(v2): Remove deprecated `CodeView` alias in the next major release (v2.0.0).
+ */
+export const CodeView = InspectView;
+

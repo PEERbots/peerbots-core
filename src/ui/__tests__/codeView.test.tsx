@@ -9,7 +9,10 @@ import {
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Template } from "../../templates/types";
-import { CodeView } from "../patterns/control-views/CodeView";
+import {
+  CodeView,
+  InspectView,
+} from "../patterns/control-views/InspectView";
 
 afterEach(() => {
   cleanup();
@@ -45,13 +48,17 @@ const makeCyclicTemplate = (): Template => ({
   },
 });
 
-describe("CodeView", () => {
+describe("InspectView (and deprecated CodeView alias)", () => {
+  it("exports CodeView as a deprecated alias of InspectView", () => {
+    expect(CodeView).toBe(InspectView);
+  });
+
   it("renders formatted PTTF lines, updates explainer on hover, switches to JSON, and has zero axe violations", async () => {
     const onButtonAction = vi.fn();
     const template = makeCyclicTemplate();
 
     const { container } = render(
-      <CodeView template={template} onButtonAction={onButtonAction} />,
+      <InspectView template={template} onButtonAction={onButtonAction} />,
     );
 
     const list = screen.getByRole("list", {
@@ -305,7 +312,7 @@ describe("CodeView", () => {
     });
     expect(
       within(diagnostics).getByText(
-        /Template "id" and content association cannot be changed in Code View/i,
+        /Template "id" and content association cannot be changed in Inspect View/i,
       ),
     ).toBeInTheDocument();
 
