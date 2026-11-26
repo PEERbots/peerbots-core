@@ -33,6 +33,7 @@ const config: StorybookConfig = {
         ? config.resolve.alias
         : {}),
       "@peerbots/core/flow": path.resolve(dirname, "../src/flow/index.ts"),
+      "@peerbots/core/charts": path.resolve(dirname, "../src/charts/index.ts"),
     };
     return config;
   },
