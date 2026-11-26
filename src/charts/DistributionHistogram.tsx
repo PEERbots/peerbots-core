@@ -92,6 +92,18 @@ export function DistributionHistogram({
     referenceLineValue !== undefined
       ? Math.min(100, Math.max(0, (referenceLineValue / maxX) * 100))
       : undefined;
+  const labelsClose =
+    averagePct !== undefined &&
+    referencePct !== undefined &&
+    Math.abs(averagePct - referencePct) < 22;
+  const hasLineLabels = averagePct !== undefined || referencePct !== undefined;
+
+  const getPillAlignClass = (pct: number) =>
+    pct < 12
+      ? "pb:translate-x-0"
+      : pct > 88
+        ? "pb:-translate-x-full"
+        : "pb:-translate-x-1/2";
 
   const plotHeightPx = chartHeight
     ? Math.max(120, Math.min(260, Math.round(chartHeight * 0.45)))
@@ -111,30 +123,47 @@ export function DistributionHistogram({
         ) : (
           <span />
         )}
-        <div className="pb:flex pb:flex-wrap pb:items-center pb:gap-1.5 pb:text-[11px]">
-          {average !== undefined && (
-            <span className="pb:inline-flex pb:items-center pb:gap-1 pb:rounded-full pb:bg-slate-100 pb:px-2 pb:py-0.5 pb:font-medium pb:tabular-nums pb:text-slate-600">
-              <span
-                className="pb:h-1.5 pb:w-1.5 pb:rounded-full pb:bg-slate-400"
-                aria-hidden="true"
-              />
-              Avg {Math.round(average * 10) / 10}
-            </span>
-          )}
-          {referenceLineValue !== undefined && (
-            <span className="pb:inline-flex pb:items-center pb:gap-1 pb:rounded-full pb:bg-pink-50 pb:px-2 pb:py-0.5 pb:font-medium pb:tabular-nums pb:text-pink-700">
-              <span
-                className="pb:h-1.5 pb:w-1.5 pb:rounded-full pb:bg-[#e86e8a]"
-                aria-hidden="true"
-              />
-              {referenceLineLabel} ≥{referenceLineValue}
-            </span>
-          )}
-          <span className="pb:tabular-nums pb:text-slate-500">
-            {data.length} total
-          </span>
-        </div>
+        <span className="pb:text-[11px] pb:tabular-nums pb:text-slate-500">
+          {data.length} total
+        </span>
       </div>
+
+      {/* Line-anchored Average & Reference labels aligned with plot canvas */}
+      {hasLineLabels && (
+        <div className="pb:mb-1.5 pb:flex pb:items-center pb:gap-2">
+          <span className="pb:w-3.5 pb:shrink-0" aria-hidden="true" />
+          <span className="pb:w-5 pb:shrink-0" aria-hidden="true" />
+          <div
+            className={`pb:relative pb:min-w-0 pb:flex-1 ${labelsClose ? "pb:h-11" : "pb:h-5"}`}
+          >
+            {averagePct !== undefined && average !== undefined && (
+              <span
+                className={`pb:absolute pb:top-0 pb:inline-flex pb:items-center pb:gap-1 pb:whitespace-nowrap pb:rounded-full pb:border pb:border-slate-200 pb:bg-slate-100 pb:px-2 pb:py-0.5 pb:text-[10.5px] pb:font-medium pb:tabular-nums pb:text-slate-600 ${getPillAlignClass(averagePct)}`}
+                style={{ left: `${averagePct}%` }}
+              >
+                <span
+                  className="pb:h-1.5 pb:w-1.5 pb:rounded-full pb:bg-slate-400"
+                  aria-hidden="true"
+                />
+                Avg {Math.round(average * 10) / 10}
+              </span>
+            )}
+            {referencePct !== undefined &&
+              referenceLineValue !== undefined && (
+                <span
+                  className={`pb:absolute ${labelsClose ? "pb:top-6" : "pb:top-0"} pb:inline-flex pb:items-center pb:gap-1 pb:whitespace-nowrap pb:rounded-full pb:border pb:border-pink-200 pb:bg-pink-50 pb:px-2 pb:py-0.5 pb:text-[10.5px] pb:font-medium pb:tabular-nums pb:text-pink-700 ${getPillAlignClass(referencePct)}`}
+                  style={{ left: `${referencePct}%` }}
+                >
+                  <span
+                    className="pb:h-1.5 pb:w-1.5 pb:rounded-full pb:bg-[#e86e8a]"
+                    aria-hidden="true"
+                  />
+                  {referenceLineLabel} ≥{referenceLineValue}
+                </span>
+              )}
+          </div>
+        </div>
+      )}
 
       {/* Plot area: Y-axis title + tick column + horizontal gridlines & rounded columns */}
       <div className="pb:flex pb:items-stretch pb:gap-2">
