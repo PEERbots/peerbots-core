@@ -230,25 +230,30 @@ export function DistributionBarChart({
         {/* Subtle X-axis scale ticks aligned with bar track */}
         <div className="pb:mt-2 pb:flex pb:items-center pb:gap-2.5">
           <span className="pb:w-20 pb:shrink-0" aria-hidden="true" />
-          <div className="pb:relative pb:h-4 pb:flex-1 pb:border-t pb:border-slate-200/80">
-            {ticks.map((tick, idx) => {
-              const leftPct = (tick / axisMax) * 100;
-              const alignClass =
-                idx === 0
-                  ? "pb:translate-x-0"
-                  : idx === ticks.length - 1
-                    ? "pb:-translate-x-full"
-                    : "pb:-translate-x-1/2";
-              return (
-                <span
-                  key={tick}
-                  className={`pb:absolute pb:top-1 pb:text-[10.5px] pb:tabular-nums pb:text-slate-400 ${alignClass}`}
-                  style={{ left: `${leftPct}%` }}
-                >
-                  {tick}
-                </span>
-              );
-            })}
+          <div className="pb:flex-1">
+            <div className="pb:relative pb:h-4 pb:border-t pb:border-slate-200/80">
+              {ticks.map((tick, idx) => {
+                const leftPct = (tick / axisMax) * 100;
+                const alignClass =
+                  idx === 0
+                    ? "pb:translate-x-0"
+                    : idx === ticks.length - 1
+                      ? "pb:-translate-x-full"
+                      : "pb:-translate-x-1/2";
+                return (
+                  <span
+                    key={tick}
+                    className={`pb:absolute pb:top-1 pb:text-[10.5px] pb:tabular-nums pb:text-slate-400 ${alignClass}`}
+                    style={{ left: `${leftPct}%` }}
+                  >
+                    {tick}
+                  </span>
+                );
+              })}
+            </div>
+            <div className="pb:mt-1 pb:text-center pb:text-[10px] pb:font-medium pb:uppercase pb:tracking-wider pb:text-slate-400">
+              Count
+            </div>
           </div>
           <span className="pb:w-7 pb:shrink-0" aria-hidden="true" />
         </div>

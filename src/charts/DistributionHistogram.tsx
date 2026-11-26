@@ -136,11 +136,22 @@ export function DistributionHistogram({
         </div>
       </div>
 
-      {/* Plot area: Y-axis tick column + horizontal gridlines & rounded columns */}
+      {/* Plot area: Y-axis title + tick column + horizontal gridlines & rounded columns */}
       <div className="pb:flex pb:items-stretch pb:gap-2">
+        {/* Rotated Y-axis title */}
+        <div
+          className="pb:flex pb:w-3.5 pb:shrink-0 pb:items-center pb:justify-center pb:select-none"
+          style={{ height: `${plotHeightPx}px` }}
+          aria-hidden="true"
+        >
+          <span className="pb:-rotate-90 pb:whitespace-nowrap pb:text-[10px] pb:font-medium pb:uppercase pb:tracking-wider pb:text-slate-400">
+            Count
+          </span>
+        </div>
+
         {/* Y-axis numeric labels */}
         <div
-          className="pb:relative pb:w-6 pb:shrink-0 pb:select-none"
+          className="pb:relative pb:w-5 pb:shrink-0 pb:select-none"
           style={{ height: `${plotHeightPx}px` }}
           aria-hidden="true"
         >
@@ -280,6 +291,9 @@ export function DistributionHistogram({
                 </span>
               );
             })}
+          </div>
+          <div className="pb:mt-1 pb:text-center pb:text-[10px] pb:font-medium pb:uppercase pb:tracking-wider pb:text-slate-400">
+            Length
           </div>
         </div>
       </div>
