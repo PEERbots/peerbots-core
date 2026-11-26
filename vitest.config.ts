@@ -16,6 +16,7 @@ export default defineConfig({
     dedupe: ['react', 'react-dom'],
     alias: {
       '@peerbots/core/flow': path.resolve(dirname, 'src/flow/index.ts'),
+      '@peerbots/core/charts': path.resolve(dirname, 'src/charts/index.ts'),
     },
   },
   test: {

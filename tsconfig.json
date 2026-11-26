@@ -9,7 +9,8 @@
         "skipLibCheck": true,
         "esModuleInterop": true,
         "paths": {
-            "@peerbots/core/flow": ["./src/flow/index.ts"]
+            "@peerbots/core/flow": ["./src/flow/index.ts"],
+            "@peerbots/core/charts": ["./src/charts/index.ts"]
         }
     },
     "exclude": ["dist", "node_modules", "storybook-static", "vitest.config.ts"]
