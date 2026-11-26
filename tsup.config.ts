@@ -6,9 +6,10 @@ export default defineConfig([
       index: "src/index.ts",
       "templates/index": "src/templates/index.ts",
       "flow/index": "src/flow/index.ts",
+      "charts/index": "src/charts/index.ts",
     },
-    format: ["cjs", "esm"],
-    dts: true,
+    format: ["esm"],
+    dts: false,
     minify: true,
     clean: true,
     loader: {
@@ -16,9 +17,38 @@ export default defineConfig([
     },
     external: [
       "@peerbots/core/flow",
+      "@peerbots/core/charts",
       "@xyflow/react",
       "@xyflow/react/dist/style.css",
       "@dagrejs/dagre",
+      "victory",
+    ],
+    injectStyle: (css) =>
+      `import styleInject from '#style-inject';styleInject(${css}, { insertAt: 'top' })`,
+    sourcemap: true,
+    splitting: true,
+  },
+  {
+    entry: {
+      index: "src/index.ts",
+      "templates/index": "src/templates/index.ts",
+      "flow/index": "src/flow/index.ts",
+      "charts/index": "src/charts/index.ts",
+    },
+    format: ["cjs"],
+    dts: true,
+    minify: true,
+    clean: false,
+    loader: {
+      ".png": "dataurl",
+    },
+    external: [
+      "@peerbots/core/flow",
+      "@peerbots/core/charts",
+      "@xyflow/react",
+      "@xyflow/react/dist/style.css",
+      "@dagrejs/dagre",
+      "victory",
     ],
     injectStyle: (css) =>
       `import styleInject from '#style-inject';styleInject(${css}, { insertAt: 'top' })`,
