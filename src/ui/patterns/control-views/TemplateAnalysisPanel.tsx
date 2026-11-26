@@ -1,12 +1,22 @@
-import { useMemo, useState } from "react";
-import { DistributionBarChart } from "../../../charts/DistributionBarChart";
-import { DistributionHistogram } from "../../../charts/DistributionHistogram";
+import { lazy, Suspense, useMemo, useState } from "react";
 import {
   DEFAULT_COMMON_LABELS,
   DEFAULT_CONTROL_LABELS,
   usePeerbotsI18n,
   type ControlLabels,
 } from "../../../i18n";
+
+const LazyDistributionBarChart = lazy(() =>
+  import("@peerbots/core/charts").then((mod) => ({
+    default: mod.DistributionBarChart,
+  })),
+);
+
+const LazyDistributionHistogram = lazy(() =>
+  import("@peerbots/core/charts").then((mod) => ({
+    default: mod.DistributionHistogram,
+  })),
+);
 import {
   PEERBOTS_COLORS,
   PEERBOTS_EMOTIONS,
@@ -306,51 +316,69 @@ export function TemplateAnalysisPanel({
         </div>
 
         <div className="pb:mt-2 pb:p-1">
-          <DistributionHistogram
-            data={analytics.titleDistribution.raw}
-            alt={`Histogram showing title length distribution. Average: ${analytics.titleDistribution.average}, Threshold: ${tooLongLimit}.`}
-            aria-label={`Histogram showing title length distribution. Average: ${analytics.titleDistribution.average}, Threshold: ${tooLongLimit}.`}
-            label={resolvedLabels.titleLength ?? "Title Length"}
-            average={analytics.titleDistribution.average}
-            referenceLineValue={tooLongLimit}
-            referenceLineLabel={resolvedLabels.tooLongLabel ?? "Too Long"}
-            chartWidth={chartWidth}
-            chartHeight={chartHeight}
-          />
-          <DistributionHistogram
-            data={analytics.speechDistribution.raw}
-            alt={`Histogram showing speech length distribution. Average: ${analytics.speechDistribution.average}, Threshold: ${tooLongLimit}.`}
-            aria-label={`Histogram showing speech length distribution. Average: ${analytics.speechDistribution.average}, Threshold: ${tooLongLimit}.`}
-            label={resolvedLabels.speechLength ?? "Speech Length"}
-            average={analytics.speechDistribution.average}
-            referenceLineValue={tooLongLimit}
-            referenceLineLabel={resolvedLabels.tooLongLabel ?? "Too Long"}
-            chartWidth={chartWidth}
-            chartHeight={chartHeight}
-          />
+          <Suspense
+            fallback={
+              <div className="pb:h-40 pb:animate-pulse pb:rounded pb:bg-gray-100" />
+            }
+          >
+            <LazyDistributionHistogram
+              data={analytics.titleDistribution.raw}
+              alt={`Histogram showing title length distribution. Average: ${analytics.titleDistribution.average}, Threshold: ${tooLongLimit}.`}
+              aria-label={`Histogram showing title length distribution. Average: ${analytics.titleDistribution.average}, Threshold: ${tooLongLimit}.`}
+              label={resolvedLabels.titleLength ?? "Title Length"}
+              average={analytics.titleDistribution.average}
+              referenceLineValue={tooLongLimit}
+              referenceLineLabel={resolvedLabels.tooLongLabel ?? "Too Long"}
+              chartWidth={chartWidth}
+              chartHeight={chartHeight}
+            />
+            <LazyDistributionHistogram
+              data={analytics.speechDistribution.raw}
+              alt={`Histogram showing speech length distribution. Average: ${analytics.speechDistribution.average}, Threshold: ${tooLongLimit}.`}
+              aria-label={`Histogram showing speech length distribution. Average: ${analytics.speechDistribution.average}, Threshold: ${tooLongLimit}.`}
+              label={resolvedLabels.speechLength ?? "Speech Length"}
+              average={analytics.speechDistribution.average}
+              referenceLineValue={tooLongLimit}
+              referenceLineLabel={resolvedLabels.tooLongLabel ?? "Too Long"}
+              chartWidth={chartWidth}
+              chartHeight={chartHeight}
+            />
+          </Suspense>
         </div>
       </div>
 
       <div className="pb:mx-1 pb:my-1.5 pb:p-1">
-        <DistributionBarChart
-          label={resolvedLabels.emotion}
-          alt="Bar chart showing the distribution of emotions in the template buttons."
-          aria-label="Bar chart showing the distribution of emotions in the template buttons."
-          data={emotionData}
-          chartWidth={chartWidth}
-          chartHeight={chartHeight}
-        />
+        <Suspense
+          fallback={
+            <div className="pb:h-40 pb:animate-pulse pb:rounded pb:bg-gray-100" />
+          }
+        >
+          <LazyDistributionBarChart
+            label={resolvedLabels.emotion}
+            alt="Bar chart showing the distribution of emotions in the template buttons."
+            aria-label="Bar chart showing the distribution of emotions in the template buttons."
+            data={emotionData}
+            chartWidth={chartWidth}
+            chartHeight={chartHeight}
+          />
+        </Suspense>
       </div>
 
       <div className="pb:mx-1 pb:my-1.5 pb:p-1">
-        <DistributionBarChart
-          label={resolvedLabels.labelColor}
-          alt="Bar chart showing the distribution of colors in the template buttons."
-          aria-label="Bar chart showing the distribution of colors in the template buttons."
-          data={colorData}
-          chartWidth={chartWidth}
-          chartHeight={chartHeight}
-        />
+        <Suspense
+          fallback={
+            <div className="pb:h-40 pb:animate-pulse pb:rounded pb:bg-gray-100" />
+          }
+        >
+          <LazyDistributionBarChart
+            label={resolvedLabels.labelColor}
+            alt="Bar chart showing the distribution of colors in the template buttons."
+            aria-label="Bar chart showing the distribution of colors in the template buttons."
+            data={colorData}
+            chartWidth={chartWidth}
+            chartHeight={chartHeight}
+          />
+        </Suspense>
       </div>
     </BasePanel>
   );

@@ -7,6 +7,9 @@
   "main": "dist/index.js",
   "style": "./dist/index.css",
   "types": "dist/index.d.ts",
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -23,6 +26,11 @@
       "types": "./dist/flow/index.d.ts",
       "import": "./dist/flow/index.mjs",
       "require": "./dist/flow/index.js"
+    },
+    "./charts": {
+      "types": "./dist/charts/index.d.ts",
+      "import": "./dist/charts/index.mjs",
+      "require": "./dist/charts/index.js"
     },
     "./theme": {
       "style": "./dist/styles/theme.css",
@@ -81,6 +89,9 @@
       "optional": true
     },
     "@xyflow/react": {
+      "optional": true
+    },
+    "victory": {
       "optional": true
     }
   },
