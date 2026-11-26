@@ -2,10 +2,10 @@
 "@peerbots/core": major
 ---
 
-Move Victory-backed chart components (`DistributionBarChart`, `DistributionHistogram`) out of the root `@peerbots/core` entrypoint into the new `@peerbots/core/charts` subpath export (matching `@peerbots/core/flow`), lazy-load them inside `TemplateAnalysisPanel`, mark `victory` as an optional peer dependency, declare `"sideEffects": ["**/*.css"]`, and enable ESM code splitting.
+Move chart components (`DistributionBarChart`, `DistributionHistogram`) into the `@peerbots/core/charts` subpath export (matching `@peerbots/core/flow`), lazy-load them inside `TemplateAnalysisPanel`, redesign them with a cohesive Peerbots card style (pill horizontal bars with subtle vertical X-axis gridlines, clean rounded columns with subtle horizontal Y-axis gridlines, non-overlapping header pills, and crisp floating tooltips) with zero Victory/Lodash runtime dependencies, declare `"sideEffects": ["**/*.css"]`, and enable ESM code splitting.
 
 ### Migration
-Update runtime imports of Victory charts from `@peerbots/core` to `@peerbots/core/charts`:
+Update runtime imports of distribution charts from `@peerbots/core` to `@peerbots/core/charts`:
 
 ```ts
 // Before
@@ -15,4 +15,4 @@ import { DistributionBarChart, DistributionHistogram } from "@peerbots/core";
 import { DistributionBarChart, DistributionHistogram } from "@peerbots/core/charts";
 ```
 
-`LineGraph` (zero external dependencies) and all chart TypeScript types remain exported from `@peerbots/core`.
+`LineGraph` and all chart TypeScript types remain exported from `@peerbots/core`.
