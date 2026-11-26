@@ -1,5 +1,13 @@
 # @peerbots/core
 
+## 1.7.0
+
+### Minor Changes
+
+- [#46](https://github.com/PEERbots/peerbots-core/pull/46) [`567131f`](https://github.com/PEERbots/peerbots-core/commit/567131f415e02b072d543ad1c250e5c27c4838f7) Thanks [@sbeleidy](https://github.com/sbeleidy)! - Redesign `DistributionBarChart` and `DistributionHistogram` with a cohesive Peerbots card style (pill horizontal bars with subtle vertical X-axis gridlines, clean rounded columns with subtle horizontal Y-axis gridlines, line-anchored `Avg`/`Reference` pills, axis titles, and crisp floating tooltips) using zero Victory/Lodash dependencies.
+
+  Also add `@peerbots/core/charts` as a dedicated subpath export (matching `@peerbots/core/flow`) while keeping root `@peerbots/core` exports 100% backwards-compatible, mark `victory` as an optional peer dependency, declare `"sideEffects": ["**/*.css"]`, and enable ESM code splitting.
+
 ## 1.6.0
 
 ### Minor Changes
